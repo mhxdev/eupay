@@ -1,0 +1,236 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Developer's registered iOS app
+model App {
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  name             String
+  bundleId         String   @unique   // e.g. "com.acme.myapp"
+  clerkUserId      String             // Developer's Clerk user ID
+
+  // Stripe Connect account for payouts to developer
+  stripeConnectId  String?  @unique   // e.g. "acct_xxx" (Phase 2)
+
+  // Apple DMA entitlement status
+  dmaEntitlementConfirmed Boolean @default(false)
+
+  // Webhook settings
+  webhookUrl       String?
+  webhookSecret    String?
+
+  products         Product[]
+  apiKeys          ApiKey[]
+  customers        Customer[]
+  transactions     Transaction[]
+
+  @@index([clerkUserId])
+}
+
+// Developer's API keys for SDK authentication
+model ApiKey {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  lastUsedAt  DateTime?
+
+  appId       String
+  app         App      @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  keyPrefix   String   // First 8 chars (for display)
+  keyHash     String   @unique // SHA-256 of full key
+  name        String   // e.g. "Production", "Development"
+  isActive    Boolean  @default(true)
+
+  @@index([appId])
+}
+
+// Products/subscriptions configured in EUPay
+model Product {
+  id               String      @id @default(cuid())
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  appId            String
+  app              App         @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  name             String      // e.g. "Pro Monthly"
+  description      String?
+  productType      ProductType // ONE_TIME | SUBSCRIPTION
+
+  // App Store product ID (for cross-referencing StoreKit)
+  appStoreProductId String?
+
+  // Stripe Price ID
+  stripePriceId    String      @unique
+  stripeProductId  String
+
+  // Pricing
+  amountCents      Int         // Price in cents (excluding VAT)
+  currency         String      @default("eur")
+
+  // Subscription fields (null for one-time)
+  interval         String?     // "month" | "year"
+  intervalCount    Int?        @default(1)
+  trialDays        Int?        @default(0)
+
+  isActive         Boolean     @default(true)
+
+  entitlements     Entitlement[]
+  transactions     Transaction[]
+
+  @@index([appId])
+  @@index([stripePriceId])
+}
+
+// End-user of the developer's app
+model Customer {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  appId           String
+  app             App      @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  // Developer's own user ID (passed in SDK config)
+  externalUserId  String
+
+  // Stripe customer
+  stripeCustomerId String  @unique
+
+  // PII (GDPR: can be anonymised on deletion request)
+  email           String?
+  name            String?
+
+  // GDPR
+  gdprConsentAt   DateTime?
+  withdrawalWaivedAt DateTime?  // Widerrufsrecht waiver timestamp
+  deletedAt       DateTime?     // Soft delete for GDPR erasure
+
+  // Location (for VAT)
+  countryCode     String?     // e.g. "DE", "FR"
+
+  entitlements    Entitlement[]
+  transactions    Transaction[]
+
+  @@unique([appId, externalUserId])
+  @@index([appId])
+  @@index([stripeCustomerId])
+}
+
+// Active product access
+model Entitlement {
+  id              String            @id @default(cuid())
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  customerId      String
+  customer        Customer          @relation(fields: [customerId], references: [id])
+
+  productId       String
+  product         Product           @relation(fields: [productId], references: [id])
+
+  status          EntitlementStatus // ACTIVE | EXPIRED | CANCELLED | PAUSED
+  source          EntitlementSource // WEB_CHECKOUT | STOREKIT (future)
+
+  // Subscription details
+  stripeSubscriptionId String?       @unique
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean        @default(false)
+
+  // One-time purchase
+  expiresAt       DateTime?         // null = lifetime
+
+  @@index([customerId])
+  @@index([productId])
+  @@index([stripeSubscriptionId])
+}
+
+// Payment transactions
+model Transaction {
+  id                String          @id @default(cuid())
+  createdAt         DateTime        @default(now())
+
+  appId             String
+  app               App             @relation(fields: [appId], references: [id])
+
+  customerId        String
+  customer          Customer        @relation(fields: [customerId], references: [id])
+
+  productId         String
+  product           Product         @relation(fields: [productId], references: [id])
+
+  // Stripe references
+  stripePaymentIntentId String?     @unique
+  stripeInvoiceId       String?     @unique
+  stripeCheckoutSessionId String?   @unique
+
+  // Amounts (in cents)
+  amountTotal       Int             // Total charged (inc. VAT)
+  amountSubtotal    Int             // Pre-tax amount
+  amountTax         Int             // VAT amount
+  vatRate           Float?          // e.g. 0.19 for Germany
+  vatCountry        String?         // "DE"
+  currency          String          @default("eur")
+
+  status            TransactionStatus // PENDING | SUCCEEDED | REFUNDED | DISPUTED
+
+  // German consumer law
+  withdrawalWaivedAt DateTime?
+
+  @@index([appId])
+  @@index([customerId])
+}
+
+// Stripe webhook events log (for debugging + idempotency)
+model WebhookEvent {
+  id          String   @id // Stripe event ID (e.g. "evt_xxx")
+  createdAt   DateTime @default(now())
+  processedAt DateTime?
+
+  type        String   // e.g. "checkout.session.completed"
+  appId       String?
+  payload     Json     // Full Stripe event object
+  status      WebhookStatus @default(PENDING)
+  error       String?
+}
+
+enum ProductType {
+  ONE_TIME
+  SUBSCRIPTION
+}
+
+enum EntitlementStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PAUSED
+}
+
+enum EntitlementSource {
+  WEB_CHECKOUT
+  STOREKIT
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCEEDED
+  REFUNDED
+  DISPUTED
+}
+
+enum WebhookStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
