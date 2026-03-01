@@ -437,6 +437,9 @@ function Footer() {
           <Link href="/impressum" className="hover:text-gray-300 transition-colors">
             Impressum
           </Link>
+          <Link href="/status" className="hover:text-gray-300 transition-colors">
+            Status
+          </Link>
         </div>
         <p className="text-xs text-gray-600">
           &copy; 2026 EUPay. All rights reserved.
