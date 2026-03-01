@@ -437,6 +437,9 @@ function Footer() {
           <Link href="/impressum" className="hover:text-gray-300 transition-colors">
             Impressum
           </Link>
+          <Link href="/changelog" className="hover:text-gray-300 transition-colors">
+            Changelog
+          </Link>
           <Link href="/status" className="hover:text-gray-300 transition-colors">
             Status
           </Link>
