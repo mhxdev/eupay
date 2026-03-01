@@ -52,10 +52,10 @@ export default async function AppDetailPage({
           <h1 className="text-2xl font-bold">{app.name}</h1>
           <p className="text-muted-foreground font-mono text-sm">{app.bundleId}</p>
         </div>
-        <ModeToggle appId={appId} mode={app.mode} />
+        <ModeToggle appId={appId} mode={app.mode ?? "sandbox"} />
       </div>
 
-      {app.mode === "sandbox" && <SandboxBanner />}
+      {(app.mode === "sandbox" || app.mode === null) && <SandboxBanner />}
 
       {!app.dmaEntitlementConfirmed && (
         <Card className="border-orange-200 bg-orange-50">
