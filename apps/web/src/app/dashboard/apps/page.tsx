@@ -70,7 +70,12 @@ export default async function AppsPage() {
                       {app._count.apiKeys} keys
                     </span>
                   </div>
-                  <div className="mt-3">
+                  <div className="mt-3 flex items-center gap-2">
+                    {app.mode === "sandbox" ? (
+                      <Badge className="bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-100">SANDBOX</Badge>
+                    ) : (
+                      <Badge className="bg-teal-100 text-teal-800 border-teal-300 hover:bg-teal-100">LIVE</Badge>
+                    )}
                     {app.dmaEntitlementConfirmed ? (
                       <Badge variant="secondary">DMA Confirmed</Badge>
                     ) : (

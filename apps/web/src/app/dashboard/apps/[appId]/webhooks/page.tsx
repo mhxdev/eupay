@@ -4,6 +4,7 @@ import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent } from "@/components/ui/card"
 import { WebhookLog, type WebhookEventRow } from "@/components/dashboard/WebhookLog"
+import { SandboxBanner } from "@/components/dashboard/SandboxBanner"
 import { ArrowLeft } from "lucide-react"
 
 export default async function WebhooksPage({
@@ -58,6 +59,8 @@ export default async function WebhooksPage({
           <p className="text-muted-foreground">{app.name}</p>
         </div>
       </div>
+
+      {app.mode === "sandbox" && <SandboxBanner />}
 
       <Card>
         <CardContent className="pt-6">

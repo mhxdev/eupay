@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table"
 import { CreateProductDialog } from "@/components/dashboard/CreateProductDialog"
 import { ProductToggle } from "@/components/dashboard/ProductToggle"
+import { SandboxBanner } from "@/components/dashboard/SandboxBanner"
 import { ArrowLeft } from "lucide-react"
 
 function formatPrice(cents: number, currency: string) {
@@ -57,6 +58,8 @@ export default async function ProductsPage({
         </div>
         <CreateProductDialog appId={appId} />
       </div>
+
+      {app.mode === "sandbox" && <SandboxBanner />}
 
       <Card>
         <CardContent className="p-0">

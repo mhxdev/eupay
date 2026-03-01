@@ -4,6 +4,7 @@ import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent } from "@/components/ui/card"
 import { SubscriberTable, type SubscriberRow } from "@/components/dashboard/SubscriberTable"
+import { SandboxBanner } from "@/components/dashboard/SandboxBanner"
 import { ArrowLeft } from "lucide-react"
 
 export default async function SubscribersPage({
@@ -77,6 +78,8 @@ export default async function SubscribersPage({
           <p className="text-muted-foreground">{app.name}</p>
         </div>
       </div>
+
+      {app.mode === "sandbox" && <SandboxBanner />}
 
       <Card>
         <CardContent className="pt-6">

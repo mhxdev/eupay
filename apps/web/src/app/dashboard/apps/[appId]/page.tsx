@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ApiKeySection } from "@/components/dashboard/ApiKeySection"
+import { ModeToggle } from "@/components/dashboard/ModeToggle"
+import { SandboxBanner } from "@/components/dashboard/SandboxBanner"
 import { Package, Users, Webhook, ExternalLink } from "lucide-react"
 
 export default async function AppDetailPage({
@@ -45,10 +47,15 @@ export default async function AppDetailPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{app.name}</h1>
-        <p className="text-muted-foreground font-mono text-sm">{app.bundleId}</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">{app.name}</h1>
+          <p className="text-muted-foreground font-mono text-sm">{app.bundleId}</p>
+        </div>
+        <ModeToggle appId={appId} mode={app.mode} />
       </div>
+
+      {app.mode === "sandbox" && <SandboxBanner />}
 
       {!app.dmaEntitlementConfirmed && (
         <Card className="border-orange-200 bg-orange-50">
@@ -111,6 +118,14 @@ export default async function AppDetailPage({
             <div className="flex justify-between">
               <span className="text-muted-foreground">Created</span>
               <span>{app.createdAt.toLocaleDateString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Mode</span>
+              {app.mode === "sandbox" ? (
+                <Badge className="bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-100">SANDBOX</Badge>
+              ) : (
+                <Badge className="bg-teal-100 text-teal-800 border-teal-300 hover:bg-teal-100">LIVE</Badge>
+              )}
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">DMA Status</span>

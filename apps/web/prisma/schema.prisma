@@ -22,6 +22,9 @@ model App {
   // Stripe Connect account for payouts to developer
   stripeConnectId  String?  @unique   // e.g. "acct_xxx" (Phase 2)
 
+  // App mode
+  mode             String   @default("sandbox")  // "sandbox" | "live"
+
   // Apple DMA entitlement status
   dmaEntitlementConfirmed Boolean @default(false)
 
