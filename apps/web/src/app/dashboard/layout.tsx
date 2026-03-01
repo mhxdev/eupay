@@ -39,6 +39,12 @@ export default function DashboardLayout({
               >
                 GDPR
               </Link>
+              <Link
+                href="/dashboard/api-explorer"
+                className="text-gray-600 hover:text-gray-900"
+              >
+                API
+              </Link>
             </div>
           </div>
           <UserButton />
