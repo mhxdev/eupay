@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator"
 import { ApiKeySection } from "@/components/dashboard/ApiKeySection"
 import { ModeToggle } from "@/components/dashboard/ModeToggle"
 import { SandboxBanner } from "@/components/dashboard/SandboxBanner"
+import { AppHealthBadge, type HealthData } from "@/components/dashboard/AppHealthBadge"
 import { Package, Users, Webhook, ExternalLink } from "lucide-react"
 
 export default async function AppDetailPage({
@@ -29,6 +30,23 @@ export default async function AppDetailPage({
   })
 
   if (!app || app.clerkUserId !== userId) notFound()
+
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+  const [activeProductCount, recentTxCount] = await Promise.all([
+    prisma.product.count({ where: { appId, isActive: true } }),
+    prisma.transaction.count({
+      where: { appId, status: "SUCCEEDED", createdAt: { gte: thirtyDaysAgo } },
+    }),
+  ])
+
+  const healthData: HealthData = {
+    hasActiveProduct: activeProductCount > 0,
+    hasWebhook: !!app.webhookUrl,
+    dmaConfirmed: !!app.dmaEntitlementConfirmed,
+    hasRecentTransaction: recentTxCount > 0,
+  }
 
   const apiKeysForClient = app.apiKeys.map((k) => ({
     id: k.id,
@@ -138,6 +156,13 @@ export default async function AppDetailPage({
             <div className="flex justify-between">
               <span className="text-muted-foreground">Total Revenue</span>
               <span className="font-medium">{app._count.transactions} transactions</span>
+            </div>
+            <Separator />
+            <div>
+              <span className="text-muted-foreground">Health</span>
+              <div className="mt-2">
+                <AppHealthBadge data={healthData} showDetails />
+              </div>
             </div>
           </CardContent>
         </Card>
