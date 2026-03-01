@@ -25,9 +25,23 @@ model App {
   // Apple DMA entitlement status
   dmaEntitlementConfirmed Boolean @default(false)
 
+  // Onboarding
+  revenueTier      String?            // e.g. "<1k", "1k-10k", "10k-100k", ">100k"
+  plan             String?            // "managed" | "byos"
+
   // Webhook settings
   webhookUrl       String?
   webhookSecret    String?
+
+  // Apple App Store Connect credentials (for DMA reporting)
+  appleKeyId       String?
+  appleIssuerId    String?
+  applePrivateKey  String?
+  appleBundleId    String?
+
+  // DMA compliance setup
+  setupChecklist                 Json?       // JSONB checklist state
+  iapExclusivityAcknowledgedAt   DateTime?
 
   products         Product[]
   apiKeys          ApiKey[]
@@ -188,8 +202,15 @@ model Transaction {
   // German consumer law
   withdrawalWaivedAt DateTime?
 
+  // Apple DMA external purchase reporting
+  appleExternalPurchaseToken String?
+  appleReportStatus          AppleReportStatus?
+  appleReportedAt            DateTime?
+  appleReportError           String?
+
   @@index([appId])
   @@index([customerId])
+  @@index([appleReportStatus])
 }
 
 // Stripe webhook events log (for debugging + idempotency)
@@ -233,4 +254,36 @@ enum WebhookStatus {
   PENDING
   PROCESSED
   FAILED
+}
+
+enum AppleReportStatus {
+  PENDING
+  REPORTED
+  FAILED
+}
+
+// DMA regulatory updates feed
+model RegulatoryUpdate {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  publishedAt   DateTime @default(now())
+
+  title         String
+  description   String
+  actionRequired String?
+
+  reads         RegulatoryUpdateRead[]
+}
+
+model RegulatoryUpdateRead {
+  id           String   @id @default(cuid())
+  readAt       DateTime @default(now())
+
+  updateId     String
+  update       RegulatoryUpdate @relation(fields: [updateId], references: [id], onDelete: Cascade)
+
+  clerkUserId  String
+
+  @@unique([updateId, clerkUserId])
+  @@index([clerkUserId])
 }

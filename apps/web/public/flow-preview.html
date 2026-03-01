@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EUPay Flow Preview — FlatsForFriendz</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --blue: #007AFF;
+    --green: #34C759;
+    --orange: #FF9500;
+    --red: #FF3B30;
+    --gray1: #8E8E93;
+    --gray2: #AEAEB2;
+    --gray3: #C7C7CC;
+    --gray4: #D1D1D6;
+    --gray5: #E5E5EA;
+    --gray6: #F2F2F7;
+    --bg: #000;
+    --stripe-purple: #635BFF;
+    --stripe-bg: #F6F9FC;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #1a1a2e;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1.page-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 8px;
+  }
+
+  .step-label {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    text-align: center;
+    min-height: 28px;
+  }
+
+  /* iPhone frame */
+  .phone-frame {
+    width: 375px;
+    height: 812px;
+    background: #000;
+    border-radius: 50px;
+    position: relative;
+    box-shadow:
+      0 0 0 3px #333,
+      0 0 0 6px #1a1a1a,
+      0 40px 80px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+
+  .phone-screen {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 50px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 54px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 32px 6px;
+    font-size: 15px;
+    font-weight: 600;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  .status-bar.dark { color: #fff; }
+  .status-bar.light { color: #000; }
+  .status-bar .time { font-size: 16px; font-weight: 700; }
+  .status-bar .icons { display: flex; gap: 5px; align-items: center; font-size: 13px; }
+
+  /* Dynamic Island */
+  .dynamic-island {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 126px;
+    height: 36px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 20;
+  }
+
+  /* Home indicator */
+  .home-indicator {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 134px;
+    height: 5px;
+    border-radius: 3px;
+    z-index: 10;
+  }
+  .home-indicator.dark { background: rgba(255,255,255,0.3); }
+  .home-indicator.light { background: rgba(0,0,0,0.2); }
+
+  /* Screen containers */
+  .screen {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0; left: 0;
+    transition: opacity 0.3s ease;
+  }
+  .screen.active { display: flex; }
+
+  .screen-content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Navigation controls */
+  .nav-controls {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    align-items: center;
+  }
+
+  .nav-btn {
+    padding: 10px 28px;
+    border-radius: 10px;
+    border: none;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .nav-btn:active { transform: scale(0.97); }
+
+  .nav-btn.prev {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .nav-btn.prev:hover { background: rgba(255,255,255,0.15); }
+
+  .nav-btn.next {
+    background: #fff;
+    color: #1a1a2e;
+  }
+  .nav-btn.next:hover { background: #e8e8e8; }
+
+  .step-dots {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    justify-content: center;
+  }
+  .step-dots .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transition: all 0.3s ease;
+  }
+  .step-dots .dot.active {
+    background: #fff;
+    width: 24px;
+    border-radius: 4px;
+  }
+
+  /* ===== SCREEN 1: APP ===== */
+  .app-screen {
+    background: linear-gradient(180deg, #1B1B3A 0%, #0F0F23 100%);
+    color: #fff;
+  }
+
+  .app-header {
+    padding: 8px 20px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .app-header .greeting {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+  }
+  .app-header .name {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .app-header .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .flat-card {
+    margin: 8px 16px;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+  }
+  .flat-card .flat-img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+  }
+  .flat-img-placeholder {
+    width: 100%;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+  }
+  .flat-img-placeholder.img1 { background: linear-gradient(135deg, #2D2D5E, #1a1a3e); }
+  .flat-img-placeholder.img2 { background: linear-gradient(135deg, #3D2D4E, #2a1a3e); }
+
+  .flat-card .flat-info {
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(10px);
+  }
+  .flat-card .flat-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .flat-card .flat-meta {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 2px;
+  }
+  .flat-card .flat-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--blue);
+    margin-top: 4px;
+  }
+  .flat-card .flat-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .flat-card .pro-lock {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+  }
+  .pro-lock .lock-icon { font-size: 28px; }
+
+  .upgrade-banner {
+    margin: 16px 16px 12px;
+    background: linear-gradient(135deg, #5B47E0, #8B5CF6);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .upgrade-banner::after {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 100px; height: 100px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+  }
+  .upgrade-banner .ub-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 4px;
+  }
+  .upgrade-banner .ub-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .upgrade-banner .ub-subtitle {
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 14px;
+  }
+  .upgrade-banner .ub-price {
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 14px;
+  }
+  .upgrade-banner .ub-price strong {
+    font-size: 26px;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .upgrade-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: #fff;
+    color: #5B47E0;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .upgrade-btn:active { transform: scale(0.98); }
+
+  .app-tab-bar {
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 28px;
+    background: rgba(15,15,35,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+  }
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 10px;
+    color: var(--gray2);
+  }
+  .tab-item.active { color: var(--blue); }
+  .tab-item .tab-icon { font-size: 22px; }
+
+  /* ===== SCREEN 2: PRE-DISCLOSURE ===== */
+  .predisclosure-screen {
+    background: linear-gradient(180deg, #1B1B3A 0%, #0F0F23 100%);
+    color: #fff;
+  }
+
+  .predisclosure-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 24px 40px;
+    overflow-y: auto;
+  }
+
+  .predisclosure-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .predisclosure-brand-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #5B47E0, #8B5CF6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .predisclosure-brand-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .predisclosure-stripe-logo {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .predisclosure-stripe-logo .stripe-wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(99,91,255,0.12);
+    padding: 10px 20px;
+    border-radius: 12px;
+  }
+  .predisclosure-stripe-logo .stripe-wordmark .stripe-s {
+    font-size: 28px;
+    font-weight: 900;
+    color: #635BFF;
+  }
+  .predisclosure-stripe-logo .stripe-wordmark span {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .predisclosure-headline {
+    font-size: 24px;
+    font-weight: 800;
+    text-align: center;
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+
+  .predisclosure-body {
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.65);
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .trust-badges {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .trust-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(52,199,89,0.1);
+    border: 1px solid rgba(52,199,89,0.2);
+    color: var(--green);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .predisclosure-spacer { flex: 1; }
+
+  .predisclosure-cta {
+    width: 100%;
+    padding: 16px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, #5B47E0, #8B5CF6);
+    color: #fff;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 12px;
+    transition: transform 0.1s;
+  }
+  .predisclosure-cta:active { transform: scale(0.98); }
+
+  .predisclosure-note {
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.35);
+    text-align: center;
+    padding: 0 8px;
+  }
+
+  /* ===== SCREEN 3: DMA DISCLOSURE ===== */
+  .dma-screen {
+    background: linear-gradient(180deg, #1B1B3A 0%, #0F0F23 100%);
+    color: #fff;
+  }
+  .dma-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    color: #000;
+    padding: 12px 24px 40px;
+    max-height: 70%;
+    display: flex;
+    flex-direction: column;
+    z-index: 5;
+  }
+  .dma-grabber {
+    width: 36px;
+    height: 5px;
+    background: var(--gray4);
+    border-radius: 3px;
+    margin: 0 auto 16px;
+    flex-shrink: 0;
+  }
+  .dma-icon {
+    font-size: 44px;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .dma-title {
+    font-size: 19px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .dma-text {
+    font-size: 14px;
+    line-height: 1.55;
+    color: #555;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .dma-warning {
+    background: #FFF8ED;
+    border: 1px solid #FFE0A3;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #8B6914;
+    text-align: center;
+    margin-bottom: 18px;
+    line-height: 1.4;
+  }
+  .dma-warning-icon { margin-right: 4px; }
+  .dma-btn-primary {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    border: none;
+    background: var(--blue);
+    color: #fff;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
+  .dma-btn-secondary {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1.5px solid var(--gray4);
+    background: transparent;
+    color: var(--blue);
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .dma-dim-bg {
+    flex: 1;
+    background: rgba(0,0,0,0.4);
+  }
+
+  /* ===== SCREEN 4: STRIPE CHECKOUT ===== */
+  .stripe-screen {
+    background: var(--stripe-bg);
+    color: #1a1a1a;
+  }
+
+  .stripe-header {
+    background: #fff;
+    padding: 10px 16px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e8e8e8;
+  }
+  .stripe-close {
+    font-size: 16px;
+    color: var(--blue);
+    font-weight: 600;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+  }
+  .stripe-lock {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--gray1);
+  }
+  .stripe-url {
+    font-size: 13px;
+    color: #333;
+    font-weight: 500;
+  }
+
+  .stripe-body {
+    padding: 20px 16px 40px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .stripe-merchant {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stripe-merchant-logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #5B47E0, #8B5CF6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #fff;
+    font-weight: 800;
+  }
+  .stripe-merchant-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+  }
+  .stripe-merchant-amount {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a1a1a;
+  }
+
+  .stripe-line-items {
+    background: #fff;
+    border-radius: 12px;
+    padding: 0;
+    margin-bottom: 16px;
+    border: 1px solid #e8e8e8;
+    overflow: hidden;
+  }
+  .stripe-line-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px 16px;
+    font-size: 14px;
+  }
+  .stripe-line-item:not(:last-child) { border-bottom: 1px solid #f0f0f0; }
+  .stripe-line-item .sli-label { color: #555; }
+  .stripe-line-item .sli-value { font-weight: 600; color: #1a1a1a; }
+  .stripe-line-item.total .sli-label { font-weight: 700; color: #1a1a1a; }
+  .stripe-line-item.total .sli-value { font-weight: 800; font-size: 16px; }
+  .stripe-line-item .sli-sub { font-size: 12px; color: var(--gray1); margin-top: 1px; }
+
+  .stripe-section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .apple-pay-btn {
+    width: 100%;
+    height: 50px;
+    background: #000;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 18px;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 16px;
+    letter-spacing: 0.3px;
+  }
+  .apple-pay-btn .apple-logo {
+    font-size: 20px;
+    margin-bottom: 2px;
+  }
+
+  .stripe-divider {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+  .stripe-divider::before, .stripe-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #ddd;
+  }
+  .stripe-divider span {
+    font-size: 12px;
+    color: var(--gray1);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stripe-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 16px;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+  }
+  .stripe-tab {
+    flex: 1;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: #777;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+    border-right: 1px solid #e0e0e0;
+    transition: all 0.15s;
+  }
+  .stripe-tab:last-child { border-right: none; }
+  .stripe-tab.active {
+    background: var(--stripe-purple);
+    color: #fff;
+    font-weight: 600;
+  }
+  .stripe-tab .tab-emoji { font-size: 16px; display: block; margin-bottom: 2px; }
+
+  .stripe-input-group { margin-bottom: 12px; }
+  .stripe-input-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 4px;
+  }
+  .stripe-input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-family: inherit;
+    font-size: 15px;
+    background: #fff;
+    color: #333;
+    outline: none;
+  }
+  .stripe-input:focus { border-color: var(--stripe-purple); box-shadow: 0 0 0 2px rgba(99,91,255,0.15); }
+  .stripe-input::placeholder { color: #bbb; }
+  .stripe-input-row {
+    display: flex;
+    gap: 8px;
+  }
+  .stripe-input-row .stripe-input-group { flex: 1; }
+
+  .stripe-checkbox {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: 16px 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #555;
+  }
+  .stripe-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    accent-color: var(--stripe-purple);
+    flex-shrink: 0;
+  }
+
+  .stripe-pay-btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    border: none;
+    background: var(--stripe-purple);
+    color: #fff;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 4px;
+    margin-bottom: 12px;
+  }
+
+  .stripe-footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--gray2);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+  .stripe-footer a { color: var(--stripe-purple); text-decoration: none; }
+
+  /* ===== SCREEN 5: PROCESSING ===== */
+  .processing-screen {
+    background: linear-gradient(180deg, #1B1B3A 0%, #0F0F23 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .processing-content {
+    text-align: center;
+    padding: 40px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .processing-spinner {
+    width: 56px;
+    height: 56px;
+    border: 3px solid rgba(255,255,255,0.1);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 24px;
+  }
+
+  .processing-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .processing-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .processing-steps {
+    margin-top: 32px;
+    text-align: left;
+    display: inline-block;
+  }
+  .processing-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: rgba(255,255,255,0.4);
+    transition: color 0.3s;
+  }
+  .processing-step.done { color: var(--green); }
+  .processing-step.active { color: #fff; }
+  .processing-step .step-icon { font-size: 18px; width: 24px; text-align: center; }
+
+  /* ===== SCREEN 6: SUCCESS ===== */
+  .success-screen {
+    background: linear-gradient(180deg, #1B1B3A 0%, #0F0F23 100%);
+    color: #fff;
+  }
+
+  .success-header {
+    padding: 8px 20px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .success-hero {
+    text-align: center;
+    padding: 12px 24px 20px;
+  }
+
+  @keyframes scaleIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  @keyframes fadeUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes confetti {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(-60px) rotate(180deg); opacity: 0; }
+  }
+
+  .success-checkmark {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--green), #2DBE4E);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 16px;
+    animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 8px 32px rgba(52,199,89,0.3);
+  }
+  .success-title {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    animation: fadeUp 0.4s ease 0.15s both;
+  }
+  .success-subtitle {
+    font-size: 15px;
+    color: rgba(255,255,255,0.5);
+    animation: fadeUp 0.4s ease 0.25s both;
+  }
+
+  .pro-badge-large {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #5B47E0, #8B5CF6);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 12px;
+    animation: fadeUp 0.4s ease 0.35s both;
+  }
+
+  .success-features {
+    margin: 20px 16px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 16px;
+    animation: fadeUp 0.4s ease 0.4s both;
+  }
+  .success-features-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+  .success-feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+  }
+  .success-feature:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .success-feature .sf-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .success-feature .sf-text {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .success-feature .sf-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 1px;
+  }
+
+  .success-flat-card {
+    margin: 0 16px 12px;
+    border-radius: 16px;
+    overflow: hidden;
+    animation: fadeUp 0.4s ease 0.5s both;
+    position: relative;
+  }
+  .success-flat-img {
+    width: 100%;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    background: linear-gradient(135deg, #3D2D4E, #2a1a3e);
+  }
+  .success-flat-info {
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .success-flat-title { font-size: 15px; font-weight: 600; }
+  .success-flat-meta { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .success-unlocked-badge {
+    background: var(--green);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+
+  .receipt-link {
+    text-align: center;
+    padding: 8px 0 0;
+    animation: fadeUp 0.4s ease 0.55s both;
+  }
+  .receipt-link a {
+    color: var(--blue);
+    font-size: 14px;
+    text-decoration: none;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">EUPay End-User Flow Preview</h1>
+<div class="step-label" id="stepLabel">1 / 6 — App-Ansicht</div>
+
+<div class="phone-frame">
+  <div class="dynamic-island"></div>
+  <div class="phone-screen">
+
+    <!-- ===== SCREEN 1: APP ===== -->
+    <div class="screen active" id="screen1">
+      <div class="app-screen" style="display:flex;flex-direction:column;height:100%;">
+        <div class="status-bar dark">
+          <span class="time">14:32</span>
+          <span class="icons">
+            <span>&#9679;&#9679;&#9679;&#9679;&#9675;</span>
+            <span>5G</span>
+            <span>&#128267;</span>
+          </span>
+        </div>
+
+        <div class="screen-content" style="flex:1;overflow-y:auto;">
+          <div class="app-header">
+            <div>
+              <div class="greeting">Willkommen zurück</div>
+              <div class="name">Lisa M.</div>
+            </div>
+            <div class="avatar">LM</div>
+          </div>
+
+          <div class="flat-card">
+            <div class="flat-img-placeholder img1">&#127963;</div>
+            <div class="flat-info">
+              <div class="flat-title">Altbau in Kreuzberg</div>
+              <div class="flat-meta">3 Zi &middot; 78 m&sup2; &middot; 2. OG &middot; Balkon</div>
+              <div class="flat-price">1.280 &euro;/Monat</div>
+            </div>
+            <div class="flat-badge">&#10024; Neu</div>
+          </div>
+
+          <div class="flat-card" style="position:relative;">
+            <div class="flat-img-placeholder img2">&#127960;</div>
+            <div class="flat-info">
+              <div class="flat-title">Loft in Prenzlauer Berg</div>
+              <div class="flat-meta">2 Zi &middot; 95 m&sup2; &middot; DG &middot; Dachterrasse</div>
+              <div class="flat-price">1.650 &euro;/Monat</div>
+            </div>
+            <div class="pro-lock">
+              <span class="lock-icon">&#128274;</span>
+              <span>Pro-Inserat</span>
+            </div>
+          </div>
+
+          <div class="upgrade-banner">
+            <div class="ub-label">FlatsForFriendz</div>
+            <div class="ub-title">Upgrade auf Pro</div>
+            <div class="ub-subtitle">Alle Inserate sehen, Sofort-Benachrichtigungen, Kontakt-Freischaltung</div>
+            <div class="ub-price"><strong>9,99 &euro;</strong> / Monat</div>
+            <button class="upgrade-btn" onclick="goTo(2)">Jetzt upgraden</button>
+          </div>
+        </div>
+
+        <div class="app-tab-bar">
+          <div class="tab-item active">
+            <span class="tab-icon">&#127968;</span>
+            <span>Suche</span>
+          </div>
+          <div class="tab-item">
+            <span class="tab-icon">&#128204;</span>
+            <span>Gemerkt</span>
+          </div>
+          <div class="tab-item">
+            <span class="tab-icon">&#128172;</span>
+            <span>Nachrichten</span>
+          </div>
+          <div class="tab-item">
+            <span class="tab-icon">&#9881;&#65039;</span>
+            <span>Profil</span>
+          </div>
+        </div>
+      </div>
+      <div class="home-indicator dark"></div>
+    </div>
+
+    <!-- ===== SCREEN 2: PRE-DISCLOSURE ===== -->
+    <div class="screen" id="screen2">
+      <div class="predisclosure-screen" style="display:flex;flex-direction:column;height:100%;">
+        <div class="status-bar dark">
+          <span class="time">14:32</span>
+          <span class="icons">
+            <span>&#9679;&#9679;&#9679;&#9679;&#9675;</span>
+            <span>5G</span>
+            <span>&#128267;</span>
+          </span>
+        </div>
+
+        <div class="predisclosure-content">
+          <div class="predisclosure-brand">
+            <div class="predisclosure-brand-icon">F</div>
+            <div class="predisclosure-brand-name">FlatsForFriendz</div>
+          </div>
+
+          <div class="predisclosure-stripe-logo">
+            <div class="stripe-wordmark">
+              <span class="stripe-s">S</span>
+              <span>Powered by Stripe</span>
+            </div>
+          </div>
+
+          <div class="predisclosure-headline">Sicher bezahlen<br>mit Stripe</div>
+
+          <div class="predisclosure-body">
+            Wir nutzen Stripe als Zahlungsanbieter &mdash; dasselbe System, das Millionen von Unternehmen weltweit verwenden. Deine Zahlung ist durch das EU-Verbraucherrecht gesch&uuml;tzt. Wir k&ouml;nnen dir dadurch g&uuml;nstigere Preise anbieten, da wir keine App&nbsp;Store Geb&uuml;hren zahlen.
+          </div>
+
+          <div class="trust-badges">
+            <div class="trust-badge">&#128274; 256-bit SSL</div>
+            <div class="trust-badge">&#10003; EU-Verbraucherschutz</div>
+            <div class="trust-badge">&#10003; Stripe gesichert</div>
+          </div>
+
+          <div class="predisclosure-spacer"></div>
+
+          <button class="predisclosure-cta" onclick="goTo(3)">Weiter zur Zahlung</button>
+
+          <div class="predisclosure-note">
+            Du wirst zu unserem Zahlungsanbieter weitergeleitet. Apple zeigt dir anschlie&szlig;end einen Sicherheitshinweis &mdash; das ist normal und gesetzlich vorgeschrieben.
+          </div>
+        </div>
+      </div>
+      <div class="home-indicator dark"></div>
+    </div>
+
+    <!-- ===== SCREEN 3: DMA DISCLOSURE ===== -->
+    <div class="screen" id="screen3">
+      <div class="dma-screen" style="display:flex;flex-direction:column;height:100%;position:relative;">
+        <div class="status-bar dark" style="z-index:1;">
+          <span class="time">14:32</span>
+          <span class="icons">
+            <span>&#9679;&#9679;&#9679;&#9679;&#9675;</span>
+            <span>5G</span>
+            <span>&#128267;</span>
+          </span>
+        </div>
+        <div class="dma-dim-bg"></div>
+        <div class="dma-overlay">
+          <div class="dma-grabber"></div>
+          <div class="dma-icon">&#128179;</div>
+          <div class="dma-title">Zahlung au&szlig;erhalb<br>des App Store</div>
+          <div class="dma-text">
+            Sie werden zu einem Zahlungsanbieter au&szlig;erhalb des App Store weitergeleitet. Apple ist nicht f&uuml;r die Zahlungsabwicklung verantwortlich. F&uuml;r Hilfe wenden Sie sich direkt an den App-Entwickler.
+          </div>
+          <div class="dma-text" style="margin-bottom:10px;">
+            Diese Zahlung unterliegt den Datenschutz- und R&uuml;ckgabebedingungen des Entwicklers.
+          </div>
+          <div class="dma-warning">
+            <span class="dma-warning-icon">&#9888;&#65039;</span> Hinweis: Apple bietet f&uuml;r diese Zahlung keinen K&auml;uferschutz.
+          </div>
+          <button class="dma-btn-primary" onclick="goTo(4)">Weiter zum Bezahlen</button>
+          <button class="dma-btn-secondary" onclick="goTo(1)">Abbrechen</button>
+        </div>
+      </div>
+      <div class="home-indicator light"></div>
+    </div>
+
+    <!-- ===== SCREEN 4: STRIPE CHECKOUT ===== -->
+    <div class="screen" id="screen4">
+      <div class="stripe-screen" style="display:flex;flex-direction:column;height:100%;">
+        <div class="status-bar light">
+          <span class="time">14:33</span>
+          <span class="icons" style="color:#333;">
+            <span>&#9679;&#9679;&#9679;&#9679;&#9675;</span>
+            <span>5G</span>
+            <span>&#128267;</span>
+          </span>
+        </div>
+
+        <div class="stripe-header">
+          <button class="stripe-close" onclick="goTo(3)">Fertig</button>
+          <div class="stripe-url">checkout.stripe.com</div>
+          <div class="stripe-lock">&#128274;</div>
+        </div>
+
+        <div class="stripe-body">
+          <div class="stripe-merchant">
+            <div class="stripe-merchant-logo">F</div>
+            <div>
+              <div class="stripe-merchant-name">FlatsForFriendz GmbH</div>
+              <div class="stripe-merchant-amount">11,89 &euro;</div>
+            </div>
+          </div>
+
+          <div class="stripe-line-items">
+            <div class="stripe-line-item">
+              <div>
+                <div class="sli-label" style="font-weight:600;color:#1a1a1a;">Pro-Abo &mdash; Monatlich</div>
+                <div class="sli-sub">Verl&auml;ngert sich automatisch</div>
+              </div>
+              <div class="sli-value">9,99 &euro;</div>
+            </div>
+            <div class="stripe-line-item">
+              <div class="sli-label">MwSt. (19% DE)</div>
+              <div class="sli-value">1,90 &euro;</div>
+            </div>
+            <div class="stripe-line-item total" style="background:#FAFAFA;">
+              <div class="sli-label">Gesamt</div>
+              <div class="sli-value">11,89 &euro;</div>
+            </div>
+          </div>
+
+          <div class="stripe-section-label">Zahlungsmethode</div>
+
+          <button class="apple-pay-btn">
+            <span class="apple-logo">&#63743;</span> Pay
+          </button>
+
+          <div class="stripe-divider"><span>oder</span></div>
+
+          <div class="stripe-tabs">
+            <button class="stripe-tab active">
+              <span class="tab-emoji">&#128179;</span>
+              Karte
+            </button>
+            <button class="stripe-tab">
+              <span class="tab-emoji">&#127974;</span>
+              SEPA
+            </button>
+            <button class="stripe-tab">
+              <span class="tab-emoji">&#128230;</span>
+              Klarna
+            </button>
+          </div>
+
+          <div class="stripe-input-group">
+            <label>E-Mail</label>
+            <input class="stripe-input" type="email" placeholder="lisa.m@gmail.com" value="lisa.m@gmail.com">
+          </div>
+
+          <div class="stripe-input-group">
+            <label>Kartennummer</label>
+            <input class="stripe-input" type="text" placeholder="1234 1234 1234 1234" value="4242 4242 4242 4242">
+          </div>
+
+          <div class="stripe-input-row">
+            <div class="stripe-input-group">
+              <label>Ablaufdatum</label>
+              <input class="stripe-input" type="text" placeholder="MM / JJ" value="09 / 28">
+            </div>
+            <div class="stripe-input-group">
+              <label>CVC</label>
+              <input class="stripe-input" type="text" placeholder="123" value="&bull;&bull;&bull;">
+            </div>
+          </div>
+
+          <div class="stripe-input-group">
+            <label>Name auf der Karte</label>
+            <input class="stripe-input" type="text" placeholder="Lisa M&uuml;ller" value="Lisa M&uuml;ller">
+          </div>
+
+          <div class="stripe-checkbox">
+            <input type="checkbox" checked>
+            <span>
+              Ich stimme zu, dass die Lieferung des digitalen Inhalts sofort beginnt und ich damit mein
+              <strong>Widerrufsrecht</strong> gem&auml;&szlig; &sect;356 Abs. 5 BGB verliere.
+            </span>
+          </div>
+
+          <button class="stripe-pay-btn" onclick="goTo(5)">11,89 &euro; bezahlen</button>
+
+          <div class="stripe-footer">
+            Betrieben von <a href="#">Stripe</a> &middot; <a href="#">Datenschutz</a> &middot; <a href="#">AGB</a>
+          </div>
+        </div>
+      </div>
+      <div class="home-indicator light"></div>
+    </div>
+
+    <!-- ===== SCREEN 5: PROCESSING ===== -->
+    <div class="screen" id="screen5">
+      <div class="processing-screen" style="height:100%;display:flex;flex-direction:column;">
+        <div class="status-bar dark">
+          <span class="time">14:33</span>
+          <span class="icons">
+            <span>&#9679;&#9679;&#9679;&#9679;&#9675;</span>
+            <span>5G</span>
+            <span>&#128267;</span>
+          </span>
+        </div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+          <div class="processing-content">
+            <div class="processing-spinner"></div>
+            <div class="processing-title">Zahlung wird verarbeitet</div>
+            <div class="processing-sub">Einen Moment bitte&hellip;</div>
+            <div class="processing-steps" id="processingSteps">
+              <div class="processing-step done" id="ps1">
+                <span class="step-icon">&#10003;</span> Zahlung best&auml;tigt
+              </div>
+              <div class="processing-step active" id="ps2">
+                <span class="step-icon">&#9679;</span> Berechtigung wird gepr&uuml;ft
+              </div>
+              <div class="processing-step" id="ps3">
+                <span class="step-icon">&#9675;</span> Pro-Zugang aktivieren
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="home-indicator dark"></div>
+    </div>
+
+    <!-- ===== SCREEN 6: SUCCESS ===== -->
+    <div class="screen" id="screen6">
+      <div class="success-screen" style="display:flex;flex-direction:column;height:100%;">
+        <div class="status-bar dark">
+          <span class="time">14:33</span>
+          <span class="icons">
+            <span>&#9679;&#9679;&#9679;&#9679;&#9675;</span>
+            <span>5G</span>
+            <span>&#128267;</span>
+          </span>
+        </div>
+
+        <div class="screen-content" style="flex:1;overflow-y:auto;">
+          <div class="success-hero">
+            <div class="success-checkmark">&#10003;</div>
+            <div class="success-title">Pro freigeschaltet!</div>
+            <div class="success-subtitle">Willkommen im FlatsForFriendz Pro-Club</div>
+            <div class="pro-badge-large">&#11088; PRO MITGLIED</div>
+          </div>
+
+          <div class="success-features">
+            <div class="success-features-title">Deine neuen Vorteile</div>
+            <div class="success-feature">
+              <div class="sf-icon" style="background:rgba(99,91,255,0.15);">&#128275;</div>
+              <div>
+                <div class="sf-text">Alle Inserate sichtbar</div>
+                <div class="sf-sub">Keine gesperrten Angebote mehr</div>
+              </div>
+            </div>
+            <div class="success-feature">
+              <div class="sf-icon" style="background:rgba(52,199,89,0.15);">&#128276;</div>
+              <div>
+                <div class="sf-text">Sofort-Benachrichtigungen</div>
+                <div class="sf-sub">Neue Wohnungen in Echtzeit</div>
+              </div>
+            </div>
+            <div class="success-feature">
+              <div class="sf-icon" style="background:rgba(255,149,0,0.15);">&#128172;</div>
+              <div>
+                <div class="sf-text">Direkt-Kontakt</div>
+                <div class="sf-sub">Vermieter sofort anschreiben</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="success-flat-card">
+            <div class="success-flat-img">&#127960;</div>
+            <div class="success-flat-info">
+              <div>
+                <div class="success-flat-title">Loft in Prenzlauer Berg</div>
+                <div class="success-flat-meta">2 Zi &middot; 95 m&sup2; &middot; DG &middot; Dachterrasse</div>
+              </div>
+            </div>
+            <div class="success-unlocked-badge">&#128275; Freigeschaltet</div>
+          </div>
+
+          <div class="receipt-link">
+            <a href="#">&#128231; Best&auml;tigung per E-Mail gesendet</a>
+          </div>
+        </div>
+
+        <div class="app-tab-bar">
+          <div class="tab-item active">
+            <span class="tab-icon">&#127968;</span>
+            <span>Suche</span>
+          </div>
+          <div class="tab-item">
+            <span class="tab-icon">&#128204;</span>
+            <span>Gemerkt</span>
+          </div>
+          <div class="tab-item">
+            <span class="tab-icon">&#128172;</span>
+            <span>Nachrichten</span>
+          </div>
+          <div class="tab-item">
+            <span class="tab-icon">&#9881;&#65039;</span>
+            <span>Profil</span>
+          </div>
+        </div>
+      </div>
+      <div class="home-indicator dark"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="nav-controls">
+  <button class="nav-btn prev" id="prevBtn" onclick="prev()">&#8592; Zur&uuml;ck</button>
+  <div class="step-dots" id="stepDots"></div>
+  <button class="nav-btn next" id="nextBtn" onclick="next()">Weiter &#8594;</button>
+</div>
+
+<script>
+  const SCREENS = 6;
+  const LABELS = [
+    '1 / 6 — App-Ansicht',
+    '2 / 6 — Sicher bezahlen',
+    '3 / 6 — DMA-Offenlegung',
+    '4 / 6 — Stripe Checkout',
+    '5 / 6 — Verarbeitung',
+    '6 / 6 — Erfolg'
+  ];
+  let current = 1;
+  let processingTimer = null;
+
+  // Build dots
+  const dotsEl = document.getElementById('stepDots');
+  for (let i = 1; i <= SCREENS; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 1 ? ' active' : '');
+    dot.dataset.step = i;
+    dot.style.cursor = 'pointer';
+    dot.onclick = () => goTo(i);
+    dotsEl.appendChild(dot);
+  }
+
+  function goTo(n) {
+    if (n < 1 || n > SCREENS) return;
+    document.getElementById('screen' + current).classList.remove('active');
+    current = n;
+    document.getElementById('screen' + current).classList.add('active');
+    document.getElementById('stepLabel').textContent = LABELS[n - 1];
+
+    // Update dots
+    dotsEl.querySelectorAll('.dot').forEach(d => {
+      d.classList.toggle('active', +d.dataset.step === n);
+    });
+
+    // Update nav buttons
+    document.getElementById('prevBtn').style.visibility = n === 1 ? 'hidden' : 'visible';
+    document.getElementById('nextBtn').style.visibility = n === SCREENS ? 'hidden' : 'visible';
+
+    // Processing animation
+    if (processingTimer) { clearTimeout(processingTimer); processingTimer = null; }
+    if (n === 5) { runProcessingAnimation(); }
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  function runProcessingAnimation() {
+    const ps1 = document.getElementById('ps1');
+    const ps2 = document.getElementById('ps2');
+    const ps3 = document.getElementById('ps3');
+    ps1.className = 'processing-step done';
+    ps2.className = 'processing-step active';
+    ps3.className = 'processing-step';
+    ps1.querySelector('.step-icon').innerHTML = '&#10003;';
+    ps2.querySelector('.step-icon').innerHTML = '&#9679;';
+    ps3.querySelector('.step-icon').innerHTML = '&#9675;';
+
+    processingTimer = setTimeout(() => {
+      ps2.className = 'processing-step done';
+      ps2.querySelector('.step-icon').innerHTML = '&#10003;';
+      ps3.className = 'processing-step active';
+      ps3.querySelector('.step-icon').innerHTML = '&#9679;';
+
+      processingTimer = setTimeout(() => {
+        ps3.className = 'processing-step done';
+        ps3.querySelector('.step-icon').innerHTML = '&#10003;';
+        document.querySelector('.processing-title').textContent = 'Fertig!';
+        document.querySelector('.processing-sub').textContent = 'Pro-Zugang aktiviert';
+        document.querySelector('.processing-spinner').style.borderColor = 'rgba(52,199,89,0.3)';
+        document.querySelector('.processing-spinner').style.borderTopColor = '#34C759';
+      }, 1200);
+    }, 1000);
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+  });
+
+  // Initial state
+  document.getElementById('prevBtn').style.visibility = 'hidden';
+</script>
+
+</body>
+</html>

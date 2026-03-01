@@ -393,6 +393,54 @@ export async function exportCustomerData(customerId: string): Promise<GdprExport
   }
 }
 
+// ─── Apple Reporting & Compliance Stubs ──────────────────────
+
+export async function exportAuditTrail(appId: string, startDate: string, endDate: string) {
+  await requireUser()
+  void appId; void startDate; void endDate
+  return [] as Record<string, string | number | null>[]
+}
+
+export async function getRegulatoryUpdates() {
+  await requireUser()
+  return [] as { id: string; title: string; description: string; actionRequired: string | null; publishedAt: string; isRead: boolean; readAt: string | null }[]
+}
+
+export async function markRegulatoryUpdateRead(id: string) {
+  await requireUser()
+  void id
+  return { success: true as const }
+}
+
+export async function markAllRegulatoryUpdatesRead() {
+  await requireUser()
+  return { success: true as const }
+}
+
+export async function updateAppleCredentials(formData: FormData) {
+  await requireUser()
+  void formData
+  return { success: true as const }
+}
+
+export async function removeAppleCredentials(appId: string) {
+  await requireUser()
+  void appId
+  return { success: true as const }
+}
+
+export async function retryAppleReportAction(reportId: string) {
+  await requireUser()
+  void reportId
+}
+
+export async function updateSetupChecklist(appId: string, stepKey: string, completed: boolean) {
+  await requireUser()
+  void appId; void stepKey; void completed
+}
+
+// ─── GDPR Actions (continued) ────────────────────────────────
+
 export async function deleteCustomerData(customerId: string) {
   const userId = await requireUser()
 
