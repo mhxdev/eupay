@@ -28,7 +28,7 @@ function Nav() {
             Pricing
           </Link>
           <a
-            href="https://github.com/markholtmeier/EUPayKit"
+            href="https://github.com/mhxdev/EUPayKit"
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-400 hover:text-white transition-colors"
@@ -269,7 +269,7 @@ function HowItWorks() {
       title: "Install EUPayKit via SPM",
       description:
         "Add the Swift package to your Xcode project. Zero external dependencies, iOS 16+.",
-      code: "https://github.com/markholtmeier/EUPayKit",
+      code: "https://github.com/mhxdev/EUPayKit",
     },
     {
       number: "2",
@@ -421,7 +421,7 @@ function Footer() {
             Docs
           </Link>
           <a
-            href="https://github.com/markholtmeier/EUPayKit"
+            href="https://github.com/mhxdev/EUPayKit"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-gray-300 transition-colors"
