@@ -47,10 +47,10 @@ export default async function AppDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold">{app.name}</h1>
-          <p className="text-muted-foreground font-mono text-sm">{app.bundleId}</p>
+          <p className="text-muted-foreground font-mono text-sm truncate">{app.bundleId}</p>
         </div>
         <ModeToggle appId={appId} mode={app.mode ?? "sandbox"} />
       </div>
@@ -58,14 +58,14 @@ export default async function AppDetailPage({
       {(app.mode === "sandbox" || app.mode === null) && <SandboxBanner />}
 
       {!app.dmaEntitlementConfirmed && (
-        <Card className="border-orange-200 bg-orange-50">
+        <Card className="border-orange-200 bg-orange-50 dark:border-orange-500/20 dark:bg-orange-500/5">
           <CardContent className="flex items-start gap-3 py-4">
-            <ExternalLink className="h-5 w-5 text-orange-600 mt-0.5 shrink-0" />
+            <ExternalLink className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-orange-900">
+              <p className="text-sm font-medium text-orange-900 dark:text-orange-300">
                 DMA Entitlement Required
               </p>
-              <p className="text-sm text-orange-700">
+              <p className="text-sm text-orange-700 dark:text-orange-400/80">
                 Before going live, ensure you have Apple&apos;s External Purchase Link entitlement.{" "}
                 <a
                   href="https://developer.apple.com/contact/request/download/external_purchase.pdf"
@@ -107,13 +107,13 @@ export default async function AppDetailPage({
             <CardTitle>App Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <div className="flex justify-between">
+            <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
               <span className="text-muted-foreground">App ID</span>
-              <code className="font-mono text-xs">{app.id}</code>
+              <code className="font-mono text-xs break-all">{app.id}</code>
             </div>
-            <div className="flex justify-between">
+            <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
               <span className="text-muted-foreground">Bundle ID</span>
-              <code className="font-mono text-xs">{app.bundleId}</code>
+              <code className="font-mono text-xs break-all">{app.bundleId}</code>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Created</span>
@@ -122,9 +122,9 @@ export default async function AppDetailPage({
             <div className="flex justify-between">
               <span className="text-muted-foreground">Mode</span>
               {app.mode === "sandbox" ? (
-                <Badge className="bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-100">SANDBOX</Badge>
+                <Badge className="bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20">SANDBOX</Badge>
               ) : (
-                <Badge className="bg-teal-100 text-teal-800 border-teal-300 hover:bg-teal-100">LIVE</Badge>
+                <Badge className="bg-teal-100 text-teal-800 border-teal-300 hover:bg-teal-100 dark:bg-teal-500/10 dark:text-teal-400 dark:border-teal-500/20">LIVE</Badge>
               )}
             </div>
             <div className="flex justify-between">

@@ -50,11 +50,11 @@ export function ModeToggle({ appId, mode }: { appId: string; mode: string }) {
     <>
       <div className="flex items-center gap-3">
         {isSandbox ? (
-          <Badge className="bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-100">
+          <Badge className="bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20">
             SANDBOX
           </Badge>
         ) : (
-          <Badge className="bg-teal-100 text-teal-800 border-teal-300 hover:bg-teal-100">
+          <Badge className="bg-teal-100 text-teal-800 border-teal-300 hover:bg-teal-100 dark:bg-teal-500/10 dark:text-teal-400 dark:border-teal-500/20">
             LIVE
           </Badge>
         )}

@@ -61,88 +61,133 @@ export default async function ProductsPage({
 
       {app.mode === "sandbox" && <SandboxBanner />}
 
-      <Card>
-        <CardContent className="p-0">
-          {products.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <p className="text-muted-foreground">
-                No products yet. Create your first product to start accepting payments.
-              </p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Stripe Price ID</TableHead>
-                  <TableHead>App Store ID</TableHead>
-                  <TableHead>Subscribers</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">
-                      {product.name}
-                      {product.trialDays && product.trialDays > 0 ? (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          ({product.trialDays}d trial)
-                        </span>
-                      ) : null}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {product.productType === "SUBSCRIPTION"
-                          ? `${product.interval}ly`
-                          : "One-time"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {formatPrice(product.amountCents, product.currency)}
-                      {product.interval && (
-                        <span className="text-muted-foreground">
-                          /{product.interval}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <code className="text-xs font-mono">{product.stripePriceId}</code>
-                    </TableCell>
-                    <TableCell>
-                      {product.appStoreProductId ? (
-                        <span className="flex items-center gap-1 text-xs">
-                          <code className="font-mono">{product.appStoreProductId}</code>
-                          <Badge variant="secondary" className="text-[10px]">Mapped</Badge>
-                        </span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{product._count.entitlements}</TableCell>
-                    <TableCell>
+      {products.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+            <p className="text-muted-foreground">
+              No products yet. Create your first product to start accepting payments.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* Mobile: card layout */}
+          <div className="space-y-3 md:hidden">
+            {products.map((product) => (
+              <Card key={product.id}>
+                <CardContent className="py-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm">
+                        {product.name}
+                        {product.trialDays && product.trialDays > 0 ? (
+                          <span className="ml-1 text-xs text-muted-foreground">
+                            ({product.trialDays}d trial)
+                          </span>
+                        ) : null}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatPrice(product.amountCents, product.currency)}
+                        {product.interval && `/${product.interval}`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
                       {product.isActive ? (
-                        <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>
+                        <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20">Active</Badge>
                       ) : (
                         <Badge variant="secondary">Inactive</Badge>
                       )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <ProductToggle
-                        productId={product.id}
-                        isActive={product.isActive}
-                      />
-                    </TableCell>
+                      <ProductToggle productId={product.id} isActive={product.isActive} />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <Badge variant="outline">
+                      {product.productType === "SUBSCRIPTION" ? `${product.interval}ly` : "One-time"}
+                    </Badge>
+                    <span className="text-muted-foreground">{product._count.entitlements} subscribers</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Desktop: table layout */}
+          <Card className="hidden md:block">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Stripe Price ID</TableHead>
+                    <TableHead>App Store ID</TableHead>
+                    <TableHead>Subscribers</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {products.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell className="font-medium">
+                        {product.name}
+                        {product.trialDays && product.trialDays > 0 ? (
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            ({product.trialDays}d trial)
+                          </span>
+                        ) : null}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {product.productType === "SUBSCRIPTION"
+                            ? `${product.interval}ly`
+                            : "One-time"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {formatPrice(product.amountCents, product.currency)}
+                        {product.interval && (
+                          <span className="text-muted-foreground">
+                            /{product.interval}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <code className="text-xs font-mono">{product.stripePriceId}</code>
+                      </TableCell>
+                      <TableCell>
+                        {product.appStoreProductId ? (
+                          <span className="flex items-center gap-1 text-xs">
+                            <code className="font-mono">{product.appStoreProductId}</code>
+                            <Badge variant="secondary" className="text-[10px]">Mapped</Badge>
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>{product._count.entitlements}</TableCell>
+                      <TableCell>
+                        {product.isActive ? (
+                          <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20">Active</Badge>
+                        ) : (
+                          <Badge variant="secondary">Inactive</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <ProductToggle
+                          productId={product.id}
+                          isActive={product.isActive}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   )
 }

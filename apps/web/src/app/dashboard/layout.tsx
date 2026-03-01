@@ -1,6 +1,7 @@
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/dashboard/ThemeToggle";
+import { MobileNav } from "@/components/dashboard/MobileNav";
 
 export default function DashboardLayout({
   children,
@@ -9,13 +10,14 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="min-h-screen bg-background">
-      <nav className="bg-card border-b border-border px-6 py-4">
+      <nav className="relative bg-card border-b border-border px-4 py-4 md:px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 md:gap-8">
+            <MobileNav />
             <Link href="/dashboard" className="text-xl font-bold">
               EUPay
             </Link>
-            <div className="flex items-center gap-4 text-sm">
+            <div className="hidden md:flex items-center gap-4 text-sm">
               <Link
                 href="/dashboard"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -54,7 +56,7 @@ export default function DashboardLayout({
           </div>
         </div>
       </nav>
-      <main className="max-w-7xl mx-auto px-6 py-8">{children}</main>
+      <main className="max-w-7xl mx-auto px-4 py-6 md:px-6 md:py-8">{children}</main>
     </div>
   );
 }

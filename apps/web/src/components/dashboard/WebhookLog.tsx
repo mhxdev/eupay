@@ -24,17 +24,17 @@ export type WebhookEventRow = {
 }
 
 const statusStyles: Record<string, string> = {
-  PROCESSED: "bg-green-100 text-green-800 hover:bg-green-100",
-  PENDING: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
-  FAILED: "bg-red-100 text-red-800 hover:bg-red-100",
+  PROCESSED: "bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400",
+  PENDING: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-500/10 dark:text-yellow-400",
+  FAILED: "bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400",
 }
 
 export function WebhookLog({ events }: { events: WebhookEventRow[] }) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   return (
-    <div className="rounded-md border">
-      <Table>
+    <div className="rounded-md border overflow-x-auto">
+      <Table className="min-w-[700px]">
         <TableHeader>
           <TableRow>
             <TableHead className="w-8"></TableHead>
