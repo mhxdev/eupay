@@ -2,8 +2,10 @@ import { auth } from "@clerk/nextjs/server"
 import { redirect, notFound } from "next/navigation"
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { WebhookLog, type WebhookEventRow } from "@/components/dashboard/WebhookLog"
+import { WebhookConfig } from "@/components/dashboard/WebhookConfig"
+import { WebhookTester } from "@/components/dashboard/WebhookTester"
 import { SandboxBanner } from "@/components/dashboard/SandboxBanner"
 import { ArrowLeft } from "lucide-react"
 
@@ -17,19 +19,22 @@ export default async function WebhooksPage({
 
   const { appId } = await params
 
-  const app = await prisma.app.findUnique({ where: { id: appId } })
+  const app = await prisma.app.findUnique({
+    where: { id: appId },
+    select: {
+      id: true,
+      name: true,
+      clerkUserId: true,
+      mode: true,
+      webhookUrl: true,
+      webhookSecret: true,
+    },
+  })
   if (!app || app.clerkUserId !== userId) notFound()
 
-  // Fetch webhook events related to this app (from payload metadata)
-  // Since WebhookEvent doesn't have a direct appId FK for all events,
-  // we fetch recent events and filter by metadata when present,
-  // or show all if no appId filtering is possible
   const rawEvents = await prisma.webhookEvent.findMany({
     where: {
-      OR: [
-        { appId },
-        { appId: null }, // Events before appId was tracked
-      ],
+      OR: [{ appId }, { appId: null }],
     },
     orderBy: { createdAt: "desc" },
     take: 100,
@@ -55,15 +60,26 @@ export default async function WebhooksPage({
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold">Webhook Logs</h1>
+          <h1 className="text-2xl font-bold">Webhooks</h1>
           <p className="text-muted-foreground">{app.name}</p>
         </div>
       </div>
 
       {app.mode === "sandbox" && <SandboxBanner />}
 
+      <WebhookConfig
+        appId={appId}
+        webhookUrl={app.webhookUrl}
+        hasSecret={!!app.webhookSecret}
+      />
+
+      <WebhookTester appId={appId} hasUrl={!!app.webhookUrl} />
+
       <Card>
-        <CardContent className="pt-6">
+        <CardHeader>
+          <CardTitle className="text-base">Delivery Log</CardTitle>
+        </CardHeader>
+        <CardContent>
           <WebhookLog events={events} />
         </CardContent>
       </Card>
