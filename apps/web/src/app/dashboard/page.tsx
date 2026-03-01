@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { RevenueChart, type MonthlyRevenue } from "@/components/dashboard/RevenueChart"
 import { MrrChart, type MonthlyMrr } from "@/components/dashboard/MrrChart"
+import { OnboardingChecklist, type ChecklistData } from "@/components/dashboard/OnboardingChecklist"
 import { TrendingUp, Users, CreditCard, BarChart3, UserPlus, DollarSign } from "lucide-react"
 
 function formatCurrency(cents: number) {
@@ -23,6 +24,21 @@ export default async function DashboardPage() {
     select: { id: true },
   })
   const appIds = apps.map((a) => a.id)
+
+  // Onboarding checklist data
+  const firstApp = await prisma.app.findFirst({
+    where: { clerkUserId: userId },
+    select: { id: true, webhookUrl: true, dmaEntitlementConfirmed: true },
+  })
+  const productCount = firstApp
+    ? await prisma.product.count({ where: { appId: firstApp.id } })
+    : 0
+  const checklistData: ChecklistData = {
+    hasApp: !!firstApp,
+    hasProduct: productCount > 0,
+    hasWebhook: !!firstApp?.webhookUrl,
+    dmaConfirmed: !!firstApp?.dmaEntitlementConfirmed,
+  }
 
   // Metrics queries
   const now = new Date()
@@ -250,6 +266,8 @@ export default async function DashboardPage() {
           Revenue and subscriber metrics across all your apps.
         </p>
       </div>
+
+      <OnboardingChecklist data={checklistData} />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {metrics.map((m) => (
