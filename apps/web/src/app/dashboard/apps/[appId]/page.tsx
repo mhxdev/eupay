@@ -9,6 +9,7 @@ import { ApiKeySection } from "@/components/dashboard/ApiKeySection"
 import { ModeToggle } from "@/components/dashboard/ModeToggle"
 import { SandboxBanner } from "@/components/dashboard/SandboxBanner"
 import { AppHealthBadge, type HealthData } from "@/components/dashboard/AppHealthBadge"
+import { AppleCredentialsForm } from "@/components/dashboard/AppleCredentialsForm"
 import { Package, Users, Webhook, ExternalLink } from "lucide-react"
 
 export default async function AppDetailPage({
@@ -173,6 +174,26 @@ export default async function AppDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Apple Credentials</CardTitle>
+          <CardDescription>
+            Required for automated Apple External Purchase Server API reporting.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AppleCredentialsForm
+            appId={appId}
+            credentials={{
+              appleKeyId: app.appleKeyId,
+              appleIssuerId: app.appleIssuerId,
+              applePrivateKey: app.applePrivateKey ? "saved" : null,
+              appleBundleId: app.appleBundleId,
+            }}
+          />
+        </CardContent>
+      </Card>
     </div>
   )
 }

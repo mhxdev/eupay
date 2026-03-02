@@ -7,6 +7,10 @@ const schema = z.object({
   webhookUrl: z.string().url().optional(),
   webhookSecret: z.string().optional(),
   dmaEntitlementConfirmed: z.boolean().optional(),
+  appleKeyId: z.string().optional(),
+  appleIssuerId: z.string().optional(),
+  applePrivateKey: z.string().optional(),
+  appleBundleId: z.string().optional(),
 }).strict()
 
 export async function PATCH(
