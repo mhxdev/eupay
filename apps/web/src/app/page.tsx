@@ -428,6 +428,9 @@ function Footer() {
           >
             GitHub
           </a>
+          <Link href="/pricing" className="hover:text-gray-300 transition-colors">
+            Pricing
+          </Link>
           <Link href="/dashboard" className="hover:text-gray-300 transition-colors">
             Dashboard
           </Link>
