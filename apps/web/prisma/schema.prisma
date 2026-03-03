@@ -46,6 +46,9 @@ model App {
   setupChecklist                 Json?       // JSONB checklist state
   iapExclusivityAcknowledgedAt   DateTime?
 
+  // Alerting
+  lastWebhookAlertAt             DateTime?
+
   products         Product[]
   apiKeys          ApiKey[]
   customers        Customer[]

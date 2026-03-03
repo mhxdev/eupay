@@ -1,10 +1,11 @@
 "use server"
 
-import { auth } from "@clerk/nextjs/server"
+import { auth, clerkClient } from "@clerk/nextjs/server"
 import { revalidatePath } from "next/cache"
 import { prisma } from "./prisma"
 import { stripe } from "./stripe"
 import { generateApiKey } from "./auth"
+import { sendDeveloperWelcome } from "./email"
 
 async function requireUser() {
   const { userId } = await auth()
@@ -20,6 +21,11 @@ export async function createApp(formData: FormData) {
   const bundleId = formData.get("bundleId") as string
 
   if (!name || !bundleId) throw new Error("Name and bundle ID are required")
+
+  // Check if this is the user's first app (before creating)
+  const existingAppCount = await prisma.app.count({
+    where: { clerkUserId: userId },
+  })
 
   const { raw, hash, prefix } = generateApiKey()
 
@@ -39,6 +45,23 @@ export async function createApp(formData: FormData) {
       name: "Default",
     },
   })
+
+  // Send welcome email on first app creation
+  if (existingAppCount === 0) {
+    try {
+      const clerk = await clerkClient()
+      const user = await clerk.users.getUser(userId)
+      const email = user.emailAddresses[0]?.emailAddress
+      if (email) {
+        await sendDeveloperWelcome({
+          to: email,
+          name: user.firstName ?? "",
+        })
+      }
+    } catch (emailErr) {
+      console.error("[Actions] Welcome email failed:", emailErr)
+    }
+  }
 
   revalidatePath("/dashboard/apps")
 

@@ -1,8 +1,9 @@
-import { auth } from "@clerk/nextjs/server"
+import { auth, clerkClient } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { createHmac, randomUUID } from "crypto"
 import { prisma } from "@/lib/prisma"
+import { sendWebhookFailureAlert } from "@/lib/email"
 
 const EVENT_TYPES = [
   "checkout.completed",
@@ -134,9 +135,11 @@ export async function POST(
     where: { id: appId },
     select: {
       id: true,
+      name: true,
       clerkUserId: true,
       webhookUrl: true,
       webhookSecret: true,
+      lastWebhookAlertAt: true,
     },
   })
   if (!app || app.clerkUserId !== userId) {
@@ -217,6 +220,48 @@ export async function POST(
       error,
     },
   })
+
+  // Check consecutive failures and alert developer
+  if (!success) {
+    try {
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
+      const recentFailures = await prisma.webhookEvent.count({
+        where: {
+          appId,
+          status: "FAILED",
+          createdAt: { gte: oneHourAgo },
+        },
+      })
+
+      if (recentFailures >= 3) {
+        const shouldAlert =
+          !app.lastWebhookAlertAt ||
+          app.lastWebhookAlertAt < oneHourAgo
+
+        if (shouldAlert) {
+          const clerk = await clerkClient()
+          const user = await clerk.users.getUser(app.clerkUserId)
+          const devEmail = user.emailAddresses[0]?.emailAddress
+          if (devEmail) {
+            await sendWebhookFailureAlert({
+              to: devEmail,
+              appName: app.name,
+              webhookUrl: app.webhookUrl!,
+              failureCount: recentFailures,
+              lastError: error ?? "Unknown error",
+              lastAttemptAt: new Date(),
+            })
+            await prisma.app.update({
+              where: { id: appId },
+              data: { lastWebhookAlertAt: new Date() },
+            })
+          }
+        }
+      }
+    } catch (alertErr) {
+      console.error("[Webhook Test] Failure alert check failed:", alertErr)
+    }
+  }
 
   return NextResponse.json({
     success,

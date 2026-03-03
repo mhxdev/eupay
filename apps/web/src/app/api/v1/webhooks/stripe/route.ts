@@ -13,7 +13,10 @@ import {
   sendPurchaseConfirmation,
   sendWiderrufsrechtWaiver,
   sendCancellationConfirmation,
+  sendDisputeAlert,
+  sendWebhookFailureAlert,
 } from '@/lib/email'
+import { clerkClient } from '@clerk/nextjs/server'
 
 export async function POST(req: Request) {
   const body = await req.text() // MUST be raw text, not parsed JSON
@@ -475,7 +478,7 @@ async function handleDisputeCreated(
     data: { status: 'DISPUTED' },
   })
 
-  // Notify developer
+  // Notify developer via webhook
   await notifyDeveloper(transaction.customer.app, 'charge.dispute.created', {
     userId: transaction.customer.externalUserId,
     productId: transaction.productId,
@@ -485,18 +488,48 @@ async function handleDisputeCreated(
     currency: dispute.currency,
     reason: dispute.reason,
   })
+
+  // Send dispute alert email to developer
+  try {
+    const clerk = await clerkClient()
+    const user = await clerk.users.getUser(transaction.customer.app.clerkUserId)
+    const email = user.emailAddresses[0]?.emailAddress
+    if (email) {
+      await sendDisputeAlert({
+        to: email,
+        appName: transaction.customer.app.name,
+        amount: dispute.amount,
+        currency: dispute.currency,
+        reason: dispute.reason,
+        disputeId: dispute.id,
+        transactionId: transaction.id,
+      })
+    }
+  } catch (alertErr) {
+    console.error('[Webhook] Dispute alert email failed:', alertErr)
+  }
 }
 
 // Helper: forward webhook events to developer's registered webhook URL
 async function notifyDeveloper(
-  app: { webhookUrl: string | null; webhookSecret: string | null },
+  app: {
+    id?: string
+    name?: string
+    clerkUserId?: string
+    webhookUrl: string | null
+    webhookSecret: string | null
+    lastWebhookAlertAt?: Date | null
+  },
   eventType: string,
   payload: Record<string, unknown>
 ) {
   if (!app.webhookUrl) return
 
+  let deliveryFailed = false
+  let deliveryError = ''
+
   try {
-    await fetch(app.webhookUrl, {
+    const res = await fetch(app.webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -506,7 +539,56 @@ async function notifyDeveloper(
       },
       body: JSON.stringify({ type: eventType, data: payload }),
     })
-  } catch {
-    // Best-effort delivery — don't fail the webhook handler
+    if (!res.ok) {
+      deliveryFailed = true
+      deliveryError = `HTTP ${res.status}`
+    }
+  } catch (err) {
+    deliveryFailed = true
+    deliveryError = err instanceof Error ? err.message : 'Request failed'
+  }
+
+  // Check for consecutive failures and alert developer
+  if (deliveryFailed && app.id && app.clerkUserId) {
+    try {
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
+
+      const recentFailures = await prisma.webhookEvent.count({
+        where: {
+          appId: app.id,
+          status: 'FAILED',
+          createdAt: { gte: oneHourAgo },
+        },
+      })
+
+      if (recentFailures >= 3) {
+        // Only send alert once per hour
+        const shouldAlert =
+          !app.lastWebhookAlertAt ||
+          app.lastWebhookAlertAt < oneHourAgo
+
+        if (shouldAlert) {
+          const clerk = await clerkClient()
+          const user = await clerk.users.getUser(app.clerkUserId)
+          const email = user.emailAddresses[0]?.emailAddress
+          if (email) {
+            await sendWebhookFailureAlert({
+              to: email,
+              appName: app.name ?? 'Your app',
+              webhookUrl: app.webhookUrl,
+              failureCount: recentFailures,
+              lastError: deliveryError,
+              lastAttemptAt: new Date(),
+            })
+            await prisma.app.update({
+              where: { id: app.id },
+              data: { lastWebhookAlertAt: new Date() },
+            })
+          }
+        }
+      }
+    } catch (alertErr) {
+      console.error('[Webhook] Failure alert check failed:', alertErr)
+    }
   }
 }
