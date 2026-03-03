@@ -10,7 +10,7 @@ import { ModeToggle } from "@/components/dashboard/ModeToggle"
 import { SandboxBanner } from "@/components/dashboard/SandboxBanner"
 import { AppHealthBadge, type HealthData } from "@/components/dashboard/AppHealthBadge"
 import { AppleCredentialsForm } from "@/components/dashboard/AppleCredentialsForm"
-import { Package, Users, Webhook, ExternalLink } from "lucide-react"
+import { Package, Users, Webhook, ExternalLink, FileText } from "lucide-react"
 
 export default async function AppDetailPage({
   params,
@@ -62,6 +62,7 @@ export default async function AppDetailPage({
     { href: `/dashboard/apps/${appId}/products`, label: "Products", icon: Package, count: app._count.products },
     { href: `/dashboard/apps/${appId}/subscribers`, label: "Subscribers", icon: Users, count: app._count.customers },
     { href: `/dashboard/apps/${appId}/webhooks`, label: "Webhook Logs", icon: Webhook, count: null },
+    { href: `/dashboard/apps/${appId}/apple-reporting`, label: "Apple Reporting", icon: FileText, count: null },
   ]
 
   return (
@@ -100,7 +101,7 @@ export default async function AppDetailPage({
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         {navItems.map((item) => (
           <Link key={item.href} href={item.href}>
             <Card className="hover:border-primary/50 transition-colors cursor-pointer">
