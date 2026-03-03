@@ -33,7 +33,7 @@ export default function CancellationConfirmation({
         <Container style={container}>
           {/* Header */}
           <Section style={header}>
-            <Text style={logo}>EUPay</Text>
+            <Text style={logo}>EuroPay</Text>
           </Section>
 
           <Section style={content}>
@@ -71,7 +71,7 @@ export default function CancellationConfirmation({
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              EUPay — EU Alternative Payment Platform
+              EuroPay — EU Alternative Payment Platform
             </Text>
           </Section>
         </Container>

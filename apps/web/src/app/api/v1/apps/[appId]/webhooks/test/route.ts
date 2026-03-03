@@ -169,7 +169,7 @@ export async function POST(
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "User-Agent": "EUPay-Webhook/1.0",
+    "User-Agent": "EuroPay-Webhook/1.0",
   }
   if (signature) {
     headers["x-eupay-signature"] = signature

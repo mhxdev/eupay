@@ -18,7 +18,7 @@ function Nav() {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#0a0f1e]/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="text-lg font-bold text-white">
-          EUPay
+          EuroPay
         </Link>
         <div className="hidden items-center gap-6 text-sm md:flex">
           <Link href="/docs" className="text-gray-400 hover:text-white transition-colors">
@@ -28,7 +28,7 @@ function Nav() {
             Pricing
           </Link>
           <a
-            href="https://github.com/mhxdev/EUPayKit"
+            href="https://github.com/mhxdev/EuroPayKit"
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-400 hover:text-white transition-colors"
@@ -64,7 +64,7 @@ function Hero() {
               <span className="text-teal-400">65%</span>
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-gray-400 md:text-xl">
-              EUPay routes EU in-app purchases through Stripe instead of Apple.
+              EuroPay routes EU in-app purchases through Stripe instead of Apple.
               Pay 7% instead of 20% — DMA-compliant, fully managed, 15-minute
               integration.
             </p>
@@ -176,10 +176,10 @@ function FeeComparison() {
       highlighted: false,
     },
     {
-      name: "EUPay Managed",
+      name: "EuroPay Managed",
       total: "11.5%",
       fees: [
-        { label: "EUPay fee", value: "5%" },
+        { label: "EuroPay fee", value: "5%" },
         { label: "Apple CTC", value: "5%" },
         { label: "Stripe", value: "~1.5%" },
       ],
@@ -187,10 +187,10 @@ function FeeComparison() {
       highlighted: false,
     },
     {
-      name: "EUPay BYOS",
+      name: "EuroPay BYOS",
       total: "7%",
       fees: [
-        { label: "EUPay fee", value: "0.5%" },
+        { label: "EuroPay fee", value: "0.5%" },
         { label: "Apple CTC", value: "5%" },
         { label: "Stripe", value: "~1.5%" },
       ],
@@ -266,10 +266,10 @@ function HowItWorks() {
     {
       number: "1",
       icon: Package,
-      title: "Install EUPayKit via SPM",
+      title: "Install EuroPayKit via SPM",
       description:
         "Add the Swift package to your Xcode project. Zero external dependencies, iOS 16+.",
-      code: "https://github.com/mhxdev/EUPayKit",
+      code: "https://github.com/mhxdev/EuroPayKit",
     },
     {
       number: "2",
@@ -284,7 +284,7 @@ function HowItWorks() {
       icon: BadgeCheck,
       title: "Request Apple entitlement and go live",
       description:
-        "Apply for the External Purchase Link Entitlement in App Store Connect. EUPay handles the rest.",
+        "Apply for the External Purchase Link Entitlement in App Store Connect. EuroPay handles the rest.",
       code: null,
     },
   ]
@@ -370,7 +370,7 @@ function Features() {
           Everything you need to sell in the EU
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-center text-gray-400">
-          EUPay handles the hard parts so you can focus on building your app.
+          EuroPay handles the hard parts so you can focus on building your app.
         </p>
         <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => (
@@ -421,7 +421,7 @@ function Footer() {
             Docs
           </Link>
           <a
-            href="https://github.com/mhxdev/EUPayKit"
+            href="https://github.com/mhxdev/EuroPayKit"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-gray-300 transition-colors"
@@ -448,7 +448,7 @@ function Footer() {
           </Link>
         </div>
         <p className="text-xs text-gray-600">
-          &copy; 2026 EUPay. All rights reserved.
+          &copy; 2026 EuroPay. All rights reserved.
         </p>
       </div>
     </footer>

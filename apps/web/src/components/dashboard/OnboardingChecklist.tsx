@@ -33,8 +33,8 @@ type Step = {
 const STEPS: Step[] = [
   {
     key: "account",
-    title: "Create your EUPay account",
-    description: "Sign up for EUPay and complete onboarding.",
+    title: "Create your EuroPay account",
+    description: "Sign up for EuroPay and complete onboarding.",
     alwaysComplete: true,
   },
   {
@@ -45,7 +45,7 @@ const STEPS: Step[] = [
   },
   {
     key: "sdk",
-    title: "Install EUPayKit SDK",
+    title: "Install EuroPayKit SDK",
     description: "Add the Swift package to your Xcode project.",
     href: "/docs/integration-guide",
     manual: true,

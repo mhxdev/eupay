@@ -15,7 +15,7 @@ export default function DashboardLayout({
           <div className="flex items-center gap-4 md:gap-8">
             <MobileNav />
             <Link href="/dashboard" className="text-xl font-bold">
-              EUPay
+              EuroPay
             </Link>
             <div className="hidden md:flex items-center gap-4 text-sm">
               <Link

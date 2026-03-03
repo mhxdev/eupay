@@ -246,7 +246,7 @@ export async function applySaveOffer(entitlementId: string) {
   }
 
   // Create or retrieve the save offer coupon (deterministic ID per app)
-  const couponId = `eupay_save_20pct_3mo_${entitlement.customer.appId}`
+  const couponId = `europay_save_20pct_3mo_${entitlement.customer.appId}`
   try {
     await stripe.coupons.retrieve(couponId)
   } catch {

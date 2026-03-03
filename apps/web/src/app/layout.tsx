@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EUPay — Alternative In-App Payments for EU",
+  title: "EuroPay — Alternative In-App Payments for EU",
   description:
-    "Cut your EU App Store fees by 65%. EUPay routes iOS in-app purchases through Stripe — DMA-compliant, 15-minute integration.",
+    "Cut your EU App Store fees by 65%. EuroPay routes iOS in-app purchases through Stripe — DMA-compliant, 15-minute integration.",
 };
 
 export default function RootLayout({

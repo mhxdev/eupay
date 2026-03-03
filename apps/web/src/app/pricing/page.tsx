@@ -22,7 +22,7 @@ const FEATURES = [
 const FEE_BREAKDOWN = [
   {
     icon: Zap,
-    name: "EUPay",
+    name: "EuroPay",
     fee: "0.5%",
     description:
       "SDK, developer dashboard, DMA reporting, webhook delivery, GDPR tools",
@@ -51,7 +51,7 @@ export default function PricingPage() {
         <div className="mx-auto flex max-w-4xl items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/" className="text-xl font-bold">
-              EUPay
+              EuroPay
             </Link>
             <span className="text-white/20">/</span>
             <span className="text-sm text-gray-400">Pricing</span>
@@ -94,7 +94,7 @@ export default function PricingPage() {
             <div className="mt-6">
               <span className="text-4xl font-bold">0.5%</span>
               <span className="ml-1 text-sm text-gray-400">
-                EUPay fee per transaction
+                EuroPay fee per transaction
               </span>
             </div>
 
@@ -131,7 +131,7 @@ export default function PricingPage() {
           <p className="text-sm text-gray-400">
             Apple IAP charges{" "}
             <span className="font-medium text-white">20% minimum</span>. With
-            EUPay BYOS you pay 0.5% to us + Stripe fees + Apple CTC. A{" "}
+            EuroPay BYOS you pay 0.5% to us + Stripe fees + Apple CTC. A{" "}
             <span className="font-medium text-white">
               &euro;10,000/month
             </span>{" "}
@@ -142,7 +142,7 @@ export default function PricingPage() {
             vs Apple IAP.
           </p>
           <p className="mt-4 text-xs text-gray-500">
-            Managed plan (EUPay handles VAT, disputes, and compliance) coming
+            Managed plan (EuroPay handles VAT, disputes, and compliance) coming
             soon.
           </p>
         </div>
@@ -211,10 +211,10 @@ export default function PricingPage() {
             className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-300 transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back to EUPay
+            Back to EuroPay
           </Link>
           <p className="text-xs text-gray-600">
-            &copy; 2026 EUPay. All rights reserved.
+            &copy; 2026 EuroPay. All rights reserved.
           </p>
         </div>
       </footer>

@@ -5,7 +5,7 @@ export default function ChangelogPage() {
         Changelog
       </h1>
       <p className="mt-4 text-lg text-gray-400">
-        A log of notable changes to EUPay and EUPayKit.
+        A log of notable changes to EuroPay and EuroPayKit.
       </p>
 
       {/* v1.0.0 */}
@@ -18,13 +18,13 @@ export default function ChangelogPage() {
         </div>
         <p className="mt-1 text-sm text-gray-500">March 2026</p>
         <p className="mt-3 text-sm text-gray-400">
-          Initial release of the EUPay platform and EUPayKit iOS SDK.
+          Initial release of the EuroPay platform and EuroPayKit iOS SDK.
         </p>
 
         <div className="mt-6 space-y-6">
           <div>
             <h3 className="text-sm font-semibold text-white">
-              EUPayKit iOS SDK
+              EuroPayKit iOS SDK
             </h3>
             <ul className="mt-2 space-y-1.5 text-sm text-gray-400">
               <li className="flex items-start gap-2">

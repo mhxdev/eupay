@@ -7,7 +7,7 @@ export default function IntegrationGuidePage() {
         Integration Guide
       </h1>
       <p className="mt-4 text-lg text-gray-400">
-        A complete walkthrough of integrating EUPayKit into a SwiftUI app —
+        A complete walkthrough of integrating EuroPayKit into a SwiftUI app —
         from setup to production.
       </p>
 
@@ -27,7 +27,7 @@ export default function IntegrationGuidePage() {
               <span className="text-white">SwiftUI</span>
               {"\n"}
               <span className="text-purple-400">import</span>{" "}
-              <span className="text-white">EUPayKit</span>
+              <span className="text-white">EuroPayKit</span>
               {"\n\n"}
               <span className="text-purple-400">@main</span>
               {"\n"}
@@ -43,17 +43,17 @@ export default function IntegrationGuidePage() {
               <span className="text-gray-400">{"{"}</span>
               {"\n"}
               {"    "}
-              <span className="text-teal-300">EUPayKit</span>
+              <span className="text-teal-300">EuroPayKit</span>
               <span className="text-gray-400">.</span>
               <span className="text-white">configure</span>
               <span className="text-gray-400">(</span>
-              <span className="text-teal-300">EUPayConfig</span>
+              <span className="text-teal-300">EuroPayConfig</span>
               <span className="text-gray-400">(</span>
               {"\n"}
               {"      "}
               <span className="text-white">apiKey</span>
               <span className="text-gray-400">:</span>{" "}
-              <span className="text-orange-300">&quot;eupay_live_...&quot;</span>
+              <span className="text-orange-300">&quot;europay_live_...&quot;</span>
               <span className="text-gray-400">,</span>
               {"\n"}
               {"      "}
@@ -114,7 +114,7 @@ export default function IntegrationGuidePage() {
           Handling Purchase Results
         </h2>
         <p className="mt-3 text-sm text-gray-400">
-          The <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">purchase()</code> method returns an <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">EUPayTransaction</code> on success or throws an <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">EUPayError</code> on failure:
+          The <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">purchase()</code> method returns an <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">EuroPayTransaction</code> on success or throws an <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">EuroPayError</code> on failure:
         </p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
           <pre className="text-sm leading-relaxed font-mono">
@@ -127,7 +127,7 @@ export default function IntegrationGuidePage() {
               <span className="text-white">tx</span>{" "}
               <span className="text-gray-400">=</span>{" "}
               <span className="text-purple-400">try await</span>{" "}
-              <span className="text-teal-300">EUPayKit</span>
+              <span className="text-teal-300">EuroPayKit</span>
               <span className="text-gray-400">.</span>
               <span className="text-white">shared</span>
               <span className="text-gray-400">!.</span>
@@ -189,7 +189,7 @@ export default function IntegrationGuidePage() {
               {"\n\n"}
               <span className="text-gray-400">{"}"}</span>{" "}
               <span className="text-purple-400">catch</span>{" "}
-              <span className="text-teal-300">EUPayError</span>
+              <span className="text-teal-300">EuroPayError</span>
               <span className="text-gray-400">.</span>
               <span className="text-white">userCancelled</span>{" "}
               <span className="text-gray-400">{"{"}</span>
@@ -199,7 +199,7 @@ export default function IntegrationGuidePage() {
               {"\n\n"}
               <span className="text-gray-400">{"}"}</span>{" "}
               <span className="text-purple-400">catch</span>{" "}
-              <span className="text-teal-300">EUPayError</span>
+              <span className="text-teal-300">EuroPayError</span>
               <span className="text-gray-400">.</span>
               <span className="text-white">regionNotSupported</span>{" "}
               <span className="text-gray-400">{"{"}</span>
@@ -213,7 +213,7 @@ export default function IntegrationGuidePage() {
               {"\n\n"}
               <span className="text-gray-400">{"}"}</span>{" "}
               <span className="text-purple-400">catch</span>{" "}
-              <span className="text-teal-300">EUPayError</span>
+              <span className="text-teal-300">EuroPayError</span>
               <span className="text-gray-400">.</span>
               <span className="text-white">verificationTimeout</span>{" "}
               <span className="text-gray-400">{"{"}</span>
@@ -284,7 +284,7 @@ export default function IntegrationGuidePage() {
               <span className="text-gray-500">// On app launch — sync with server</span>
               {"\n"}
               <span className="text-purple-400">await</span>{" "}
-              <span className="text-teal-300">EUPayKit</span>
+              <span className="text-teal-300">EuroPayKit</span>
               <span className="text-gray-400">.</span>
               <span className="text-white">shared</span>
               <span className="text-gray-400">!.</span>
@@ -298,7 +298,7 @@ export default function IntegrationGuidePage() {
               <span className="text-gray-500">// Check access anywhere in your app</span>
               {"\n"}
               <span className="text-purple-400">if</span>{" "}
-              <span className="text-teal-300">EUPayKit</span>
+              <span className="text-teal-300">EuroPayKit</span>
               <span className="text-gray-400">.</span>
               <span className="text-white">shared</span>
               <span className="text-gray-400">!.</span>
@@ -329,7 +329,7 @@ export default function IntegrationGuidePage() {
           StoreKit Fallback for Non-EU Users
         </h2>
         <p className="mt-3 text-sm text-gray-400">
-          EUPay only works for users in EU App Store regions. Use{" "}
+          EuroPay only works for users in EU App Store regions. Use{" "}
           <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">checkRegion()</code>{" "}
           to decide which payment flow to show:
         </p>
@@ -337,7 +337,7 @@ export default function IntegrationGuidePage() {
           <pre className="text-sm leading-relaxed font-mono">
             <code>
               <span className="text-purple-400">switch await</span>{" "}
-              <span className="text-teal-300">EUPayKit</span>
+              <span className="text-teal-300">EuroPayKit</span>
               <span className="text-gray-400">.</span>
               <span className="text-white">shared</span>
               <span className="text-gray-400">!.</span>
@@ -351,10 +351,10 @@ export default function IntegrationGuidePage() {
               <span className="text-gray-400">:</span>
               {"\n"}
               {"  "}
-              <span className="text-gray-500">// EU user — show EUPay checkout</span>
+              <span className="text-gray-500">// EU user — show EuroPay checkout</span>
               {"\n"}
               {"  "}
-              <span className="text-white">showEUPayButton</span>
+              <span className="text-white">showEuroPayButton</span>
               <span className="text-gray-400">()</span>
               {"\n"}
               <span className="text-purple-400">case</span>{" "}
@@ -384,8 +384,8 @@ export default function IntegrationGuidePage() {
           Sandbox &amp; Test Mode
         </h2>
         <p className="mt-3 text-sm text-gray-400">
-          During development, EUPay uses Stripe&apos;s test mode automatically when
-          your API key starts with <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">eupay_test_</code>.
+          During development, EuroPay uses Stripe&apos;s test mode automatically when
+          your API key starts with <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">europay_test_</code>.
         </p>
         <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] px-5 py-4">
           <p className="text-sm font-medium text-white">Test card numbers</p>

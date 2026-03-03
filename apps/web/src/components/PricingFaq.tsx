@@ -12,17 +12,17 @@ const FAQS = [
   {
     question: "When do I get paid?",
     answer:
-      "Stripe pays out directly to your bank account, typically 2 business days after a transaction. You receive 100% of the charge minus Stripe\u2019s processing fee \u2014 EUPay\u2019s 0.5% is deducted separately via monthly invoice.",
+      "Stripe pays out directly to your bank account, typically 2 business days after a transaction. You receive 100% of the charge minus Stripe\u2019s processing fee \u2014 EuroPay\u2019s 0.5% is deducted separately via monthly invoice.",
   },
   {
     question: "Do I need a registered business?",
     answer:
-      "Yes, Stripe requires a registered business entity (sole proprietorship, GmbH, Ltd, etc.) to create a connected account. This is a Stripe requirement, not an EUPay one.",
+      "Yes, Stripe requires a registered business entity (sole proprietorship, GmbH, Ltd, etc.) to create a connected account. This is a Stripe requirement, not an EuroPay one.",
   },
   {
     question: "What happens if Apple rejects my entitlement request?",
     answer:
-      "EUPayKit automatically falls back to StoreKit if the External Purchase Link entitlement is not available. Your users still get the purchase flow \u2014 it just goes through Apple IAP instead. No revenue lost.",
+      "EuroPayKit automatically falls back to StoreKit if the External Purchase Link entitlement is not available. Your users still get the purchase flow \u2014 it just goes through Apple IAP instead. No revenue lost.",
   },
   {
     question: "Is my data safe?",

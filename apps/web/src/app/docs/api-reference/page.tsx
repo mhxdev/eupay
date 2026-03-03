@@ -5,7 +5,7 @@ export default function ApiReferencePage() {
         API Reference
       </h1>
       <p className="mt-4 text-lg text-gray-400">
-        The EUPay REST API. All endpoints are under{" "}
+        The EuroPay REST API. All endpoints are under{" "}
         <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
           /api/v1
         </code>{" "}
@@ -27,7 +27,7 @@ export default function ApiReferencePage() {
             <code>
               <span className="text-teal-300">Authorization</span>
               <span className="text-gray-400">:</span>{" "}
-              <span className="text-orange-300">Bearer eupay_live_your_api_key</span>
+              <span className="text-orange-300">Bearer europay_live_your_api_key</span>
             </code>
           </pre>
         </div>

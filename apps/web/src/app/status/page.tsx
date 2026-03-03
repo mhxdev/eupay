@@ -84,7 +84,7 @@ export default async function StatusPage() {
     },
     {
       name: "SDK",
-      description: "EUPayKit",
+      description: "EuroPayKit",
       status: "operational",
     },
     {
@@ -129,7 +129,7 @@ export default async function StatusPage() {
       <nav className="border-b border-white/10 px-6 py-4">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <Link href="/" className="text-xl font-bold">
-            EUPay
+            EuroPay
           </Link>
           <span className="text-sm text-gray-400">System Status</span>
         </div>
@@ -239,10 +239,10 @@ export default async function StatusPage() {
             href="/"
             className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
           >
-            &larr; Back to EUPay
+            &larr; Back to EuroPay
           </Link>
           <p className="text-xs text-gray-600">
-            &copy; 2026 EUPay. All rights reserved.
+            &copy; 2026 EuroPay. All rights reserved.
           </p>
         </div>
       </footer>

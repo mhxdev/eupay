@@ -6,7 +6,7 @@ import WiderrufsrechtWaiver from "@/emails/WiderrufsrechtWaiver"
 import CancellationConfirmation from "@/emails/CancellationConfirmation"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "receipts@eupay.io"
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "receipts@europay.dev"
 
 // ── Purchase Confirmation ─────────────────────────────────────
 

@@ -210,7 +210,7 @@ async function handleCheckoutSessionCompleted(
       // Create a portal URL for the email
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: customer.stripeCustomerId,
-        return_url: process.env.NEXT_PUBLIC_APP_URL ?? 'https://eupay.io',
+        return_url: process.env.NEXT_PUBLIC_APP_URL ?? 'https://europay.dev',
       }, connectOpts)
 
       await sendPurchaseConfirmation({
@@ -501,7 +501,7 @@ async function notifyDeveloper(
       headers: {
         'Content-Type': 'application/json',
         ...(app.webhookSecret
-          ? { 'X-EUPay-Signature': app.webhookSecret }
+          ? { 'X-EuroPay-Signature': app.webhookSecret }
           : {}),
       },
       body: JSON.stringify({ type: eventType, data: payload }),

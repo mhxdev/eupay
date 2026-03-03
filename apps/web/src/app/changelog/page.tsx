@@ -43,9 +43,9 @@ const RELEASES: Release[] = [
   {
     version: "v1.0.0",
     date: "March 2026",
-    summary: "Initial release of the EUPay platform and EUPayKit iOS SDK.",
+    summary: "Initial release of the EuroPay platform and EuroPayKit iOS SDK.",
     changes: [
-      { tag: "New", text: "EUPayKit iOS SDK — SwiftUI checkout, DMA disclosure, entitlement verification" },
+      { tag: "New", text: "EuroPayKit iOS SDK — SwiftUI checkout, DMA disclosure, entitlement verification" },
       { tag: "New", text: "Self-serve signup and onboarding with Clerk authentication" },
       { tag: "New", text: "Stripe-powered checkout with automatic EU VAT calculation" },
       { tag: "New", text: "DMA disclosure flow with ExternalPurchaseCustomLink support" },
@@ -67,7 +67,7 @@ export default function ChangelogPage() {
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/" className="text-xl font-bold">
-              EUPay
+              EuroPay
             </Link>
             <span className="text-white/20">/</span>
             <span className="text-sm text-gray-400">Changelog</span>
@@ -86,7 +86,7 @@ export default function ChangelogPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Changelog</h1>
           <p className="mt-3 text-gray-400">
-            Product updates and release notes for EUPay and EUPayKit.
+            Product updates and release notes for EuroPay and EuroPayKit.
           </p>
           <a
             href="mailto:updates@europay.dev"
@@ -148,10 +148,10 @@ export default function ChangelogPage() {
             className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-300 transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back to EUPay
+            Back to EuroPay
           </Link>
           <p className="text-xs text-gray-600">
-            &copy; 2026 EUPay. All rights reserved.
+            &copy; 2026 EuroPay. All rights reserved.
           </p>
         </div>
       </footer>

@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
   // ── Save offer flow ──────────────────────────────────────────
   if (parsed.data.acceptSaveOffer) {
-    const couponId = `eupay_save_20pct_3mo_${auth.appId}`
+    const couponId = `europay_save_20pct_3mo_${auth.appId}`
     try {
       await stripe.coupons.retrieve(couponId, connectOpts)
     } catch {

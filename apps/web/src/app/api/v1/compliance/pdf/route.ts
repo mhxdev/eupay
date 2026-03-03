@@ -9,7 +9,7 @@ export async function GET() {
 
   const content = `
 ================================================================================
-                    EUPay — Compliance Summary Document
+                    EuroPay — Compliance Summary Document
 ================================================================================
 
 Generated: ${date}
@@ -25,14 +25,14 @@ PCI DSS Level:     Level 1 Service Provider (highest certification)
 Stripe Dashboard:  https://stripe.com/docs/security/stripe
                    https://stripe.com/guides/pci-compliance
 
-EUPay does NOT handle, store, or transmit raw payment card data.
+EuroPay does NOT handle, store, or transmit raw payment card data.
 All payment processing is handled by Stripe's PCI-compliant infrastructure.
 
 --------------------------------------------------------------------------------
 2. GDPR COMPLIANCE
 --------------------------------------------------------------------------------
 
-EUPay implements the following GDPR provisions:
+EuroPay implements the following GDPR provisions:
 
   - Art. 15: Right of Access — Full customer data export (JSON format)
   - Art. 17: Right to Erasure — Customer data anonymisation with financial
@@ -50,21 +50,21 @@ Data Processing:
 3. EU VAT COMPLIANCE
 --------------------------------------------------------------------------------
 
-EUPay is the Merchant of Record and handles:
+EuroPay is the Merchant of Record and handles:
 
   - EU VAT collection via Stripe Tax (automatic rate calculation)
   - One-Stop Shop (OSS) VAT remittance
   - Country-specific digital services VAT rates
   - VAT invoicing for all transactions
 
-Developers using EUPay do NOT need their own EU VAT registration
+Developers using EuroPay do NOT need their own EU VAT registration
 for sales processed through the platform.
 
 --------------------------------------------------------------------------------
 4. APPLE DMA COMPLIANCE
 --------------------------------------------------------------------------------
 
-EUPay operates under Apple's StoreKit External Purchase Link Entitlement
+EuroPay operates under Apple's StoreKit External Purchase Link Entitlement
 for EU Apps, complying with the EU Digital Markets Act (DMA).
 
 Requirements fulfilled:
@@ -80,7 +80,7 @@ Requirements fulfilled:
 
 Include the following in your App Store Connect review notes:
 
-  "This app uses Stripe (via EUPay) as its alternative payment service
+  "This app uses Stripe (via EuroPay) as its alternative payment service
    provider under the EU Digital Markets Act External Purchase Link
    Entitlement. PSP: Stripe, Inc. PCI Level: Level 1 Service Provider.
    Platform: europay.dev"

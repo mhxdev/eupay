@@ -7,7 +7,7 @@ export default function GettingStartedPage() {
         Getting Started
       </h1>
       <p className="mt-4 text-lg text-gray-400">
-        Get EUPay running in your iOS app in under 15 minutes. This guide covers
+        Get EuroPay running in your iOS app in under 15 minutes. This guide covers
         prerequisites, installation, and your first checkout.
       </p>
 
@@ -39,7 +39,7 @@ export default function GettingStartedPage() {
           <li className="flex items-start gap-3">
             <span className="mt-0.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-teal-400" />
             <span>
-              <strong className="text-white">EUPay account</strong> —{" "}
+              <strong className="text-white">EuroPay account</strong> —{" "}
               <Link
                 href="/sign-up"
                 className="text-teal-400 underline underline-offset-2 hover:text-teal-300"
@@ -66,7 +66,7 @@ export default function GettingStartedPage() {
         </p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
           <code className="text-sm font-mono text-teal-300">
-            https://github.com/mhxdev/EUPayKit
+            https://github.com/mhxdev/EuroPayKit
           </code>
         </div>
         <p className="mt-3 text-sm text-gray-400">
@@ -83,28 +83,28 @@ export default function GettingStartedPage() {
       <section className="mt-12">
         <h2 className="text-xl font-semibold text-white">Basic Setup</h2>
         <p className="mt-3 text-sm text-gray-400">
-          Import EUPayKit and configure the SDK at app launch — typically in
+          Import EuroPayKit and configure the SDK at app launch — typically in
           your <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">App</code> struct&apos;s initialiser:
         </p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
           <pre className="text-sm leading-relaxed font-mono">
             <code>
               <span className="text-purple-400">import</span>{" "}
-              <span className="text-white">EUPayKit</span>
+              <span className="text-white">EuroPayKit</span>
               {"\n\n"}
               <span className="text-gray-500">// In your App init or AppDelegate</span>
               {"\n"}
-              <span className="text-teal-300">EUPayKit</span>
+              <span className="text-teal-300">EuroPayKit</span>
               <span className="text-gray-400">.</span>
               <span className="text-white">configure</span>
               <span className="text-gray-400">(</span>
-              <span className="text-teal-300">EUPayConfig</span>
+              <span className="text-teal-300">EuroPayConfig</span>
               <span className="text-gray-400">(</span>
               {"\n"}
               {"    "}
               <span className="text-white">apiKey</span>
               <span className="text-gray-400">:</span>{" "}
-              <span className="text-orange-300">&quot;eupay_your_api_key&quot;</span>
+              <span className="text-orange-300">&quot;europay_your_api_key&quot;</span>
               <span className="text-gray-400">,</span>
               {"\n"}
               {"    "}

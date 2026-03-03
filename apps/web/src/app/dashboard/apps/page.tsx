@@ -64,7 +64,7 @@ export default async function AppsPage() {
             <Package className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">No apps yet</h3>
             <p className="text-muted-foreground text-center max-w-sm">
-              Register your first iOS app to get an API key for the EUPayKit SDK.
+              Register your first iOS app to get an API key for the EuroPayKit SDK.
             </p>
           </CardContent>
         </Card>

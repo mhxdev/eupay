@@ -86,7 +86,7 @@ export function authErrorResponse(result: AuthError): NextResponse {
  * Returns { raw, hash, prefix } — raw is shown ONCE to the developer and never stored.
  */
 export function generateApiKey(): { raw: string; hash: string; prefix: string } {
-  const raw = `eupay_${randomBytes(32).toString('hex')}`
+  const raw = `europay_${randomBytes(32).toString('hex')}`
   const hash = createHash('sha256').update(raw).digest('hex')
   const prefix = raw.slice(0, 12)
   return { raw, hash, prefix }

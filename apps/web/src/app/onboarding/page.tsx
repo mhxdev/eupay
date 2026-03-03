@@ -241,7 +241,7 @@ export default function OnboardingPage() {
                 <span className="ml-1 text-sm text-gray-400">total per transaction</span>
               </p>
               <ul className="mt-3 space-y-1 text-sm text-gray-400">
-                <li>EUPay 5% + Apple CTC 5% + Stripe ~1.5%</li>
+                <li>EuroPay 5% + Apple CTC 5% + Stripe ~1.5%</li>
                 <li>We handle VAT, refunds, disputes, emails</li>
                 <li>Fully managed Merchant of Record</li>
               </ul>
@@ -264,7 +264,7 @@ export default function OnboardingPage() {
                 <span className="ml-1 text-sm text-gray-400">total per transaction</span>
               </p>
               <ul className="mt-3 space-y-1 text-sm text-gray-400">
-                <li>EUPay 0.5% + Apple CTC 5% + Stripe ~1.5%</li>
+                <li>EuroPay 0.5% + Apple CTC 5% + Stripe ~1.5%</li>
                 <li>Connect your own Stripe account</li>
                 <li>You manage VAT and disputes</li>
               </ul>
@@ -299,7 +299,7 @@ export default function OnboardingPage() {
                 Save this key — it won&apos;t be shown again
               </p>
               <p className="mt-1 text-xs text-yellow-400/70">
-                Store it securely. You&apos;ll need it to configure EUPayKit in your iOS app.
+                Store it securely. You&apos;ll need it to configure EuroPayKit in your iOS app.
               </p>
             </div>
 
@@ -330,13 +330,13 @@ export default function OnboardingPage() {
                 <pre className="text-sm leading-relaxed font-mono">
                   <code>
                     <span className="text-purple-400">import</span>{" "}
-                    <span className="text-white">EUPayKit</span>
+                    <span className="text-white">EuroPayKit</span>
                     {"\n\n"}
-                    <span className="text-teal-300">EUPayKit</span>
+                    <span className="text-teal-300">EuroPayKit</span>
                     <span className="text-gray-400">.</span>
                     <span className="text-white">configure</span>
                     <span className="text-gray-400">(</span>
-                    <span className="text-teal-300">EUPayConfig</span>
+                    <span className="text-teal-300">EuroPayConfig</span>
                     <span className="text-gray-400">(</span>
                     {"\n"}
                     {"  "}

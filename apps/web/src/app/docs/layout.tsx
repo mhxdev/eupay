@@ -33,7 +33,7 @@ export default function DocsLayout({
       {/* Top bar */}
       <header className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center border-b border-white/10 bg-[#0a0f1e]/80 backdrop-blur-md px-6">
         <Link href="/" className="text-lg font-bold text-white">
-          EUPay
+          EuroPay
         </Link>
         <span className="mx-3 text-white/20">/</span>
         <Link href="/docs" className="text-sm text-gray-400 hover:text-white transition-colors">
@@ -44,7 +44,7 @@ export default function DocsLayout({
             Dashboard
           </Link>
           <a
-            href="https://github.com/mhxdev/EUPayKit"
+            href="https://github.com/mhxdev/EuroPayKit"
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-400 hover:text-white transition-colors"

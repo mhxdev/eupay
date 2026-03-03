@@ -66,7 +66,7 @@ export default function PurchaseConfirmation({
         <Container style={container}>
           {/* Header */}
           <Section style={header}>
-            <Text style={logo}>EUPay</Text>
+            <Text style={logo}>EuroPay</Text>
           </Section>
 
           <Section style={content}>
@@ -162,7 +162,7 @@ export default function PurchaseConfirmation({
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              EUPay — EU Alternative Payment Platform
+              EuroPay — EU Alternative Payment Platform
             </Text>
             <Text style={footerText}>
               This email serves as your VAT receipt for tax purposes.

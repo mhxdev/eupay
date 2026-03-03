@@ -5,7 +5,7 @@ export default function DMACompliancePage() {
         DMA Compliance
       </h1>
       <p className="mt-4 text-lg text-gray-400">
-        How EUPay keeps your app compliant with the EU Digital Markets Act so
+        How EuroPay keeps your app compliant with the EU Digital Markets Act so
         you can focus on building, not legal paperwork.
       </p>
 
@@ -63,13 +63,13 @@ export default function DMACompliancePage() {
         </ul>
       </section>
 
-      {/* How EUPay handles it */}
+      {/* How EuroPay handles it */}
       <section className="mt-12">
         <h2 className="text-xl font-semibold text-white">
-          How EUPay Handles It
+          How EuroPay Handles It
         </h2>
         <p className="mt-3 text-sm text-gray-400">
-          EUPay automates every DMA requirement so your integration stays
+          EuroPay automates every DMA requirement so your integration stays
           simple.
         </p>
 
@@ -97,7 +97,7 @@ export default function DMACompliancePage() {
               Apple Transaction Reporting
             </h3>
             <p className="mt-2 text-sm text-gray-400">
-              EUPay automatically reports every transaction to Apple&apos;s
+              EuroPay automatically reports every transaction to Apple&apos;s
               External Purchase Server API. This includes:
             </p>
             <ul className="mt-2 space-y-1.5 text-sm text-gray-400">
@@ -132,7 +132,7 @@ export default function DMACompliancePage() {
             </h3>
             <p className="mt-2 text-sm text-gray-400">
               Apple&apos;s 5% CTF is calculated on each transaction and included in
-              the fee breakdown shown in your dashboard. EUPay tracks this
+              the fee breakdown shown in your dashboard. EuroPay tracks this
               automatically — you don&apos;t need to calculate or remit it
               separately. Apple invoices developers directly based on the
               transaction reports.
@@ -148,7 +148,7 @@ export default function DMACompliancePage() {
         </h2>
         <p className="mt-3 text-sm text-gray-400">
           Your only requirement is to request the External Purchase Link
-          Entitlement from Apple. EUPay handles everything else.
+          Entitlement from Apple. EuroPay handles everything else.
         </p>
 
         <div className="mt-6 space-y-4">
@@ -207,7 +207,7 @@ export default function DMACompliancePage() {
                 That&apos;s it
               </p>
               <p className="mt-1 text-sm text-gray-400">
-                EUPay handles the disclosure UI, transaction reporting, null
+                EuroPay handles the disclosure UI, transaction reporting, null
                 reports, and CTF tracking. You ship your app as normal.
               </p>
             </div>
@@ -220,7 +220,7 @@ export default function DMACompliancePage() {
         <p className="text-sm font-medium text-white">Summary</p>
         <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
           <div>
-            <p className="font-medium text-gray-300">EUPay handles</p>
+            <p className="font-medium text-gray-300">EuroPay handles</p>
             <ul className="mt-1.5 space-y-1 text-gray-400">
               <li>DMA disclosure modal</li>
               <li>Apple transaction reporting</li>

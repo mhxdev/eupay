@@ -80,7 +80,7 @@ export function CreateAppDialog() {
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
-                Use this key in your EUPayKit configuration.
+                Use this key in your EuroPayKit configuration.
               </p>
               <Button onClick={handleClose} className="w-full">
                 Done
@@ -92,7 +92,7 @@ export function CreateAppDialog() {
             <DialogHeader>
               <DialogTitle>Register a New App</DialogTitle>
               <DialogDescription>
-                Register your iOS app to get an API key for the EUPayKit SDK.
+                Register your iOS app to get an API key for the EuroPayKit SDK.
               </DialogDescription>
             </DialogHeader>
             <form action={handleSubmit} className="space-y-4">
