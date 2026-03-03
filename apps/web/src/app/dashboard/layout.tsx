@@ -1,13 +1,16 @@
+import { auth } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/dashboard/ThemeToggle";
 import { MobileNav } from "@/components/dashboard/MobileNav";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { userId } = await auth();
+  const isAdmin = userId === process.env.ADMIN_CLERK_USER_ID;
   return (
     <div className="min-h-screen bg-background">
       <nav className="relative bg-card border-b border-border px-4 py-4 md:px-6">
@@ -54,6 +57,14 @@ export default function DashboardLayout({
               >
                 Regulatory
               </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="text-orange-500 hover:text-orange-400 transition-colors font-medium"
+                >
+                  Admin
+                </Link>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-3">

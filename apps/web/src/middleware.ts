@@ -1,10 +1,10 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
-// Dashboard routes require authentication
-const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/onboarding(.*)'])
+// Dashboard and admin routes require authentication
+const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/onboarding(.*)', '/admin(.*)'])
 
 export default clerkMiddleware(async (auth, req) => {
-  // Protect dashboard routes
+  // Protect dashboard and admin routes
   if (isProtectedRoute(req)) {
     await auth.protect()
   }
