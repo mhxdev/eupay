@@ -1,7 +1,7 @@
 import Foundation
 
-/// A product available for purchase via EUPay.
-public struct EUPayProduct: Codable, Identifiable, Sendable {
+/// A product available for purchase via EuroPay.
+public struct EuroPayProduct: Codable, Identifiable, Sendable {
     public let id: String
     public let name: String
     public let description: String?

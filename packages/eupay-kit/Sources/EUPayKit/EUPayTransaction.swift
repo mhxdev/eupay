@@ -1,7 +1,7 @@
 import Foundation
 
 /// The result of a completed purchase.
-public struct EUPayTransaction: Sendable {
+public struct EuroPayTransaction: Sendable {
     public let id: String
     public let productId: String
     public let status: Status

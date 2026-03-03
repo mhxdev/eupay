@@ -6,16 +6,16 @@ import Foundation
 /// network request fails. Entitlements are stored securely in the Keychain.
 final class EntitlementEngine {
     private let keychain = KeychainHelper()
-    private let cacheKey = "eupay.entitlements"
+    private let cacheKey = "europay.entitlements"
 
-    func cache(entitlements: [EUPayEntitlement]) {
+    func cache(entitlements: [EuroPayEntitlement]) {
         guard let data = try? JSONEncoder().encode(entitlements) else { return }
         keychain.save(data, forKey: cacheKey)
     }
 
-    func cachedEntitlements() -> [EUPayEntitlement] {
+    func cachedEntitlements() -> [EuroPayEntitlement] {
         guard let data = keychain.load(forKey: cacheKey),
-              let entitlements = try? JSONDecoder().decode([EUPayEntitlement].self, from: data) else {
+              let entitlements = try? JSONDecoder().decode([EuroPayEntitlement].self, from: data) else {
             return []
         }
         return entitlements.filter { $0.isActive }
@@ -27,7 +27,7 @@ final class EntitlementEngine {
 }
 
 /// An active product entitlement for the current user.
-public struct EUPayEntitlement: Codable, Identifiable, Sendable {
+public struct EuroPayEntitlement: Codable, Identifiable, Sendable {
     public let id: String
     public let productId: String
     public let appStoreProductId: String?

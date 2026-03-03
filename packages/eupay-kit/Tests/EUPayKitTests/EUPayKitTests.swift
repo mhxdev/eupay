@@ -1,7 +1,7 @@
 import XCTest
-@testable import EUPayKit
+@testable import EuroPayKit
 
-final class EUPayKitTests: XCTestCase {
+final class EuroPayKitTests: XCTestCase {
 
     // MARK: - StoreRegion Tests
 
@@ -29,7 +29,7 @@ final class EUPayKitTests: XCTestCase {
     // MARK: - Entitlement Tests
 
     func testEntitlementIsActiveWhenStatusActive() {
-        let entitlement = EUPayEntitlement(
+        let entitlement = EuroPayEntitlement(
             id: "ent_1",
             productId: "prod_1",
             appStoreProductId: "com.test.pro",
@@ -41,7 +41,7 @@ final class EUPayKitTests: XCTestCase {
     }
 
     func testEntitlementIsNotActiveWhenExpired() {
-        let entitlement = EUPayEntitlement(
+        let entitlement = EuroPayEntitlement(
             id: "ent_1",
             productId: "prod_1",
             appStoreProductId: "com.test.pro",
@@ -53,7 +53,7 @@ final class EUPayKitTests: XCTestCase {
     }
 
     func testEntitlementIsNotActiveWhenPeriodEnded() {
-        let entitlement = EUPayEntitlement(
+        let entitlement = EuroPayEntitlement(
             id: "ent_1",
             productId: "prod_1",
             appStoreProductId: "com.test.pro",
@@ -65,7 +65,7 @@ final class EUPayKitTests: XCTestCase {
     }
 
     func testLifetimeEntitlementIsActiveWithNilPeriodEnd() {
-        let entitlement = EUPayEntitlement(
+        let entitlement = EuroPayEntitlement(
             id: "ent_1",
             productId: "prod_1",
             appStoreProductId: "com.test.pro",
@@ -77,7 +77,7 @@ final class EUPayKitTests: XCTestCase {
     }
 
     func testCancelledEntitlementIsNotActive() {
-        let entitlement = EUPayEntitlement(
+        let entitlement = EuroPayEntitlement(
             id: "ent_1",
             productId: "prod_1",
             appStoreProductId: nil,
@@ -92,7 +92,7 @@ final class EUPayKitTests: XCTestCase {
 
     @MainActor
     func testHandleReturnURLWithSessionId() {
-        let expectation = expectation(forNotification: .EUPayCheckoutReturn, object: nil) { notification in
+        let expectation = expectation(forNotification: .EuroPayCheckoutReturn, object: nil) { notification in
             guard let result = notification.userInfo?["result"] as? CheckoutResult,
                   case .completed(let sessionId) = result else {
                 return false
@@ -100,7 +100,7 @@ final class EUPayKitTests: XCTestCase {
             return sessionId == "cs_test_123"
         }
 
-        let url = URL(string: "eupay-myapp://return?session=cs_test_123")!
+        let url = URL(string: "europay-myapp://return?session=cs_test_123")!
         CheckoutSheet.handleReturnURL(url)
 
         wait(for: [expectation], timeout: 1.0)
@@ -108,7 +108,7 @@ final class EUPayKitTests: XCTestCase {
 
     @MainActor
     func testHandleReturnURLWithCancellation() {
-        let expectation = expectation(forNotification: .EUPayCheckoutReturn, object: nil) { notification in
+        let expectation = expectation(forNotification: .EuroPayCheckoutReturn, object: nil) { notification in
             guard let result = notification.userInfo?["result"] as? CheckoutResult,
                   case .cancelled = result else {
                 return false
@@ -116,7 +116,7 @@ final class EUPayKitTests: XCTestCase {
             return true
         }
 
-        let url = URL(string: "eupay-myapp://return?cancelled=true")!
+        let url = URL(string: "europay-myapp://return?cancelled=true")!
         CheckoutSheet.handleReturnURL(url)
 
         wait(for: [expectation], timeout: 1.0)
@@ -125,7 +125,7 @@ final class EUPayKitTests: XCTestCase {
     // MARK: - Product Tests
 
     func testProductFormattedPrice() {
-        let product = EUPayProduct(
+        let product = EuroPayProduct(
             id: "prod_1",
             name: "Pro Monthly",
             description: "Monthly subscription",
@@ -144,7 +144,7 @@ final class EUPayKitTests: XCTestCase {
     // MARK: - Entitlement Encoding/Decoding
 
     func testEntitlementCodable() throws {
-        let original = EUPayEntitlement(
+        let original = EuroPayEntitlement(
             id: "ent_1",
             productId: "prod_1",
             appStoreProductId: "com.test.pro",
@@ -154,7 +154,7 @@ final class EUPayKitTests: XCTestCase {
         )
 
         let data = try JSONEncoder().encode(original)
-        let decoded = try JSONDecoder().decode(EUPayEntitlement.self, from: data)
+        let decoded = try JSONDecoder().decode(EuroPayEntitlement.self, from: data)
 
         XCTAssertEqual(decoded.id, original.id)
         XCTAssertEqual(decoded.productId, original.productId)
@@ -165,11 +165,11 @@ final class EUPayKitTests: XCTestCase {
     // MARK: - Config Tests
 
     func testConfigDefaultValues() {
-        let config = EUPayConfig(
-            apiKey: "eupay_test",
+        let config = EuroPayConfig(
+            apiKey: "europay_test",
             appId: "app_123",
-            returnScheme: "eupay-test://return"
+            returnScheme: "europay-test://return"
         )
-        XCTAssertEqual(config.baseURL.absoluteString, "https://api.eupay.io")
+        XCTAssertEqual(config.baseURL.absoluteString, "https://api.europay.io")
     }
 }

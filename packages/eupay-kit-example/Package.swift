@@ -2,18 +2,18 @@
 import PackageDescription
 
 let package = Package(
-    name: "EUPayKitExample",
+    name: "EuroPayKitExample",
     platforms: [.iOS(.v16)],
     dependencies: [
-        .package(path: "../eupay-kit")
+        .package(path: "../europay-kit")
     ],
     targets: [
         .executableTarget(
-            name: "EUPayKitExample",
+            name: "EuroPayKitExample",
             dependencies: [
-                .product(name: "EUPayKit", package: "eupay-kit")
+                .product(name: "EuroPayKit", package: "europay-kit")
             ],
-            path: "EUPayKitExample"
+            path: "EuroPayKitExample"
         )
     ]
 )

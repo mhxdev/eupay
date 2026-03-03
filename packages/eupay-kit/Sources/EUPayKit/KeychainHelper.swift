@@ -7,7 +7,7 @@ import Security
 /// and are not accessible to other apps (sandboxed by default).
 final class KeychainHelper {
 
-    private let service = "io.eupay.sdk"
+    private let service = "io.europay.sdk"
 
     func save(_ data: Data, forKey key: String) {
         // Delete any existing item first

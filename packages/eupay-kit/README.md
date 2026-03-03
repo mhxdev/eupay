@@ -1,4 +1,4 @@
-# EUPayKit
+# EuroPayKit
 
 Drop-in iOS SDK for DMA-compliant alternative in-app purchases in the EU. Powered by Stripe.
 
@@ -7,7 +7,7 @@ Drop-in iOS SDK for DMA-compliant alternative in-app purchases in the EU. Powere
 [![SPM Compatible](https://img.shields.io/badge/SPM-Compatible-brightgreen.svg)](https://swift.org/package-manager/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-EUPayKit handles EU region detection, Apple's mandatory DMA disclosure, Stripe Checkout presentation, and entitlement management — so you can offer alternative payments to EU users in under 15 minutes.
+EuroPayKit handles EU region detection, Apple's mandatory DMA disclosure, Stripe Checkout presentation, and entitlement management — so you can offer alternative payments to EU users in under 15 minutes.
 
 ## Features
 
@@ -23,18 +23,18 @@ EUPayKit handles EU region detection, Apple's mandatory DMA disclosure, Stripe C
 - iOS 16.0+
 - Swift 5.9+
 - Xcode 15+
-- An [EUPay](https://eupay.io) account with API key and app ID
+- An [EuroPay](https://europay.io) account with API key and app ID
 
 ## Installation
 
 ### Swift Package Manager
 
-Add EUPayKit to your project in Xcode:
+Add EuroPayKit to your project in Xcode:
 
 1. **File > Add Package Dependencies...**
 2. Enter the repository URL:
    ```
-   https://github.com/eupay-io/eupay-kit
+   https://github.com/europay-io/europay-kit
    ```
 3. Select **Up to Next Major Version** from `1.0.0`
 4. Click **Add Package**
@@ -43,7 +43,7 @@ Or add it to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/eupay-io/eupay-kit", from: "1.0.0")
+    .package(url: "https://github.com/europay-io/europay-kit", from: "1.0.0")
 ]
 ```
 
@@ -61,7 +61,7 @@ Add the required entitlements to your app's `Info.plist`:
 <!-- Required: Associated Domains for checkout return URL -->
 <key>com.apple.developer.associated-domains</key>
 <array>
-    <string>applinks:eupay.io</string>
+    <string>applinks:europay.io</string>
 </array>
 ```
 
@@ -69,23 +69,23 @@ Add the required entitlements to your app's `Info.plist`:
 
 ### Step 2: Register a URL Scheme
 
-In your Xcode project under **Targets > Info > URL Types**, add a custom URL scheme (e.g., `eupay-myapp`). This is used for checkout return callbacks.
+In your Xcode project under **Targets > Info > URL Types**, add a custom URL scheme (e.g., `europay-myapp`). This is used for checkout return callbacks.
 
 ### Step 3: Configure the SDK
 
-Initialize EUPayKit once at app launch:
+Initialize EuroPayKit once at app launch:
 
 ```swift
 import SwiftUI
-import EUPayKit
+import EuroPayKit
 
 @main
 struct MyApp: App {
     init() {
-        EUPayKit.configure(EUPayConfig(
-            apiKey: "eupay_pk_your_api_key",
+        EuroPayKit.configure(EuroPayConfig(
+            apiKey: "europay_pk_your_api_key",
             appId: "app_your_app_id",
-            returnScheme: "eupay-myapp://return",
+            returnScheme: "europay-myapp://return",
             checkoutMode: .inAppSafari
         ))
     }
@@ -105,11 +105,11 @@ struct MyApp: App {
 
 ```swift
 import SwiftUI
-import EUPayKit
+import EuroPayKit
 
 struct StoreView: View {
-    @ObservedObject private var euPay = EUPayKit.shared!
-    @State private var products: [EUPayProduct] = []
+    @ObservedObject private var euPay = EuroPayKit.shared!
+    @State private var products: [EuroPayProduct] = []
     @State private var error: String?
 
     var body: some View {
@@ -144,7 +144,7 @@ struct StoreView: View {
         }
     }
 
-    private func purchase(_ product: EUPayProduct) async {
+    private func purchase(_ product: EuroPayProduct) async {
         do {
             let rootVC = UIApplication.shared
                 .connectedScenes
@@ -162,11 +162,11 @@ struct StoreView: View {
             )
             print("Purchase succeeded: \(transaction.id)")
 
-        } catch EUPayError.regionNotSupported {
+        } catch EuroPayError.regionNotSupported {
             // Non-EU user — fall back to StoreKit
             await purchaseWithStoreKit(product)
 
-        } catch EUPayError.userCancelled {
+        } catch EuroPayError.userCancelled {
             // User dismissed — do nothing
 
         } catch {
@@ -174,7 +174,7 @@ struct StoreView: View {
         }
     }
 
-    private func purchaseWithStoreKit(_ product: EUPayProduct) async {
+    private func purchaseWithStoreKit(_ product: EuroPayProduct) async {
         // Your StoreKit 2 purchase logic here
         guard let appStoreId = product.appStoreProductId else { return }
         // let storeProducts = try? await Product.products(for: [appStoreId])
@@ -188,18 +188,18 @@ struct StoreView: View {
 ```swift
 // Restore entitlements on app launch
 Task {
-    await EUPayKit.shared?.refreshEntitlements(userId: "user_123")
+    await EuroPayKit.shared?.refreshEntitlements(userId: "user_123")
 }
 
 // Check access anywhere in your app
-if EUPayKit.shared?.hasAccess(to: "com.myapp.premium") == true {
+if EuroPayKit.shared?.hasAccess(to: "com.myapp.premium") == true {
     showPremiumContent()
 }
 ```
 
 ## Universal Link Handling
 
-EUPayKit uses URL callbacks to detect when a user returns from Stripe Checkout. Register the handler in your SwiftUI app's `WindowGroup`:
+EuroPayKit uses URL callbacks to detect when a user returns from Stripe Checkout. Register the handler in your SwiftUI app's `WindowGroup`:
 
 ```swift
 @main
@@ -226,7 +226,7 @@ func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>)
 
 ## StoreKit Fallback
 
-EUPayKit only works for EU App Store users (DMA requirement). For non-EU users, the SDK throws `.regionNotSupported` so you can seamlessly fall back to native StoreKit:
+EuroPayKit only works for EU App Store users (DMA requirement). For non-EU users, the SDK throws `.regionNotSupported` so you can seamlessly fall back to native StoreKit:
 
 ```swift
 do {
@@ -235,7 +235,7 @@ do {
         userId: userId,
         presenting: viewController
     )
-} catch EUPayError.regionNotSupported {
+} catch EuroPayError.regionNotSupported {
     // User is not in the EU — use Apple's native StoreKit
     let storeProducts = try await Product.products(for: [product.appStoreProductId!])
     let result = try await storeProducts.first!.purchase()
@@ -248,7 +248,7 @@ You can also check the region proactively before showing any EU-specific UI:
 ```swift
 let isEU = await euPay.isEUUser()
 if isEU {
-    showEUPayPurchaseButton()
+    showEuroPayPurchaseButton()
 } else {
     showStoreKitPurchaseButton()
 }
@@ -267,7 +267,7 @@ try await euPay.openCustomerPortal(
 
 ## API Reference
 
-### EUPayKit
+### EuroPayKit
 
 | Method | Description |
 |--------|-------------|
@@ -279,17 +279,17 @@ try await euPay.openCustomerPortal(
 | `hasAccess(to:)` | Check if user has active access to a product |
 | `openCustomerPortal(userId:presenting:)` | Open Stripe Customer Portal |
 
-### EUPayConfig
+### EuroPayConfig
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `apiKey` | `String` | — | Your EUPay publishable API key |
-| `appId` | `String` | — | Your EUPay app ID |
-| `baseURL` | `URL` | `https://api.eupay.io` | API base URL |
+| `apiKey` | `String` | — | Your EuroPay publishable API key |
+| `appId` | `String` | — | Your EuroPay app ID |
+| `baseURL` | `URL` | `https://api.europay.io` | API base URL |
 | `returnScheme` | `String` | — | URL scheme for checkout callbacks |
 | `checkoutMode` | `CheckoutMode` | `.inAppSafari` | How to present checkout |
 
-### EUPayError
+### EuroPayError
 
 | Case | Description |
 |------|-------------|
@@ -299,11 +299,11 @@ try await euPay.openCustomerPortal(
 | `.networkError(Error)` | Network request failed |
 | `.invalidProduct` | Product not found |
 
-### EUPayProduct
+### EuroPayProduct
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `id` | `String` | EUPay product ID |
+| `id` | `String` | EuroPay product ID |
 | `name` | `String` | Display name |
 | `description` | `String?` | Product description |
 | `productType` | `.oneTime` / `.subscription` | Product type |
@@ -311,7 +311,7 @@ try await euPay.openCustomerPortal(
 | `formattedPrice` | `String` | Localized price string (e.g., "9,99 \u20ac") |
 | `trialDays` | `Int` | Free trial duration |
 
-### EUPayEntitlement
+### EuroPayEntitlement
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -328,7 +328,7 @@ Before submitting your app, ensure you have:
 
 1. **Enrolled in Apple's alternative payments program** at [developer.apple.com](https://developer.apple.com)
 2. **Requested the External Purchase Link entitlement** from Apple
-3. **Added Associated Domains** in your app's capabilities for `applinks:eupay.io`
+3. **Added Associated Domains** in your app's capabilities for `applinks:europay.io`
 4. **Registered a URL scheme** for checkout return callbacks
 5. **Acknowledged the 3% Core Technology Fee** Apple charges on alternative payment transactions
 
@@ -338,7 +338,7 @@ Before submitting your app, ensure you have:
 ┌──────────────────────────────────────┐
 │           Your iOS App               │
 │  ┌────────────────────────────────┐  │
-│  │         EUPayKit SDK           │  │
+│  │         EuroPayKit SDK           │  │
 │  │  - EU detection (StoreKit 2)  │  │
 │  │  - DMA disclosure modal       │  │
 │  │  - SFSafariViewController     │  │
@@ -347,7 +347,7 @@ Before submitting your app, ensure you have:
 └─────────────────┼────────────────────┘
                   │ HTTPS
 ┌─────────────────▼────────────────────┐
-│        EUPay Backend API             │
+│        EuroPay Backend API             │
 │  - Stripe Checkout Sessions          │
 │  - Entitlement management            │
 │  - Webhook processing                │

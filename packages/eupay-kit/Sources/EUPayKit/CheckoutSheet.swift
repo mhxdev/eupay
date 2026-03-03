@@ -40,7 +40,7 @@ public enum CheckoutResult: Sendable {
 ///
 /// ```swift
 /// ContentView()
-///     .eupayCheckoutReturnHandler()
+///     .europayCheckoutReturnHandler()
 /// ```
 @MainActor
 public enum CheckoutSheet {
@@ -51,7 +51,7 @@ public enum CheckoutSheet {
     @discardableResult
     static func open(
         url: URL,
-        mode: EUPayConfig.CheckoutMode,
+        mode: EuroPayConfig.CheckoutMode,
         presenting viewController: UIViewController
     ) async throws -> CheckoutResult {
         switch mode {
@@ -79,7 +79,7 @@ public enum CheckoutSheet {
             // Listen for Universal Link return
             var observer: NSObjectProtocol?
             observer = NotificationCenter.default.addObserver(
-                forName: .EUPayCheckoutReturn,
+                forName: .EuroPayCheckoutReturn,
                 object: nil,
                 queue: .main
             ) { notification in
@@ -124,7 +124,7 @@ public enum CheckoutSheet {
             var observer: NSObjectProtocol?
 
             observer = NotificationCenter.default.addObserver(
-                forName: .EUPayCheckoutReturn,
+                forName: .EuroPayCheckoutReturn,
                 object: nil,
                 queue: .main
             ) { notification in
@@ -174,7 +174,7 @@ public enum CheckoutSheet {
     /// ```
     ///
     /// - Parameter url: The URL received by the app (custom scheme or Universal Link)
-    /// - Returns: `true` if the URL was handled by EUPayKit, `false` otherwise
+    /// - Returns: `true` if the URL was handled by EuroPayKit, `false` otherwise
     @discardableResult
     public static func handleReturnURL(_ url: URL) -> Bool {
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
@@ -193,7 +193,7 @@ public enum CheckoutSheet {
             : .completed(sessionId: sessionId ?? "")
 
         NotificationCenter.default.post(
-            name: .EUPayCheckoutReturn,
+            name: .EuroPayCheckoutReturn,
             object: nil,
             userInfo: ["result": result]
         )
@@ -203,7 +203,7 @@ public enum CheckoutSheet {
 
 // MARK: - SwiftUI View Modifier
 
-/// A SwiftUI view modifier that automatically handles EUPay checkout return URLs.
+/// A SwiftUI view modifier that automatically handles EuroPay checkout return URLs.
 ///
 /// Apply this to your root view instead of manually wiring up `onOpenURL`:
 ///
@@ -213,12 +213,12 @@ public enum CheckoutSheet {
 ///     var body: some Scene {
 ///         WindowGroup {
 ///             ContentView()
-///                 .eupayCheckoutReturnHandler()
+///                 .europayCheckoutReturnHandler()
 ///         }
 ///     }
 /// }
 /// ```
-public struct EUPayCheckoutReturnHandler: ViewModifier {
+public struct EuroPayCheckoutReturnHandler: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .onOpenURL { url in
@@ -228,7 +228,7 @@ public struct EUPayCheckoutReturnHandler: ViewModifier {
 }
 
 extension View {
-    /// Adds EUPay checkout return URL handling to this view.
+    /// Adds EuroPay checkout return URL handling to this view.
     ///
     /// Attach this modifier to your root view in the `WindowGroup` scene.
     /// It automatically calls ``CheckoutSheet/handleReturnURL(_:)`` when the
@@ -236,10 +236,10 @@ extension View {
     ///
     /// ```swift
     /// ContentView()
-    ///     .eupayCheckoutReturnHandler()
+    ///     .europayCheckoutReturnHandler()
     /// ```
-    public func eupayCheckoutReturnHandler() -> some View {
-        modifier(EUPayCheckoutReturnHandler())
+    public func europayCheckoutReturnHandler() -> some View {
+        modifier(EuroPayCheckoutReturnHandler())
     }
 }
 
@@ -247,13 +247,13 @@ extension View {
 
 extension Notification.Name {
     /// Posted when the app receives a checkout return URL.
-    static let EUPayCheckoutReturn = Notification.Name("EUPayCheckoutReturn")
+    static let EuroPayCheckoutReturn = Notification.Name("EuroPayCheckoutReturn")
 }
 
 // MARK: - Safari Dismiss Delegate
 
 private enum AssociatedKeys {
-    static var delegate = "EUPaySafariDelegate"
+    static var delegate = "EuroPaySafariDelegate"
 }
 
 /// Detects when the user taps "Done" / swipes away the SFSafariViewController.

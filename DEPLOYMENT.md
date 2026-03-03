@@ -1,6 +1,6 @@
 # Deployment Guide
 
-Deploy EUPay to Vercel with PostgreSQL, Stripe, Clerk, and Resend.
+Deploy EuroPay to Vercel with PostgreSQL, Stripe, Clerk, and Resend.
 
 ---
 
@@ -22,7 +22,7 @@ Before deploying, you need accounts with:
 
 1. Go to [vercel.com/new](https://vercel.com/new)
 2. Click **Import Git Repository**
-3. Select the `eupay` repository
+3. Select the `europay` repository
 4. **Configure the project:**
    - **Framework Preset:** Next.js (auto-detected)
    - **Root Directory:** Click **Edit** and set to `apps/web`
@@ -71,13 +71,13 @@ Set all variables for the **Production**, **Preview**, and **Development** envir
 | Variable | Value | Notes |
 |----------|-------|-------|
 | `RESEND_API_KEY` | `re_...` | From [Resend > API Keys](https://resend.com/api-keys). |
-| `RESEND_FROM_EMAIL` | `receipts@eupay.io` | Must match a [verified domain](https://resend.com/domains) in Resend. |
+| `RESEND_FROM_EMAIL` | `receipts@europay.io` | Must match a [verified domain](https://resend.com/domains) in Resend. |
 
 ### Application
 
 | Variable | Value | Notes |
 |----------|-------|-------|
-| `NEXT_PUBLIC_APP_URL` | `https://eupay.io` | Your production domain. For Preview, use `https://eupay-git-{branch}.vercel.app` or leave as production URL. |
+| `NEXT_PUBLIC_APP_URL` | `https://europay.io` | Your production domain. For Preview, use `https://europay-git-{branch}.vercel.app` or leave as production URL. |
 | `APP_SECRET` | *(random string)* | Generate with: `openssl rand -base64 32` |
 
 After adding all variables, click **Deploy** (or trigger a redeploy).
@@ -94,7 +94,7 @@ After your first deploy succeeds and you have a live URL:
    ```
    https://your-domain.com/api/v1/webhooks/stripe
    ```
-   Replace `your-domain.com` with your Vercel domain (e.g., `eupay.io` or `eupay.vercel.app`).
+   Replace `your-domain.com` with your Vercel domain (e.g., `europay.io` or `europay.vercel.app`).
 
 4. Under **Events to send**, select these 7 events:
    - `checkout.session.completed`
@@ -174,7 +174,7 @@ When you're ready to accept real payments:
 
 5. **Keep test keys for Preview environment** — in Vercel, you can set different values per environment. Set the Production environment to live keys and keep Preview/Development on test keys.
 
-6. **Recreate your products in live mode** — Stripe test mode and live mode have separate product catalogs. Create your products again in live mode, then update your EUPay dashboard product records.
+6. **Recreate your products in live mode** — Stripe test mode and live mode have separate product catalogs. Create your products again in live mode, then update your EuroPay dashboard product records.
 
 7. **Redeploy** to pick up the new environment variables.
 
@@ -190,12 +190,12 @@ When you're ready to accept real payments:
 
 ## Step 6: Configure Custom Domain (Optional)
 
-1. In Vercel project **Settings > Domains**, add your custom domain (e.g., `eupay.io`)
+1. In Vercel project **Settings > Domains**, add your custom domain (e.g., `europay.io`)
 2. Follow Vercel's DNS instructions to point your domain
 3. Update these after the domain is active:
-   - `NEXT_PUBLIC_APP_URL` → `https://eupay.io`
-   - Stripe webhook endpoint URL → `https://eupay.io/api/v1/webhooks/stripe`
-   - Clerk production domain → add `eupay.io` in Clerk Dashboard
+   - `NEXT_PUBLIC_APP_URL` → `https://europay.io`
+   - Stripe webhook endpoint URL → `https://europay.io/api/v1/webhooks/stripe`
+   - Clerk production domain → add `europay.io` in Clerk Dashboard
 
 ---
 
@@ -203,8 +203,8 @@ When you're ready to accept real payments:
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/markholtmeier/eupay.git
-cd eupay
+git clone https://github.com/markholtmeier/europay.git
+cd europay
 
 # 2. Set up environment
 cp .env.example apps/web/.env.local

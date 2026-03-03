@@ -1,20 +1,20 @@
 import Foundation
 
-/// Configuration for the EUPay SDK.
+/// Configuration for the EuroPay SDK.
 ///
-/// Create this once at app launch and pass it to ``EUPayKit/configure(_:)``.
-public struct EUPayConfig {
-    /// Your EUPay API key (publishable — safe to include in app)
+/// Create this once at app launch and pass it to ``EuroPayKit/configure(_:)``.
+public struct EuroPayConfig {
+    /// Your EuroPay API key (publishable — safe to include in app)
     public let apiKey: String
 
-    /// Your EUPay app ID (from the dashboard)
+    /// Your EuroPay app ID (from the dashboard)
     public let appId: String
 
-    /// Base URL of EUPay backend (defaults to production)
+    /// Base URL of EuroPay backend (defaults to production)
     public let baseURL: URL
 
     /// Your app's Universal Link scheme for checkout callbacks
-    /// e.g. "eupay-myapp://return" — must be registered in Associated Domains
+    /// e.g. "europay-myapp://return" — must be registered in Associated Domains
     public let returnScheme: String
 
     /// Whether to show the checkout in an embedded bottom sheet
@@ -33,7 +33,7 @@ public struct EUPayConfig {
     public init(
         apiKey: String,
         appId: String,
-        baseURL: URL = URL(string: "https://api.eupay.io")!,
+        baseURL: URL = URL(string: "https://api.europay.io")!,
         returnScheme: String,
         checkoutMode: CheckoutMode = .inAppSafari
     ) {

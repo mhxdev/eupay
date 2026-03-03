@@ -1,15 +1,15 @@
 import SwiftUI
-import EUPayKit
+import EuroPayKit
 
 @main
-struct EUPayKitExampleApp: App {
+struct EuroPayKitExampleApp: App {
     init() {
-        // Configure EUPayKit at launch.
-        // Replace with your actual API key and app ID from the EUPay dashboard.
-        EUPayKit.configure(EUPayConfig(
-            apiKey: "eupay_pk_test_example",
+        // Configure EuroPayKit at launch.
+        // Replace with your actual API key and app ID from the EuroPay dashboard.
+        EuroPayKit.configure(EuroPayConfig(
+            apiKey: "europay_pk_test_example",
             appId: "app_example_123",
-            returnScheme: "eupay-example://return",
+            returnScheme: "europay-example://return",
             checkoutMode: .inAppSafari
         ))
     }
@@ -17,7 +17,7 @@ struct EUPayKitExampleApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .eupayCheckoutReturnHandler()
+                .europayCheckoutReturnHandler()
         }
     }
 }

@@ -2,60 +2,60 @@ import Foundation
 import StoreKit
 import UIKit
 
-/// Main entry point for the EUPay iOS SDK.
+/// Main entry point for the EuroPay iOS SDK.
 ///
 /// Configure once at app launch, then use to fetch products, initiate purchases,
 /// and check entitlements.
 ///
 /// ```swift
 /// // 1. Configure at launch
-/// EUPayKit.configure(EUPayConfig(
-///     apiKey: "eupay_your_api_key",
+/// EuroPayKit.configure(EuroPayConfig(
+///     apiKey: "europay_your_api_key",
 ///     appId: "your_app_id",
-///     returnScheme: "eupay-myapp://return",
+///     returnScheme: "europay-myapp://return",
 ///     checkoutMode: .inAppSafari
 /// ))
 ///
 /// // 2. Purchase a product
-/// let transaction = try await EUPayKit.shared!.purchase(
+/// let transaction = try await EuroPayKit.shared!.purchase(
 ///     product: product,
 ///     userId: "user_123",
 ///     presenting: viewController
 /// )
 ///
 /// // 3. Check access
-/// if EUPayKit.shared!.hasAccess(to: "com.myapp.premium") {
+/// if EuroPayKit.shared!.hasAccess(to: "com.myapp.premium") {
 ///     showPremiumContent()
 /// }
 /// ```
 @MainActor
-public final class EUPayKit: ObservableObject {
+public final class EuroPayKit: ObservableObject {
 
     // MARK: - Singleton
 
     /// The shared SDK instance. `nil` until ``configure(_:)`` is called.
-    public static var shared: EUPayKit?
+    public static var shared: EuroPayKit?
 
     /// Initialize the SDK with your configuration. Call once at app launch.
-    public static func configure(_ config: EUPayConfig) {
-        shared = EUPayKit(config: config)
+    public static func configure(_ config: EuroPayConfig) {
+        shared = EuroPayKit(config: config)
     }
 
     // MARK: - Properties
 
-    private let config: EUPayConfig
+    private let config: EuroPayConfig
     private let network: NetworkClient
     private let entitlementEngine: EntitlementEngine
 
     /// Current active entitlements for the user. Updated by ``refreshEntitlements(userId:)``.
-    @Published public private(set) var entitlements: [EUPayEntitlement] = []
+    @Published public private(set) var entitlements: [EuroPayEntitlement] = []
 
     /// Whether a network operation is in progress.
     @Published public private(set) var isLoading = false
 
     // MARK: - Init
 
-    private init(config: EUPayConfig) {
+    private init(config: EuroPayConfig) {
         self.config = config
         self.network = NetworkClient(config: config)
         self.entitlementEngine = EntitlementEngine()
@@ -72,7 +72,7 @@ public final class EUPayKit: ObservableObject {
         return await StoreRegion.isEUStorefront()
     }
 
-    /// Check the user's region and return a result indicating whether EUPay
+    /// Check the user's region and return a result indicating whether EuroPay
     /// can be used, or if the app should fall back to StoreKit.
     ///
     /// Use this before showing any EU-specific purchase UI:
@@ -80,7 +80,7 @@ public final class EUPayKit: ObservableObject {
     /// ```swift
     /// switch await euPay.checkRegion() {
     /// case .supported:
-    ///     showEUPayPurchaseButton()
+    ///     showEuroPayPurchaseButton()
     /// case .notSupported:
     ///     showStoreKitPurchaseButton()
     /// }
@@ -90,8 +90,8 @@ public final class EUPayKit: ObservableObject {
         return isEU ? .supported : .notSupported
     }
 
-    /// Fetch products from the EUPay catalog for this app.
-    public func fetchProducts() async throws -> [EUPayProduct] {
+    /// Fetch products from the EuroPay catalog for this app.
+    public func fetchProducts() async throws -> [EuroPayProduct] {
         let response: ProductsResponse = try await network.get("/products/\(config.appId)")
         return response.products
     }
@@ -111,24 +111,24 @@ public final class EUPayKit: ObservableObject {
     ///   - userEmail: Pre-fill email on checkout (optional)
     ///   - presenting: The view controller to present checkout UI from
     /// - Returns: A transaction confirming the purchase
-    /// - Throws: ``EUPayError/regionNotSupported`` if not in EU,
-    ///           ``EUPayError/userCancelled`` if user dismisses
+    /// - Throws: ``EuroPayError/regionNotSupported`` if not in EU,
+    ///           ``EuroPayError/userCancelled`` if user dismisses
     public func purchase(
-        product: EUPayProduct,
+        product: EuroPayProduct,
         userId: String,
         userEmail: String? = nil,
         presenting: UIViewController
-    ) async throws -> EUPayTransaction {
+    ) async throws -> EuroPayTransaction {
 
         // 1. Check EU region
         guard await isEUUser() else {
-            throw EUPayError.regionNotSupported
+            throw EuroPayError.regionNotSupported
         }
 
         // 2. Show DMA mandatory disclosure
         let userAccepted = await DMADisclosure.present(from: presenting)
         guard userAccepted else {
-            throw EUPayError.userCancelled
+            throw EuroPayError.userCancelled
         }
 
         // 3. Create checkout session
@@ -155,8 +155,8 @@ public final class EUPayKit: ObservableObject {
         )
 
         guard let checkoutURL = URL(string: session.checkoutUrl) else {
-            throw EUPayError.networkError(
-                NSError(domain: "EUPayKit", code: -1, userInfo: [
+            throw EuroPayError.networkError(
+                NSError(domain: "EuroPayKit", code: -1, userInfo: [
                     NSLocalizedDescriptionKey: "Invalid checkout URL"
                 ])
             )
@@ -170,7 +170,7 @@ public final class EUPayKit: ObservableObject {
         )
 
         guard case .completed(let sessionId) = result else {
-            throw EUPayError.userCancelled
+            throw EuroPayError.userCancelled
         }
 
         // 5. Verify entitlement
@@ -207,7 +207,7 @@ public final class EUPayKit: ObservableObject {
     /// Check if the user has active access to a specific product.
     ///
     /// - Parameter appStoreProductId: The App Store product ID to check
-    ///   (as mapped in the EUPay dashboard)
+    ///   (as mapped in the EuroPay dashboard)
     public func hasAccess(to appStoreProductId: String) -> Bool {
         return entitlements.contains {
             $0.appStoreProductId == appStoreProductId && $0.status == .active
@@ -228,8 +228,8 @@ public final class EUPayKit: ObservableObject {
         )
 
         guard let portalURL = URL(string: response.url) else {
-            throw EUPayError.networkError(
-                NSError(domain: "EUPayKit", code: -1, userInfo: [
+            throw EuroPayError.networkError(
+                NSError(domain: "EuroPayKit", code: -1, userInfo: [
                     NSLocalizedDescriptionKey: "Invalid portal URL"
                 ])
             )
@@ -247,8 +247,8 @@ public final class EUPayKit: ObservableObject {
     private func verifyAndGrantEntitlement(
         sessionId: String,
         userId: String,
-        product: EUPayProduct
-    ) async throws -> EUPayTransaction {
+        product: EuroPayProduct
+    ) async throws -> EuroPayTransaction {
         // Poll for entitlement (webhook processing may take a moment)
         for attempt in 1...5 {
             let response: EntitlementsResponse = try await network.get(
@@ -256,7 +256,7 @@ public final class EUPayKit: ObservableObject {
             )
 
             if response.entitlements.contains(where: { $0.productId == product.id }) {
-                return EUPayTransaction(
+                return EuroPayTransaction(
                     id: sessionId,
                     productId: product.id,
                     status: .succeeded,
@@ -269,15 +269,15 @@ public final class EUPayKit: ObservableObject {
             }
         }
 
-        throw EUPayError.verificationTimeout
+        throw EuroPayError.verificationTimeout
     }
 }
 
 // MARK: - Region Check Result
 
-/// The result of a region check via ``EUPayKit/checkRegion()``.
+/// The result of a region check via ``EuroPayKit/checkRegion()``.
 public enum RegionCheckResult: Sendable {
-    /// The user is in an EU App Store region — EUPay purchases are available.
+    /// The user is in an EU App Store region — EuroPay purchases are available.
     case supported
     /// The user is NOT in the EU — fall back to native StoreKit for purchases.
     case notSupported
@@ -285,8 +285,8 @@ public enum RegionCheckResult: Sendable {
 
 // MARK: - Error Types
 
-/// Errors that can occur during EUPay operations.
-public enum EUPayError: LocalizedError {
+/// Errors that can occur during EuroPay operations.
+public enum EuroPayError: LocalizedError {
     /// The user's App Store region is not in the EU.
     /// Your app should fall back to StoreKit for non-EU users.
     case regionNotSupported
@@ -307,7 +307,7 @@ public enum EUPayError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .regionNotSupported:
-            return "EUPay is only available in the EU App Store. This user's storefront is outside the EU."
+            return "EuroPay is only available in the EU App Store. This user's storefront is outside the EU."
         case .userCancelled:
             return "Purchase cancelled"
         case .verificationTimeout:

@@ -1,16 +1,16 @@
-# ``EUPayKit``
+# ``EuroPayKit``
 
 Drop-in iOS SDK for DMA-compliant alternative in-app purchases in the EU.
 
 ## Overview
 
-EUPayKit lets iOS developers offer Stripe-powered in-app purchases to EU App Store users under the Digital Markets Act (DMA). The SDK handles EU region detection, Apple's mandatory disclosure modal, Stripe Checkout presentation, and server-verified entitlement management.
+EuroPayKit lets iOS developers offer Stripe-powered in-app purchases to EU App Store users under the Digital Markets Act (DMA). The SDK handles EU region detection, Apple's mandatory disclosure modal, Stripe Checkout presentation, and server-verified entitlement management.
 
-For non-EU users, the SDK returns a clear ``EUPayError/regionNotSupported`` error so your app can seamlessly fall back to native StoreKit.
+For non-EU users, the SDK returns a clear ``EuroPayError/regionNotSupported`` error so your app can seamlessly fall back to native StoreKit.
 
 ### How It Works
 
-1. Your app calls ``EUPayKit/purchase(product:userId:userEmail:presenting:)``
+1. Your app calls ``EuroPayKit/purchase(product:userId:userEmail:presenting:)``
 2. The SDK verifies the user is in an EU App Store region via StoreKit 2
 3. The mandatory DMA disclosure modal is presented
 4. A Stripe Checkout session opens in SFSafariViewController
@@ -21,7 +21,7 @@ For non-EU users, the SDK returns a clear ``EUPayError/regionNotSupported`` erro
 
 - iOS 16.0+
 - Swift 5.9+
-- An EUPay account with API key and app ID
+- An EuroPay account with API key and app ID
 - Apple's External Purchase Link entitlement
 
 ## Topics
@@ -30,19 +30,19 @@ For non-EU users, the SDK returns a clear ``EUPayError/regionNotSupported`` erro
 
 - <doc:GettingStarted>
 - <doc:DMACompliance>
-- ``EUPayKit``
-- ``EUPayConfig``
+- ``EuroPayKit``
+- ``EuroPayConfig``
 
 ### Products and Purchases
 
-- ``EUPayProduct``
-- ``EUPayTransaction``
+- ``EuroPayProduct``
+- ``EuroPayTransaction``
 - ``CheckoutSheet``
 - ``CheckoutResult``
 
 ### Entitlements
 
-- ``EUPayEntitlement``
+- ``EuroPayEntitlement``
 
 ### Region Detection
 
@@ -50,8 +50,8 @@ For non-EU users, the SDK returns a clear ``EUPayError/regionNotSupported`` erro
 
 ### Errors
 
-- ``EUPayError``
+- ``EuroPayError``
 
 ### UI Components
 
-- ``EUPayCheckoutReturnHandler``
+- ``EuroPayCheckoutReturnHandler``

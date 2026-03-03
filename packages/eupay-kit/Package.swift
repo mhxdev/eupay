@@ -2,21 +2,21 @@
 import PackageDescription
 
 let package = Package(
-    name: "EUPayKit",
+    name: "EuroPayKit",
     platforms: [.iOS(.v16)],
     products: [
-        .library(name: "EUPayKit", targets: ["EUPayKit"])
+        .library(name: "EuroPayKit", targets: ["EuroPayKit"])
     ],
     dependencies: [],  // Zero external dependencies
     targets: [
         .target(
-            name: "EUPayKit",
+            name: "EuroPayKit",
             dependencies: [],
-            path: "Sources/EUPayKit"
+            path: "Sources/EuroPayKit"
         ),
         .testTarget(
-            name: "EUPayKitTests",
-            dependencies: ["EUPayKit"]
+            name: "EuroPayKitTests",
+            dependencies: ["EuroPayKit"]
         )
     ]
 )

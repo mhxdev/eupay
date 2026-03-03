@@ -1,6 +1,6 @@
 import Foundation
 
-/// URLSession-based network client for communicating with the EUPay backend.
+/// URLSession-based network client for communicating with the EuroPay backend.
 ///
 /// Zero external dependencies — uses only Foundation's URLSession.
 /// All requests include the API key as a Bearer token.
@@ -10,7 +10,7 @@ final class NetworkClient: Sendable {
     private let session: URLSession
     private let decoder: JSONDecoder
 
-    init(config: EUPayConfig) {
+    init(config: EuroPayConfig) {
         self.baseURL = config.baseURL
         self.apiKey = config.apiKey
 
@@ -60,8 +60,8 @@ final class NetworkClient: Sendable {
 
     private func validateResponse(_ response: URLResponse, data: Data) throws {
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw EUPayError.networkError(
-                NSError(domain: "EUPayKit", code: -1, userInfo: [
+            throw EuroPayError.networkError(
+                NSError(domain: "EuroPayKit", code: -1, userInfo: [
                     NSLocalizedDescriptionKey: "Invalid response"
                 ])
             )
@@ -75,8 +75,8 @@ final class NetworkClient: Sendable {
             } else {
                 errorMessage = "HTTP \(httpResponse.statusCode)"
             }
-            throw EUPayError.networkError(
-                NSError(domain: "EUPayKit", code: httpResponse.statusCode, userInfo: [
+            throw EuroPayError.networkError(
+                NSError(domain: "EuroPayKit", code: httpResponse.statusCode, userInfo: [
                     NSLocalizedDescriptionKey: errorMessage
                 ])
             )
@@ -86,7 +86,7 @@ final class NetworkClient: Sendable {
 
 // MARK: - Internal Response Types
 
-/// API error response shape from the EUPay backend.
+/// API error response shape from the EuroPay backend.
 private struct APIErrorResponse: Decodable {
     let error: String
     let code: String?
@@ -102,12 +102,12 @@ struct CheckoutSessionResponse: Decodable {
 /// Response from GET /api/v1/entitlements/:userId
 struct EntitlementsResponse: Decodable {
     let userId: String
-    let entitlements: [EUPayEntitlement]
+    let entitlements: [EuroPayEntitlement]
 }
 
 /// Response from GET /api/v1/products/:appId
 struct ProductsResponse: Decodable {
-    let products: [EUPayProduct]
+    let products: [EuroPayProduct]
 }
 
 /// Response from POST /api/v1/portal

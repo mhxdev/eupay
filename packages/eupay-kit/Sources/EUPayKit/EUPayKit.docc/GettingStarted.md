@@ -1,17 +1,17 @@
 # Getting Started
 
-Integrate EUPayKit into your iOS app in under 15 minutes.
+Integrate EuroPayKit into your iOS app in under 15 minutes.
 
 ## Overview
 
-This guide walks you through adding EUPayKit to your project, configuring the SDK, handling checkout return URLs, and making your first purchase.
+This guide walks you through adding EuroPayKit to your project, configuring the SDK, handling checkout return URLs, and making your first purchase.
 
 ## Add the Package
 
-Add EUPayKit via Swift Package Manager in Xcode:
+Add EuroPayKit via Swift Package Manager in Xcode:
 
 1. Go to **File > Add Package Dependencies...**
-2. Enter `https://github.com/eupay-io/eupay-kit`
+2. Enter `https://github.com/europay-io/europay-kit`
 3. Select **Up to Next Major Version** from `1.0.0`
 
 ## Configure Info.plist
@@ -26,27 +26,27 @@ Add the required entitlements:
 <!-- Associated Domains for checkout return -->
 <key>com.apple.developer.associated-domains</key>
 <array>
-    <string>applinks:eupay.io</string>
+    <string>applinks:europay.io</string>
 </array>
 ```
 
-Also register a URL scheme in **Targets > Info > URL Types** (e.g., `eupay-myapp`).
+Also register a URL scheme in **Targets > Info > URL Types** (e.g., `europay-myapp`).
 
 ## Initialize the SDK
 
-Configure EUPayKit once at app launch:
+Configure EuroPayKit once at app launch:
 
 ```swift
 import SwiftUI
-import EUPayKit
+import EuroPayKit
 
 @main
 struct MyApp: App {
     init() {
-        EUPayKit.configure(EUPayConfig(
-            apiKey: "eupay_pk_your_api_key",
+        EuroPayKit.configure(EuroPayConfig(
+            apiKey: "europay_pk_your_api_key",
             appId: "app_your_app_id",
-            returnScheme: "eupay-myapp://return",
+            returnScheme: "europay-myapp://return",
             checkoutMode: .inAppSafari
         ))
     }
@@ -54,18 +54,18 @@ struct MyApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .eupayCheckoutReturnHandler()
+                .europayCheckoutReturnHandler()
         }
     }
 }
 ```
 
-The ``SwiftUI/View/eupayCheckoutReturnHandler()`` modifier handles checkout return URLs automatically via the iOS 16+ scene-based `onOpenURL` lifecycle.
+The ``SwiftUI/View/europayCheckoutReturnHandler()`` modifier handles checkout return URLs automatically via the iOS 16+ scene-based `onOpenURL` lifecycle.
 
 ## Make a Purchase
 
 ```swift
-let euPay = EUPayKit.shared!
+let euPay = EuroPayKit.shared!
 
 do {
     let products = try await euPay.fetchProducts()
@@ -75,9 +75,9 @@ do {
         presenting: viewController
     )
     print("Success: \(transaction.id)")
-} catch EUPayError.regionNotSupported {
+} catch EuroPayError.regionNotSupported {
     // Fall back to StoreKit for non-EU users
-} catch EUPayError.userCancelled {
+} catch EuroPayError.userCancelled {
     // User dismissed — do nothing
 }
 ```
@@ -97,5 +97,5 @@ if euPay.hasAccess(to: "com.myapp.premium") {
 ## Next Steps
 
 - Read <doc:DMACompliance> to understand Apple's legal requirements
-- See ``EUPayKit`` for the full API reference
-- Check ``EUPayError`` for all error cases and recovery strategies
+- See ``EuroPayKit`` for the full API reference
+- Check ``EuroPayError`` for all error cases and recovery strategies

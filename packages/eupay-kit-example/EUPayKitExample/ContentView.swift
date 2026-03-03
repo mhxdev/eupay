@@ -1,9 +1,9 @@
 import SwiftUI
-import EUPayKit
+import EuroPayKit
 
 struct ContentView: View {
-    @ObservedObject private var euPay = EUPayKit.shared!
-    @State private var products: [EUPayProduct] = []
+    @ObservedObject private var euPay = EuroPayKit.shared!
+    @State private var products: [EuroPayProduct] = []
     @State private var regionStatus: RegionCheckResult?
     @State private var alertMessage: String?
     @State private var showAlert = false
@@ -18,10 +18,10 @@ struct ContentView: View {
                 productSection
                 portalSection
             }
-            .navigationTitle("EUPayKit Demo")
+            .navigationTitle("EuroPayKit Demo")
             .task { await setup() }
             .refreshable { await setup() }
-            .alert("EUPayKit", isPresented: $showAlert) {
+            .alert("EuroPayKit", isPresented: $showAlert) {
                 Button("OK") {}
             } message: {
                 Text(alertMessage ?? "")
@@ -167,7 +167,7 @@ struct ContentView: View {
 
     private var regionSubtitle: String {
         switch regionStatus {
-        case .supported: return "EUPay alternative payments available"
+        case .supported: return "EuroPay alternative payments available"
         case .notSupported: return "StoreKit fallback will be used"
         case nil: return "Detecting storefront via StoreKit 2"
         }
@@ -185,7 +185,7 @@ struct ContentView: View {
         }
     }
 
-    private func purchase(_ product: EUPayProduct) async {
+    private func purchase(_ product: EuroPayProduct) async {
         guard let vc = rootViewController else {
             showError("No root view controller available")
             return
@@ -200,11 +200,11 @@ struct ContentView: View {
             purchasedProductId = product.id
             showError("Purchase succeeded!\nTransaction: \(transaction.id)")
 
-        } catch EUPayError.regionNotSupported {
+        } catch EuroPayError.regionNotSupported {
             // Non-EU user — demonstrate StoreKit fallback
             await purchaseWithStoreKit(product)
 
-        } catch EUPayError.userCancelled {
+        } catch EuroPayError.userCancelled {
             // User dismissed — no action needed
             return
 
@@ -213,14 +213,14 @@ struct ContentView: View {
         }
     }
 
-    private func purchaseWithStoreKit(_ product: EUPayProduct) async {
+    private func purchaseWithStoreKit(_ product: EuroPayProduct) async {
         guard let appStoreId = product.appStoreProductId else {
             showError("No App Store product ID mapped for StoreKit fallback")
             return
         }
 
         showError(
-            "Region not supported for EUPay.\n\n"
+            "Region not supported for EuroPay.\n\n"
             + "In production, this would trigger a StoreKit purchase for product: \(appStoreId)"
         )
 
