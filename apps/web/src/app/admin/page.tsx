@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Users, Layers, CreditCard, DollarSign } from "lucide-react"
+import { Users, Layers, CreditCard, DollarSign, Mail } from "lucide-react"
 
 function formatCurrency(cents: number) {
   return new Intl.NumberFormat("de-DE", {
@@ -32,6 +32,7 @@ export default async function AdminPage() {
     recentTransactions,
     topApps,
     failedWebhooks,
+    waitlistCount,
   ] = await Promise.all([
     prisma.app.findMany({ select: { id: true, clerkUserId: true } }),
 
@@ -83,6 +84,9 @@ export default async function AdminPage() {
       orderBy: { createdAt: "desc" },
       take: 20,
     }),
+
+    // Waitlist count
+    prisma.waitlistEntry.count(),
   ])
 
   const totalDevelopers = new Set(allApps.map((a) => a.clerkUserId)).size
@@ -138,7 +142,7 @@ export default async function AdminPage() {
       </div>
 
       {/* ── Stat cards ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <StatCard
           title="Developer Accounts"
           value={totalDevelopers.toString()}
@@ -160,6 +164,11 @@ export default async function AdminPage() {
           value={formatCurrency(europayRevenue)}
           sub="0.5% platform fee"
           icon={<DollarSign className="h-4 w-4" />}
+        />
+        <StatCard
+          title="Waitlist"
+          value={waitlistCount.toLocaleString("de-DE")}
+          icon={<Mail className="h-4 w-4" />}
         />
       </div>
 
