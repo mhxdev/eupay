@@ -11,6 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { Download } from "lucide-react"
 import { ReportDownloads } from "./ReportDownloads"
 
 function formatCurrency(cents: number, currency = "eur") {
@@ -36,6 +38,10 @@ export default async function ReportsPage({
   })
   if (!app || app.clerkUserId !== userId) notFound()
 
+  const waiverCount = await prisma.transaction.count({
+    where: { appId, withdrawalWaivedAt: { not: null } },
+  })
+
   // Last 30 days of transactions for inline summary
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
@@ -60,6 +66,27 @@ export default async function ReportsPage({
       </div>
 
       <ReportDownloads appId={appId} />
+
+      {/* Widerrufsrecht Records */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Widerrufsrecht Records</CardTitle>
+          <CardDescription>
+            Export all withdrawal waiver confirmations. Required for EU consumer law compliance.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            {waiverCount} waiver record{waiverCount !== 1 ? "s" : ""} on file.
+          </p>
+          <Button asChild size="sm" className="w-full">
+            <a href={`/api/dashboard/apps/${appId}/export/widerrufsrecht`} download>
+              <Download className="mr-2 h-4 w-4" />
+              Download Widerrufsrecht CSV
+            </a>
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Transaction summary — last 30 days */}
       <Card>

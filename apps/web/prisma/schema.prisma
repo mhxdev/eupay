@@ -50,6 +50,7 @@ model App {
   apiKeys          ApiKey[]
   customers        Customer[]
   transactions     Transaction[]
+  gdprAuditLogs    GdprAuditLog[]
 
   @@index([clerkUserId])
 }
@@ -263,6 +264,20 @@ enum AppleReportStatus {
   PENDING
   REPORTED
   FAILED
+}
+
+// GDPR audit log
+model GdprAuditLog {
+  id          String   @id @default(cuid())
+  appId       String
+  action      String   // 'EXPORT' | 'DELETE'
+  userId      String   // externalUserId of the affected customer
+  requestedBy String   // clerkUserId of the developer who triggered it
+  ip          String?
+  createdAt   DateTime @default(now())
+  app         App      @relation(fields: [appId], references: [id])
+
+  @@index([appId])
 }
 
 // DMA regulatory updates feed

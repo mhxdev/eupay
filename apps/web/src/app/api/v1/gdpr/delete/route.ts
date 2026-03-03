@@ -48,5 +48,16 @@ export async function DELETE(req: NextRequest) {
     },
   })
 
+  // Log GDPR delete action
+  await prisma.gdprAuditLog.create({
+    data: {
+      appId: auth.appId,
+      action: "DELETE",
+      userId,
+      requestedBy: auth.app.clerkUserId,
+      ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+    },
+  })
+
   return NextResponse.json({ success: true, deletedAt: new Date().toISOString() })
 }

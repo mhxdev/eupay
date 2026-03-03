@@ -25,6 +25,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
   }
 
+  // Log GDPR export action
+  await prisma.gdprAuditLog.create({
+    data: {
+      appId: auth.appId,
+      action: "EXPORT",
+      userId,
+      requestedBy: auth.app.clerkUserId,
+      ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+    },
+  })
+
   // Redact Stripe internal IDs from the export, keep payment amounts and dates
   return NextResponse.json({
     customer: {
