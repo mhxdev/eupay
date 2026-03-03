@@ -30,6 +30,11 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  if (!auth.app.stripeConnectId) {
+    return NextResponse.json({ error: 'No Stripe account connected.' }, { status: 422 })
+  }
+  const connectOpts = { stripeAccount: auth.app.stripeConnectId }
+
   const entitlement = await prisma.entitlement.findUnique({
     where: { id: parsed.data.entitlementId },
     include: { customer: true },
@@ -54,7 +59,7 @@ export async function POST(req: NextRequest) {
   // Pause collection in Stripe — invoices won't be generated while paused
   await stripe.subscriptions.update(entitlement.stripeSubscriptionId, {
     pause_collection: { behavior: 'mark_uncollectible' },
-  })
+  }, connectOpts)
 
   await prisma.entitlement.update({
     where: { id: entitlement.id },

@@ -31,6 +31,11 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  if (!auth.app.stripeConnectId) {
+    return NextResponse.json({ error: 'No Stripe account connected.' }, { status: 422 })
+  }
+  const connectOpts = { stripeAccount: auth.app.stripeConnectId }
+
   const entitlement = await prisma.entitlement.findUnique({
     where: { id: parsed.data.entitlementId },
     include: { customer: true },
@@ -49,7 +54,7 @@ export async function POST(req: NextRequest) {
   if (parsed.data.acceptSaveOffer) {
     const couponId = `eupay_save_20pct_3mo_${auth.appId}`
     try {
-      await stripe.coupons.retrieve(couponId)
+      await stripe.coupons.retrieve(couponId, connectOpts)
     } catch {
       await stripe.coupons.create({
         id: couponId,
@@ -58,13 +63,13 @@ export async function POST(req: NextRequest) {
         duration_in_months: 3,
         name: '20% off for 3 months (save offer)',
         metadata: { appId: auth.appId, type: 'save_offer' },
-      })
+      }, connectOpts)
     }
 
     await stripe.subscriptions.update(entitlement.stripeSubscriptionId, {
       discounts: [{ coupon: couponId }],
       cancel_at_period_end: false,
-    })
+    }, connectOpts)
 
     await prisma.entitlement.update({
       where: { id: entitlement.id },
@@ -82,7 +87,7 @@ export async function POST(req: NextRequest) {
   // Cancel at period end (preferred — gives user remaining time)
   await stripe.subscriptions.update(entitlement.stripeSubscriptionId, {
     cancel_at_period_end: true,
-  })
+  }, connectOpts)
 
   await prisma.entitlement.update({
     where: { id: entitlement.id },
