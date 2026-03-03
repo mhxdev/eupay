@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { href: "/dashboard/settings", label: "Settings" },
   { href: "/dashboard/gdpr", label: "GDPR" },
   { href: "/dashboard/api-explorer", label: "API" },
+  { href: "/dashboard/regulatory", label: "Regulatory" },
 ]
 
 export function MobileNav() {

@@ -48,6 +48,12 @@ export default function DashboardLayout({
               >
                 API
               </Link>
+              <Link
+                href="/dashboard/regulatory"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Regulatory
+              </Link>
             </div>
           </div>
           <div className="flex items-center gap-3">
