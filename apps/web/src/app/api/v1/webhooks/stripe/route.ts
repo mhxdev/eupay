@@ -1,6 +1,9 @@
 // POST /api/v1/webhooks/stripe
 // Receives all Stripe webhook events and updates the database accordingly.
 // This endpoint does NOT use API key auth — it uses Stripe signature verification.
+// To receive events from connected accounts, register this endpoint in
+// Stripe Dashboard > Developers > Webhooks with 'Listen to events on
+// Connected accounts' enabled.
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
@@ -34,6 +37,12 @@ export async function POST(req: Request) {
     })
   }
 
+  // Connected account support: if event.account is set, the event came from
+  // a developer's connected Stripe account — scope all API calls to it.
+  const connectOpts = event.account
+    ? { stripeAccount: event.account }
+    : undefined
+
   // Idempotency: check if already processed
   const existing = await prisma.webhookEvent.findUnique({
     where: { id: event.id },
@@ -55,7 +64,7 @@ export async function POST(req: Request) {
   })
 
   try {
-    await handleStripeEvent(event)
+    await handleStripeEvent(event, connectOpts)
     await prisma.webhookEvent.update({
       where: { id: event.id },
       data: { status: 'PROCESSED', processedAt: new Date() },
@@ -73,10 +82,13 @@ export async function POST(req: Request) {
   return new NextResponse('OK', { status: 200 })
 }
 
-async function handleStripeEvent(event: Stripe.Event) {
+async function handleStripeEvent(
+  event: Stripe.Event,
+  connectOpts: { stripeAccount: string } | undefined
+) {
   switch (event.type) {
     case 'checkout.session.completed':
-      await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session)
+      await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session, connectOpts)
       break
     case 'customer.subscription.updated':
       await handleSubscriptionUpdated(event.data.object as Stripe.Subscription)
@@ -85,16 +97,16 @@ async function handleStripeEvent(event: Stripe.Event) {
       await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
       break
     case 'invoice.payment_succeeded':
-      await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice)
+      await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice, connectOpts)
       break
     case 'invoice.payment_failed':
       await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice)
       break
     case 'charge.refunded':
-      await handleChargeRefunded(event.data.object as Stripe.Charge)
+      await handleChargeRefunded(event.data.object as Stripe.Charge, connectOpts)
       break
     case 'charge.dispute.created':
-      await handleDisputeCreated(event.data.object as Stripe.Dispute)
+      await handleDisputeCreated(event.data.object as Stripe.Dispute, connectOpts)
       break
     default:
       // Unhandled event type — log but don't error
@@ -102,7 +114,10 @@ async function handleStripeEvent(event: Stripe.Event) {
   }
 }
 
-async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+async function handleCheckoutSessionCompleted(
+  session: Stripe.Checkout.Session,
+  connectOpts: { stripeAccount: string } | undefined
+) {
   const metadata = session.metadata
   if (!metadata?.appId || !metadata?.productId || !metadata?.externalUserId) {
     throw new Error('Missing metadata on checkout session')
@@ -158,7 +173,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     const subscriptionId = typeof session.subscription === 'string'
       ? session.subscription
       : session.subscription.id
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId, {}, connectOpts)
     // Get billing period from the first subscription item
     const firstItem = subscription.items.data[0]
     await prisma.entitlement.create({
@@ -196,7 +211,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: customer.stripeCustomerId,
         return_url: process.env.NEXT_PUBLIC_APP_URL ?? 'https://eupay.io',
-      })
+      }, connectOpts)
 
       await sendPurchaseConfirmation({
         to: customer.email,
@@ -296,7 +311,10 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   }
 }
 
-async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
+async function handleInvoicePaymentSucceeded(
+  invoice: Stripe.Invoice,
+  connectOpts: { stripeAccount: string } | undefined
+) {
   // Only handle subscription renewal invoices (not the first invoice from checkout)
   const subDetails = invoice.parent?.subscription_details
   if (!subDetails?.subscription || invoice.billing_reason === 'subscription_create') return
@@ -312,7 +330,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   if (!entitlement) return
 
   // Retrieve updated subscription to get new period dates
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId, {}, connectOpts)
   const firstItem = subscription.items.data[0]
 
   // Update entitlement period
@@ -380,7 +398,10 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   })
 }
 
-async function handleChargeRefunded(charge: Stripe.Charge) {
+async function handleChargeRefunded(
+  charge: Stripe.Charge,
+  connectOpts: { stripeAccount: string } | undefined
+) {
   const paymentIntentId = typeof charge.payment_intent === 'string'
     ? charge.payment_intent
     : charge.payment_intent?.id
@@ -413,7 +434,7 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
       // For subscriptions, cancel in Stripe as well
       if (entitlement.stripeSubscriptionId) {
         try {
-          await stripe.subscriptions.cancel(entitlement.stripeSubscriptionId)
+          await stripe.subscriptions.cancel(entitlement.stripeSubscriptionId, {}, connectOpts)
         } catch {
           // Subscription may already be cancelled
         }
@@ -426,9 +447,12 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
   }
 }
 
-async function handleDisputeCreated(dispute: Stripe.Dispute) {
+async function handleDisputeCreated(
+  dispute: Stripe.Dispute,
+  connectOpts: { stripeAccount: string } | undefined
+) {
   const charge = typeof dispute.charge === 'string'
-    ? await stripe.charges.retrieve(dispute.charge)
+    ? await stripe.charges.retrieve(dispute.charge, connectOpts)
     : dispute.charge
 
   if (!charge) return
