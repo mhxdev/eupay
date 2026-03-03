@@ -45,6 +45,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Product not found' }, { status: 404 })
   }
 
+  // Require Stripe Connect for BYOS
+  if (!auth.app.stripeConnectId) {
+    return NextResponse.json(
+      { error: 'No Stripe account connected. Connect your Stripe account in the dashboard.' },
+      { status: 422 }
+    )
+  }
+
+  const connectOpts: Stripe.RequestOptions = { stripeAccount: auth.app.stripeConnectId }
+
   // Get or create Stripe customer
   let customer = await prisma.customer.findUnique({
     where: { appId_externalUserId: { appId: auth.appId, externalUserId: userId } },
@@ -54,7 +64,7 @@ export async function POST(req: NextRequest) {
     const stripeCustomer = await stripe.customers.create({
       email: userEmail,
       metadata: { appId: auth.appId, externalUserId: userId },
-    })
+    }, connectOpts)
     customer = await prisma.customer.create({
       data: {
         appId: auth.appId,
@@ -120,7 +130,7 @@ export async function POST(req: NextRequest) {
 
   let session: Awaited<ReturnType<typeof stripe.checkout.sessions.create>>
   try {
-    session = await stripe.checkout.sessions.create(sessionParams)
+    session = await stripe.checkout.sessions.create(sessionParams, connectOpts)
   } catch (err) {
     if (err instanceof Stripe.errors.StripeError) {
       return NextResponse.json(

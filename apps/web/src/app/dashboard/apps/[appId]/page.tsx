@@ -10,6 +10,7 @@ import { ModeToggle } from "@/components/dashboard/ModeToggle"
 import { SandboxBanner } from "@/components/dashboard/SandboxBanner"
 import { AppHealthBadge, type HealthData } from "@/components/dashboard/AppHealthBadge"
 import { AppleCredentialsForm } from "@/components/dashboard/AppleCredentialsForm"
+import { StripeConnect } from "@/components/dashboard/StripeConnect"
 import { Package, Users, Webhook, ExternalLink, FileText } from "lucide-react"
 
 export default async function AppDetailPage({
@@ -146,6 +147,10 @@ export default async function AppDetailPage({
               ) : (
                 <Badge className="bg-teal-100 text-teal-800 border-teal-300 hover:bg-teal-100 dark:bg-teal-500/10 dark:text-teal-400 dark:border-teal-500/20">LIVE</Badge>
               )}
+            </div>
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-muted-foreground">Stripe</span>
+              <StripeConnect appId={appId} stripeConnectId={app.stripeConnectId} />
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">DMA Status</span>
