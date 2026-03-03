@@ -76,13 +76,19 @@ export async function createProduct(formData: FormData) {
   const app = await prisma.app.findUnique({ where: { id: appId } })
   if (!app || app.clerkUserId !== userId) throw new Error("Not found")
 
+  if (!app.stripeConnectId) {
+    throw new Error("No Stripe account connected. Connect your Stripe account in the app settings before creating products.")
+  }
+
+  const connectOpts = { stripeAccount: app.stripeConnectId }
+
   // Create Stripe product
   const stripeProduct = await stripe.products.create({
     name,
     description,
     tax_code: "txcd_10103001", // SaaS
     metadata: { appId, eupay: "true" },
-  })
+  }, connectOpts)
 
   // Create Stripe price
   const priceParams: Parameters<typeof stripe.prices.create>[0] = {
@@ -99,7 +105,7 @@ export async function createProduct(formData: FormData) {
     }
   }
 
-  const stripePrice = await stripe.prices.create(priceParams)
+  const stripePrice = await stripe.prices.create(priceParams, connectOpts)
 
   await prisma.product.create({
     data: {
