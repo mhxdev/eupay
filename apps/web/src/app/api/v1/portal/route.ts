@@ -30,6 +30,11 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  if (!auth.app.stripeConnectId) {
+    return NextResponse.json({ error: 'No Stripe account connected.' }, { status: 422 })
+  }
+  const connectOpts = { stripeAccount: auth.app.stripeConnectId }
+
   const customer = await prisma.customer.findUnique({
     where: {
       appId_externalUserId: {
@@ -46,7 +51,7 @@ export async function POST(req: NextRequest) {
   const session = await stripe.billingPortal.sessions.create({
     customer: customer.stripeCustomerId,
     return_url: parsed.data.returnUrl,
-  })
+  }, connectOpts)
 
   return NextResponse.json({ url: session.url })
 }
