@@ -11,6 +11,7 @@ import { SandboxBanner } from "@/components/dashboard/SandboxBanner"
 import { AppHealthBadge, type HealthData } from "@/components/dashboard/AppHealthBadge"
 import { AppleCredentialsForm } from "@/components/dashboard/AppleCredentialsForm"
 import { StripeConnect } from "@/components/dashboard/StripeConnect"
+import { AppRevenueChart } from "@/components/dashboard/AppRevenueChart"
 import { Package, Users, Webhook, ExternalLink, FileText, BarChart3 } from "lucide-react"
 
 export default async function AppDetailPage({
@@ -120,6 +121,8 @@ export default async function AppDetailPage({
           </Link>
         ))}
       </div>
+
+      <AppRevenueChart appId={appId} />
 
       <Separator />
 
