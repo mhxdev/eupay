@@ -1,10 +1,27 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
 // Dashboard and admin routes require authentication
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/onboarding(.*)', '/admin(.*)'])
 
+// Routes allowed through during maintenance mode
+const isMaintenanceAllowed = createRouteMatcher([
+  '/coming-soon',
+  '/api/health',
+  '/_next(.*)',
+  '/favicon.ico',
+])
+
 export default clerkMiddleware(async (auth, req) => {
-  // Protect dashboard and admin routes
+  // Maintenance mode: redirect everything except allowed routes
+  if (process.env.MAINTENANCE_MODE === 'true') {
+    if (!isMaintenanceAllowed(req)) {
+      return NextResponse.redirect(new URL('/coming-soon', req.url))
+    }
+    return NextResponse.next()
+  }
+
+  // Normal mode: protect dashboard and admin routes
   if (isProtectedRoute(req)) {
     await auth.protect()
   }
