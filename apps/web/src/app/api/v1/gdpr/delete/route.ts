@@ -26,11 +26,15 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Customer data already deleted' }, { status: 409 })
   }
 
-  // Delete from Stripe (best effort)
-  try {
-    await stripe.customers.del(customer.stripeCustomerId)
-  } catch {
-    // Stripe deletion may fail if already deleted — continue
+  // Delete from Stripe (best effort) — only if a connected account exists
+  if (auth.app.stripeConnectId) {
+    try {
+      await stripe.customers.del(customer.stripeCustomerId, {
+        stripeAccount: auth.app.stripeConnectId,
+      })
+    } catch {
+      // Stripe deletion may fail if already deleted — continue
+    }
   }
 
   // Anonymise in our DB — retain financial records for tax compliance

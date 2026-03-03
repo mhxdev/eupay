@@ -21,7 +21,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing sessionId parameter' }, { status: 400 })
   }
 
-  const session = await stripe.checkout.sessions.retrieve(parsed.data.sessionId)
+  if (!auth.app.stripeConnectId) {
+    return NextResponse.json({ error: 'No Stripe account connected.' }, { status: 422 })
+  }
+  const connectOpts = { stripeAccount: auth.app.stripeConnectId }
+
+  const session = await stripe.checkout.sessions.retrieve(parsed.data.sessionId, connectOpts)
 
   if (session.metadata?.appId !== auth.appId) {
     return NextResponse.json({ error: 'Session does not belong to this app' }, { status: 403 })
