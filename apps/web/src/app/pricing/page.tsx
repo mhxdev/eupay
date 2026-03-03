@@ -141,10 +141,6 @@ export default function PricingPage() {
             </span>{" "}
             vs Apple IAP.
           </p>
-          <p className="mt-4 text-xs text-gray-500">
-            Managed plan (EuroPay handles VAT, disputes, and compliance) coming
-            soon.
-          </p>
         </div>
 
         {/* Fee breakdown */}

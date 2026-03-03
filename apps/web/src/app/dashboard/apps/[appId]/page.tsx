@@ -11,7 +11,7 @@ import { SandboxBanner } from "@/components/dashboard/SandboxBanner"
 import { AppHealthBadge, type HealthData } from "@/components/dashboard/AppHealthBadge"
 import { AppleCredentialsForm } from "@/components/dashboard/AppleCredentialsForm"
 import { StripeConnect } from "@/components/dashboard/StripeConnect"
-import { Package, Users, Webhook, ExternalLink, FileText } from "lucide-react"
+import { Package, Users, Webhook, ExternalLink, FileText, BarChart3 } from "lucide-react"
 
 export default async function AppDetailPage({
   params,
@@ -64,6 +64,7 @@ export default async function AppDetailPage({
     { href: `/dashboard/apps/${appId}/subscribers`, label: "Subscribers", icon: Users, count: app._count.customers },
     { href: `/dashboard/apps/${appId}/webhooks`, label: "Webhook Logs", icon: Webhook, count: null },
     { href: `/dashboard/apps/${appId}/apple-reporting`, label: "Apple Reporting", icon: FileText, count: null },
+    { href: `/dashboard/apps/${appId}/reports`, label: "Reports", icon: BarChart3, count: null },
   ]
 
   return (
@@ -102,7 +103,7 @@ export default async function AppDetailPage({
         </Card>
       )}
 
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
         {navItems.map((item) => (
           <Link key={item.href} href={item.href}>
             <Card className="hover:border-primary/50 transition-colors cursor-pointer">

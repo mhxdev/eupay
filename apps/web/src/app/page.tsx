@@ -65,7 +65,7 @@ function Hero() {
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-gray-400 md:text-xl">
               EuroPay routes EU in-app purchases through Stripe instead of Apple.
-              Pay 7% instead of 20% — DMA-compliant, fully managed, 15-minute
+              Pay 7% instead of 20% — DMA-compliant, drop-in SDK, 15-minute
               integration.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
@@ -176,17 +176,6 @@ function FeeComparison() {
       highlighted: false,
     },
     {
-      name: "EuroPay Managed",
-      total: "11.5%",
-      fees: [
-        { label: "EuroPay fee", value: "5%" },
-        { label: "Apple CTC", value: "5%" },
-        { label: "Stripe", value: "~1.5%" },
-      ],
-      note: "We handle everything — MoR, VAT, refunds",
-      highlighted: false,
-    },
-    {
       name: "EuroPay BYOS",
       total: "7%",
       fees: [
@@ -208,7 +197,7 @@ function FeeComparison() {
         <p className="mx-auto mt-4 max-w-2xl text-center text-gray-400">
           Compare your total cost per transaction across payment options.
         </p>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <div className="mt-12 grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
           {plans.map((plan) => (
             <div
               key={plan.name}
