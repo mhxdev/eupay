@@ -9,6 +9,47 @@ export default function DMACompliancePage() {
         you can focus on building, not legal paperwork.
       </p>
 
+      {/* Legal Basis */}
+      <section className="mt-8">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+          Legal Basis
+        </h2>
+        <div className="mt-3 flex flex-wrap gap-3 text-sm">
+          <a
+            href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32022R1925"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-3 py-1.5 text-teal-400 hover:bg-white/[0.06] transition-colors"
+          >
+            EUR-Lex: DMA Full Text&nbsp;&#8599;
+          </a>
+          <a
+            href="https://commission.europa.eu/strategy-and-policy/priorities-2019-2024/europe-fit-digital-age/digital-markets-act-ensuring-fair-and-open-digital-markets_en"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-3 py-1.5 text-teal-400 hover:bg-white/[0.06] transition-colors"
+          >
+            European Commission: DMA Overview&nbsp;&#8599;
+          </a>
+          <a
+            href="https://developer.apple.com/support/dma-and-apps-in-the-eu/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-3 py-1.5 text-teal-400 hover:bg-white/[0.06] transition-colors"
+          >
+            Apple: DMA Compliance&nbsp;&#8599;
+          </a>
+          <a
+            href="https://developer.apple.com/documentation/externalpurchaseserverapi"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-3 py-1.5 text-teal-400 hover:bg-white/[0.06] transition-colors"
+          >
+            Apple: External Purchase API Docs&nbsp;&#8599;
+          </a>
+        </div>
+      </section>
+
       {/* What the DMA requires */}
       <section className="mt-12">
         <h2 className="text-xl font-semibold text-white">
@@ -137,6 +178,34 @@ export default function DMACompliancePage() {
               separately. Apple invoices developers directly based on the
               transaction reports.
             </p>
+            <div className="mt-4 rounded-md border border-white/5 bg-white/[0.02] px-4 py-3 space-y-2 text-sm text-gray-400">
+              <p className="font-medium text-gray-300">CTF Details</p>
+              <ul className="space-y-1.5">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 text-teal-400">&#8226;</span>
+                  <strong className="text-white">5% transaction commission</strong> — applied to all alternative-payment transactions for EU users
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 text-teal-400">&#8226;</span>
+                  <strong className="text-white">&#8364;0.50 per first annual install</strong> — charged beyond 1&nbsp;million first annual installs in the EU
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 text-teal-400">&#8226;</span>
+                  Apps earning under &#8364;10&nbsp;million in global revenue and under 1&nbsp;million EU first annual installs pay no per-install fee
+                </li>
+              </ul>
+              <p className="text-xs text-gray-500 pt-1">
+                Source:{" "}
+                <a
+                  href="https://developer.apple.com/support/core-technology-fee/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-teal-400 hover:underline"
+                >
+                  Apple Core Technology Fee
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -161,11 +230,24 @@ export default function DMACompliancePage() {
                 Request the entitlement in App Store Connect
               </p>
               <p className="mt-1 text-sm text-gray-400">
-                Go to your app in App Store Connect and apply for the{" "}
+                Go to your app in{" "}
+                <a
+                  href="https://appstoreconnect.apple.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-teal-400 hover:underline"
+                >
+                  App Store Connect
+                </a>{" "}
+                and apply for the{" "}
                 <strong className="text-white">
                   External Purchase Link Entitlement
                 </strong>
                 . Apple typically approves this within a few business days.
+              </p>
+              <p className="mt-2 text-xs text-gray-500">
+                Note: You must agree to Apple&apos;s Alternative Terms Addendum for
+                Apps in the EU before the entitlement can be granted.
               </p>
             </div>
           </div>
@@ -237,6 +319,77 @@ export default function DMACompliancePage() {
               <li>Nothing else</li>
             </ul>
           </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-white">
+          Frequently Asked Questions
+        </h2>
+        <div className="mt-6 space-y-4">
+          <details className="group rounded-lg border border-white/10 bg-white/[0.03]">
+            <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-white select-none">
+              Does this only apply to EU users?
+            </summary>
+            <p className="px-5 pb-4 text-sm text-gray-400">
+              Yes. The DMA only applies to users located in EU member states.
+              EuroPay&apos;s iOS SDK detects the user&apos;s App Store storefront and only
+              offers alternative checkout for EU storefronts. Users outside the EU
+              continue to use Apple IAP as normal.
+            </p>
+          </details>
+
+          <details className="group rounded-lg border border-white/10 bg-white/[0.03]">
+            <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-white select-none">
+              What happens if I don&apos;t report transactions to Apple?
+            </summary>
+            <p className="px-5 pb-4 text-sm text-gray-400">
+              Apple requires all external purchase transactions to be reported
+              within 24&nbsp;hours. Failure to report may result in Apple revoking
+              your External Purchase Link Entitlement and removing your app from
+              the App Store in the EU. EuroPay reports transactions automatically
+              so you don&apos;t have to worry about this.
+            </p>
+          </details>
+
+          <details className="group rounded-lg border border-white/10 bg-white/[0.03]">
+            <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-white select-none">
+              Do I need my own Stripe account?
+            </summary>
+            <p className="px-5 pb-4 text-sm text-gray-400">
+              Yes. EuroPay uses Stripe Connect to process payments directly into
+              your Stripe account. You&apos;ll connect your Stripe account during
+              onboarding. EuroPay charges a 0.5% platform fee on each transaction,
+              collected automatically via Stripe Connect.
+            </p>
+          </details>
+
+          <details className="group rounded-lg border border-white/10 bg-white/[0.03]">
+            <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-white select-none">
+              How do fees stack up compared to Apple IAP?
+            </summary>
+            <p className="px-5 pb-4 text-sm text-gray-400">
+              With Apple IAP you pay 15–30%. With EuroPay, your total fees are:
+              Stripe processing (~2.9% + &#8364;0.25), Apple&apos;s 5% CTF, and
+              EuroPay&apos;s 0.5% — roughly 8.4% total versus Apple&apos;s 15–30%.
+              For most developers this means significantly more revenue per
+              transaction.
+            </p>
+          </details>
+
+          <details className="group rounded-lg border border-white/10 bg-white/[0.03]">
+            <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-white select-none">
+              How long does the entitlement approval take?
+            </summary>
+            <p className="px-5 pb-4 text-sm text-gray-400">
+              Apple typically reviews and approves External Purchase Link
+              Entitlement requests within 2–5 business days. You must first agree
+              to Apple&apos;s Alternative Terms Addendum for Apps in the EU. Once
+              approved, add the entitlement key to your Info.plist and submit a new
+              build.
+            </p>
+          </details>
         </div>
       </section>
     </article>
