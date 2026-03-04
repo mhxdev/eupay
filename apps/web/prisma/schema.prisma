@@ -19,8 +19,14 @@ model App {
   bundleId         String   @unique   // e.g. "com.acme.myapp"
   clerkUserId      String             // Developer's Clerk user ID
 
+  // Payment provider
+  paymentProvider  PaymentProvider @default(STRIPE)
+
   // Stripe Connect account for payouts to developer
   stripeConnectId  String?  @unique   // e.g. "acct_xxx" (Phase 2)
+
+  // Rootline account (alternative payment provider)
+  rootlineAccountId String?  @unique
 
   // App mode
   mode             String   @default("sandbox")  // "sandbox" | "live"
@@ -231,6 +237,11 @@ model WebhookEvent {
   payload     Json     // Full Stripe event object
   status      WebhookStatus @default(PENDING)
   error       String?
+}
+
+enum PaymentProvider {
+  STRIPE
+  ROOTLINE
 }
 
 enum ProductType {

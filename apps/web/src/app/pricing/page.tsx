@@ -79,16 +79,11 @@ export default function PricingPage() {
         {/* Pricing card */}
         <div className="mx-auto mt-12 max-w-lg">
           <div className="rounded-xl border border-teal-500/50 bg-teal-500/5 ring-1 ring-teal-500/20 p-6 md:p-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold">BYOS</h2>
-                <p className="text-sm text-gray-400">
-                  Bring Your Own Stripe
-                </p>
-              </div>
-              <span className="rounded-full bg-teal-500 px-3 py-0.5 text-xs font-medium text-white">
-                Available now
-              </span>
+            <div>
+              <h2 className="text-xl font-semibold">Pay as you go</h2>
+              <p className="text-sm text-gray-400">
+                Connect your Stripe account
+              </p>
             </div>
 
             <div className="mt-6">
@@ -131,16 +126,12 @@ export default function PricingPage() {
           <p className="text-sm text-gray-400">
             Apple IAP charges{" "}
             <span className="font-medium text-white">30%</span> (15% for small
-            developers). With EuroPay BYOS you pay 1.5% to us + Stripe fees +
-            Apple CTC. A{" "}
-            <span className="font-medium text-white">
-              &euro;10,000/month
-            </span>{" "}
-            app saves up to{" "}
-            <span className="font-medium text-teal-400">
-              &euro;13,000/year
-            </span>{" "}
-            vs Apple IAP.
+            developers). With EuroPay you pay 1.5% to us + Stripe fees +
+            Apple CTF.{" "}
+            <Link href="/" className="font-medium text-teal-400 hover:text-teal-300 transition-colors">
+              Use our calculator
+            </Link>{" "}
+            to see your exact savings.
           </p>
         </div>
 

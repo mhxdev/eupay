@@ -9,7 +9,9 @@ type AuthSuccess = {
     name: string
     bundleId: string
     clerkUserId: string
+    paymentProvider: string
     stripeConnectId: string | null
+    rootlineAccountId: string | null
     dmaEntitlementConfirmed: boolean
     webhookUrl: string | null
     webhookSecret: string | null

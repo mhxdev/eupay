@@ -1,10 +1,11 @@
+// MIGRATED to payment provider abstraction — see src/lib/payment/
 // POST /api/v1/portal
-// Creates a Stripe Customer Portal session for end-user subscription management.
+// Creates a billing portal session for end-user subscription management.
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { authenticateRequest, isAuthError, authErrorResponse } from '@/lib/auth'
+import { getPaymentProvider, ProviderType } from '@/lib/payment'
 
 const portalSchema = z.object({
   userId: z.string().min(1),
@@ -30,10 +31,14 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  if (!auth.app.stripeConnectId) {
-    return NextResponse.json({ error: 'No Stripe account connected.' }, { status: 422 })
+  // Resolve the payment provider from the app's configuration
+  const provider = getPaymentProvider(auth.app.paymentProvider as ProviderType)
+
+  // Determine the merchant's connected account ID for the active provider
+  const providerId = auth.app.stripeConnectId ?? auth.app.rootlineAccountId
+  if (!providerId) {
+    return NextResponse.json({ error: 'No payment account connected.' }, { status: 422 })
   }
-  const connectOpts = { stripeAccount: auth.app.stripeConnectId }
 
   const customer = await prisma.customer.findUnique({
     where: {
@@ -48,10 +53,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
   }
 
-  const session = await stripe.billingPortal.sessions.create({
+  const session = await provider.createBillingPortalSession({
+    merchantCtx: { providerId },
     customer: customer.stripeCustomerId,
-    return_url: parsed.data.returnUrl,
-  }, connectOpts)
+    returnUrl: parsed.data.returnUrl,
+  })
 
   return NextResponse.json({ url: session.url })
 }
