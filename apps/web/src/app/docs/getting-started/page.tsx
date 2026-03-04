@@ -11,6 +11,86 @@ export default function GettingStartedPage() {
         Add alternative payments to your iOS app in 5 minutes.
       </p>
 
+      {/* What this guide covers */}
+      <section className="mt-10">
+        <h2 className="text-xl font-semibold text-white">
+          What this guide covers
+        </h2>
+        <ul className="mt-4 space-y-2 text-sm text-gray-400">
+          <li className="flex items-start gap-3">
+            <span className="mt-0.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-teal-400" />
+            Install the EuroPayKit iOS SDK
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="mt-0.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-teal-400" />
+            Accept your first EU payment via Stripe
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="mt-0.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-teal-400" />
+            Verify the entitlement was granted
+          </li>
+        </ul>
+        <p className="mt-4 text-sm text-gray-400">
+          By the end, you&apos;ll have a working checkout flow for EU users —
+          EuroPay handles the DMA disclosure, Stripe checkout, Apple reporting,
+          and entitlement management automatically.
+        </p>
+      </section>
+
+      {/* How it works */}
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-white">How it works</h2>
+        <div className="mt-6 flex flex-col items-stretch gap-3 md:flex-row md:items-center">
+          <div className="flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-center">
+            <p className="text-sm font-medium text-white">Your App</p>
+            <p className="mt-1 text-xs text-gray-500">
+              Region check
+              <br />
+              + purchase()
+            </p>
+          </div>
+          <div className="shrink-0 py-1 text-center text-sm text-teal-400 md:py-0 md:px-1">
+            <span className="hidden md:inline">&rarr;</span>
+            <span className="inline md:hidden">&darr;</span>
+          </div>
+          <div className="flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-center">
+            <p className="text-sm font-medium text-white">EuroPayKit</p>
+            <p className="mt-1 text-xs text-gray-500">
+              DMA disclosure
+              <br />
+              + Safari checkout
+            </p>
+          </div>
+          <div className="shrink-0 py-1 text-center text-sm text-teal-400 md:py-0 md:px-1">
+            <span className="hidden md:inline">&rarr;</span>
+            <span className="inline md:hidden">&darr;</span>
+          </div>
+          <div className="flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-center">
+            <p className="text-sm font-medium text-white">Stripe Checkout</p>
+            <p className="mt-1 text-xs text-gray-500">
+              User pays
+              <br />
+              via Stripe
+            </p>
+          </div>
+          <div className="shrink-0 py-1 text-center text-sm text-teal-400 md:py-0 md:px-1">
+            <span className="hidden md:inline">&rarr;</span>
+            <span className="inline md:hidden">&darr;</span>
+          </div>
+          <div className="flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-center">
+            <p className="text-sm font-medium text-white">Entitlement Granted</p>
+            <p className="mt-1 text-xs text-gray-500">
+              Automatic
+              <br />
+              via webhook
+            </p>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-gray-400">
+          You only write code for step 1. EuroPay handles steps 2–4.
+        </p>
+      </section>
+
       {/* Prerequisites */}
       <section className="mt-12">
         <h2 className="text-xl font-semibold text-white">Prerequisites</h2>
@@ -239,15 +319,128 @@ export default function GettingStartedPage() {
         </div>
       </section>
 
+      {/* Handle the result */}
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-white">
+          Handle the Result
+        </h2>
+        <p className="mt-3 text-sm text-gray-400">
+          After a successful purchase, verify the entitlement was granted:
+        </p>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm leading-relaxed font-mono">
+            <code>
+              <span className="text-gray-500">// After successful purchase, verify the entitlement</span>
+              {"\n"}
+              <span className="text-purple-400">try await</span>{" "}
+              <span className="text-teal-300">EuroPayKit</span>
+              <span className="text-gray-400">.</span>
+              <span className="text-white">shared</span>
+              <span className="text-gray-400">!.</span>
+              <span className="text-white">refreshEntitlements</span>
+              <span className="text-gray-400">(</span>
+              <span className="text-white">userId</span>
+              <span className="text-gray-400">:</span>{" "}
+              <span className="text-orange-300">&quot;your-user-id&quot;</span>
+              <span className="text-gray-400">)</span>
+              {"\n\n"}
+              <span className="text-purple-400">if</span>{" "}
+              <span className="text-teal-300">EuroPayKit</span>
+              <span className="text-gray-400">.</span>
+              <span className="text-white">shared</span>
+              <span className="text-gray-400">!.</span>
+              <span className="text-white">hasAccess</span>
+              <span className="text-gray-400">(</span>
+              <span className="text-white">to</span>
+              <span className="text-gray-400">:</span>{" "}
+              <span className="text-orange-300">&quot;premium&quot;</span>
+              <span className="text-gray-400">)</span>{" "}
+              <span className="text-gray-400">{"{"}</span>
+              {"\n"}
+              {"  "}
+              <span className="text-gray-500">// Unlock premium content</span>
+              {"\n"}
+              <span className="text-gray-400">{"}"}</span>
+            </code>
+          </pre>
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          EuroPay grants entitlements automatically when the Stripe webhook
+          confirms payment. Call{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">refreshEntitlements</code>{" "}
+          on app launch or after purchase to sync the latest state. Use{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">hasAccess(to:)</code>{" "}
+          to gate premium content.
+        </p>
+      </section>
+
       {/* Test it */}
       <section className="mt-12">
         <h2 className="text-xl font-semibold text-white">Test It</h2>
         <p className="mt-3 text-sm text-gray-400">
           API keys starting with{" "}
           <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">europay_test_</code>{" "}
-          use Stripe test mode automatically. Use card{" "}
-          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">4242 4242 4242 4242</code>{" "}
-          with any future expiry and any CVC.
+          use Stripe test mode automatically. Walk through a full end-to-end test:
+        </p>
+        <div className="mt-6 space-y-4">
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">
+              1
+            </div>
+            <p className="text-sm text-gray-400">
+              In the EuroPay dashboard, make sure your app is in{" "}
+              <strong className="text-white">Sandbox mode</strong> (toggle in
+              app settings).
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">
+              2
+            </div>
+            <p className="text-sm text-gray-400">
+              Trigger a purchase in your app — the SDK will open a Stripe test
+              checkout.
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">
+              3
+            </div>
+            <p className="text-sm text-gray-400">
+              Use card number{" "}
+              <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">4242 4242 4242 4242</code>
+              , any future expiry, any CVC.
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">
+              4
+            </div>
+            <p className="text-sm text-gray-400">
+              After payment, check your{" "}
+              <strong className="text-white">Webhook Log</strong> in the
+              dashboard — you should see a{" "}
+              <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">checkout.session.completed</code>{" "}
+              event with status &ldquo;Processed&rdquo;.
+            </p>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-gray-400">
+          If the webhook shows &ldquo;Processed&rdquo; and your entitlement
+          check returns true, your integration is working end-to-end.
+        </p>
+      </section>
+
+      {/* Timeline callout */}
+      <section className="mt-12 rounded-lg border border-teal-500/20 bg-teal-500/5 px-6 py-5">
+        <p className="text-sm font-medium text-white">
+          How long does this take?
+        </p>
+        <p className="mt-2 text-sm text-gray-400">
+          The code integration takes about an hour. The longest wait is Apple
+          approving your External Purchase Link Entitlement, which typically
+          takes 2–5 business days. You can build and test your integration in
+          Sandbox mode while waiting for approval.
         </p>
       </section>
 
