@@ -9,8 +9,156 @@ export default function DMACompliancePage() {
         you can focus on building, not legal paperwork.
       </p>
 
+      {/* What you need to do — moved to top */}
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-white">
+          What You Need to Do
+        </h2>
+        <p className="mt-3 text-sm text-gray-400">
+          Your only requirement is to request the External Purchase Link
+          Entitlement from Apple. EuroPay handles everything else.
+        </p>
+
+        <div className="mt-6 space-y-4">
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">
+              1
+            </div>
+            <div>
+              <p className="text-sm font-medium text-white">
+                Request the entitlement in App Store Connect
+              </p>
+              <p className="mt-1 text-sm text-gray-400">
+                Go to your app in{" "}
+                <a
+                  href="https://appstoreconnect.apple.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-teal-400 hover:underline"
+                >
+                  App Store Connect
+                </a>{" "}
+                and apply for the{" "}
+                <strong className="text-white">
+                  External Purchase Link Entitlement
+                </strong>
+                . Apple typically approves this within a few business days.
+              </p>
+              <p className="mt-2 text-xs text-gray-500">
+                Note: You must agree to Apple&apos;s Alternative Terms Addendum for
+                Apps in the EU before the entitlement can be granted.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">
+              2
+            </div>
+            <div>
+              <p className="text-sm font-medium text-white">
+                Add the entitlement to your Info.plist
+              </p>
+              <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-3">
+                <pre className="text-sm font-mono">
+                  <code className="text-gray-300">
+                    <span className="text-gray-500">&lt;</span>
+                    <span className="text-teal-300">key</span>
+                    <span className="text-gray-500">&gt;</span>
+                    com.apple.developer.storekit.external-purchase-link
+                    <span className="text-gray-500">&lt;/</span>
+                    <span className="text-teal-300">key</span>
+                    <span className="text-gray-500">&gt;</span>
+                    {"\n"}
+                    <span className="text-gray-500">&lt;</span>
+                    <span className="text-teal-300">true</span>
+                    <span className="text-gray-500">/&gt;</span>
+                  </code>
+                </pre>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">
+              3
+            </div>
+            <div>
+              <p className="text-sm font-medium text-white">
+                Upload your Apple credentials in the EuroPay dashboard
+              </p>
+              <p className="mt-1 text-sm text-gray-400">
+                For automated transaction reporting, EuroPay needs to sign JWT
+                tokens for Apple&apos;s External Purchase Server API on your behalf.
+                In the dashboard under your app&apos;s{" "}
+                <strong className="text-white">Apple Reporting</strong>{" "}
+                settings, provide:
+              </p>
+              <ul className="mt-2 space-y-1.5 text-sm text-gray-400">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 text-teal-400">&#8226;</span>
+                  <strong className="text-white">Key ID</strong> — from the App Store Connect API keys page
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 text-teal-400">&#8226;</span>
+                  <strong className="text-white">Issuer ID</strong> — shown at the top of the API keys page
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 text-teal-400">&#8226;</span>
+                  <strong className="text-white">Private Key (.p8 file)</strong> — the key file you downloaded when creating the API key
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 text-teal-400">&#8226;</span>
+                  <strong className="text-white">Bundle ID</strong> — your app&apos;s bundle identifier (e.g. com.example.myapp)
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">
+              4
+            </div>
+            <div>
+              <p className="text-sm font-medium text-white">
+                That&apos;s it
+              </p>
+              <p className="mt-1 text-sm text-gray-400">
+                EuroPay handles the disclosure UI, transaction reporting, null
+                reports, and CTF tracking. You ship your app as normal.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Summary — right after action steps */}
+      <section className="mt-12 rounded-lg border border-teal-500/20 bg-teal-500/5 px-6 py-5">
+        <p className="text-sm font-medium text-white">Summary</p>
+        <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
+          <div>
+            <p className="font-medium text-gray-300">EuroPay handles</p>
+            <ul className="mt-1.5 space-y-1 text-gray-400">
+              <li>DMA disclosure modal</li>
+              <li>Apple transaction reporting</li>
+              <li>Monthly nil reports</li>
+              <li>CTF tracking &amp; dashboard</li>
+              <li>EU region detection</li>
+            </ul>
+          </div>
+          <div>
+            <p className="font-medium text-gray-300">You handle</p>
+            <ul className="mt-1.5 space-y-1 text-gray-400">
+              <li>Request Apple entitlement</li>
+              <li>Add Info.plist key</li>
+              <li>Upload Apple credentials to dashboard</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
       {/* Legal Basis */}
-      <section className="mt-8">
+      <section className="mt-12">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
           Legal Basis
         </h2>
@@ -166,7 +314,7 @@ export default function DMACompliancePage() {
             </ul>
           </div>
 
-          {/* CTC */}
+          {/* CTF */}
           <div className="rounded-lg border border-white/10 bg-white/[0.03] px-5 py-4">
             <h3 className="text-base font-semibold text-white">
               Core Technology Fee (CTF)
@@ -206,154 +354,6 @@ export default function DMACompliancePage() {
                 </a>
               </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* What you need to do */}
-      <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">
-          What You Need to Do
-        </h2>
-        <p className="mt-3 text-sm text-gray-400">
-          Your only requirement is to request the External Purchase Link
-          Entitlement from Apple. EuroPay handles everything else.
-        </p>
-
-        <div className="mt-6 space-y-4">
-          <div className="flex gap-4">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">
-              1
-            </div>
-            <div>
-              <p className="text-sm font-medium text-white">
-                Request the entitlement in App Store Connect
-              </p>
-              <p className="mt-1 text-sm text-gray-400">
-                Go to your app in{" "}
-                <a
-                  href="https://appstoreconnect.apple.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-teal-400 hover:underline"
-                >
-                  App Store Connect
-                </a>{" "}
-                and apply for the{" "}
-                <strong className="text-white">
-                  External Purchase Link Entitlement
-                </strong>
-                . Apple typically approves this within a few business days.
-              </p>
-              <p className="mt-2 text-xs text-gray-500">
-                Note: You must agree to Apple&apos;s Alternative Terms Addendum for
-                Apps in the EU before the entitlement can be granted.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">
-              2
-            </div>
-            <div>
-              <p className="text-sm font-medium text-white">
-                Add the entitlement to your Info.plist
-              </p>
-              <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-3">
-                <pre className="text-sm font-mono">
-                  <code className="text-gray-300">
-                    <span className="text-gray-500">&lt;</span>
-                    <span className="text-teal-300">key</span>
-                    <span className="text-gray-500">&gt;</span>
-                    com.apple.developer.storekit.external-purchase-link
-                    <span className="text-gray-500">&lt;/</span>
-                    <span className="text-teal-300">key</span>
-                    <span className="text-gray-500">&gt;</span>
-                    {"\n"}
-                    <span className="text-gray-500">&lt;</span>
-                    <span className="text-teal-300">true</span>
-                    <span className="text-gray-500">/&gt;</span>
-                  </code>
-                </pre>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">
-              3
-            </div>
-            <div>
-              <p className="text-sm font-medium text-white">
-                Upload your Apple credentials in the EuroPay dashboard
-              </p>
-              <p className="mt-1 text-sm text-gray-400">
-                For automated transaction reporting, EuroPay needs to sign JWT
-                tokens for Apple&apos;s External Purchase Server API on your behalf.
-                In the dashboard under your app&apos;s{" "}
-                <strong className="text-white">Apple Reporting</strong>{" "}
-                settings, provide:
-              </p>
-              <ul className="mt-2 space-y-1.5 text-sm text-gray-400">
-                <li className="flex items-start gap-2">
-                  <span className="mt-1 text-teal-400">&#8226;</span>
-                  <strong className="text-white">Key ID</strong> — from the App Store Connect API keys page
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1 text-teal-400">&#8226;</span>
-                  <strong className="text-white">Issuer ID</strong> — shown at the top of the API keys page
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1 text-teal-400">&#8226;</span>
-                  <strong className="text-white">Private Key (.p8 file)</strong> — the key file you downloaded when creating the API key
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1 text-teal-400">&#8226;</span>
-                  <strong className="text-white">Bundle ID</strong> — your app&apos;s bundle identifier (e.g. com.example.myapp)
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">
-              4
-            </div>
-            <div>
-              <p className="text-sm font-medium text-white">
-                That&apos;s it
-              </p>
-              <p className="mt-1 text-sm text-gray-400">
-                EuroPay handles the disclosure UI, transaction reporting, null
-                reports, and CTF tracking. You ship your app as normal.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Summary */}
-      <section className="mt-12 rounded-lg border border-teal-500/20 bg-teal-500/5 px-6 py-5">
-        <p className="text-sm font-medium text-white">Summary</p>
-        <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
-          <div>
-            <p className="font-medium text-gray-300">EuroPay handles</p>
-            <ul className="mt-1.5 space-y-1 text-gray-400">
-              <li>DMA disclosure modal</li>
-              <li>Apple transaction reporting</li>
-              <li>Monthly nil reports</li>
-              <li>CTF tracking &amp; dashboard</li>
-              <li>EU region detection</li>
-            </ul>
-          </div>
-          <div>
-            <p className="font-medium text-gray-300">You handle</p>
-            <ul className="mt-1.5 space-y-1 text-gray-400">
-              <li>Request Apple entitlement</li>
-              <li>Add Info.plist key</li>
-              <li>Upload Apple credentials to dashboard</li>
-            </ul>
           </div>
         </div>
       </section>

@@ -7,137 +7,25 @@ export default function IntegrationGuidePage() {
         Integration Guide
       </h1>
       <p className="mt-4 text-lg text-gray-400">
-        A complete walkthrough of integrating EuroPayKit into a SwiftUI app —
-        from setup to production.
+        Everything beyond the{" "}
+        <Link
+          href="/docs/getting-started"
+          className="text-teal-400 underline underline-offset-2 hover:text-teal-300"
+        >
+          quickstart
+        </Link>
+        . Each section is self-contained — skip to what you need.
       </p>
 
-      {/* Full SwiftUI integration */}
+      {/* 1. Handling Errors */}
       <section className="mt-12">
         <h2 className="text-xl font-semibold text-white">
-          Full SwiftUI Integration
+          1. Handling Errors
         </h2>
         <p className="mt-3 text-sm text-gray-400">
-          A typical integration has three parts: configure the SDK at launch,
-          handle checkout return URLs, and present the purchase flow.
-        </p>
-        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
-          <pre className="text-sm leading-relaxed font-mono">
-            <code>
-              <span className="text-purple-400">import</span>{" "}
-              <span className="text-white">SwiftUI</span>
-              {"\n"}
-              <span className="text-purple-400">import</span>{" "}
-              <span className="text-white">EuroPayKit</span>
-              {"\n\n"}
-              <span className="text-purple-400">@main</span>
-              {"\n"}
-              <span className="text-purple-400">struct</span>{" "}
-              <span className="text-teal-300">MyApp</span>
-              <span className="text-gray-400">:</span>{" "}
-              <span className="text-teal-300">App</span>{" "}
-              <span className="text-gray-400">{"{"}</span>
-              {"\n"}
-              {"  "}
-              <span className="text-purple-400">init</span>
-              <span className="text-gray-400">()</span>{" "}
-              <span className="text-gray-400">{"{"}</span>
-              {"\n"}
-              {"    "}
-              <span className="text-teal-300">EuroPayKit</span>
-              <span className="text-gray-400">.</span>
-              <span className="text-white">configure</span>
-              <span className="text-gray-400">(</span>
-              <span className="text-teal-300">EuroPayConfig</span>
-              <span className="text-gray-400">(</span>
-              {"\n"}
-              {"      "}
-              <span className="text-white">apiKey</span>
-              <span className="text-gray-400">:</span>{" "}
-              <span className="text-orange-300">&quot;europay_live_...&quot;</span>
-              <span className="text-gray-400">,</span>
-              {"\n"}
-              {"      "}
-              <span className="text-white">appId</span>
-              <span className="text-gray-400">:</span>{" "}
-              <span className="text-orange-300">&quot;app_...&quot;</span>
-              <span className="text-gray-400">,</span>
-              {"\n"}
-              {"      "}
-              <span className="text-white">returnScheme</span>
-              <span className="text-gray-400">:</span>{" "}
-              <span className="text-orange-300">&quot;europay-myapp://return&quot;</span>
-              <span className="text-gray-400">,</span>
-              {"\n"}
-              {"      "}
-              <span className="text-white">checkoutMode</span>
-              <span className="text-gray-400">:</span>{" "}
-              <span className="text-gray-400">.</span>
-              <span className="text-teal-300">inAppSafari</span>
-              {"\n"}
-              {"    "}
-              <span className="text-gray-400">))</span>
-              {"\n"}
-              {"  "}
-              <span className="text-gray-400">{"}"}</span>
-              {"\n\n"}
-              {"  "}
-              <span className="text-purple-400">var</span>{" "}
-              <span className="text-white">body</span>
-              <span className="text-gray-400">:</span>{" "}
-              <span className="text-purple-400">some</span>{" "}
-              <span className="text-teal-300">Scene</span>{" "}
-              <span className="text-gray-400">{"{"}</span>
-              {"\n"}
-              {"    "}
-              <span className="text-teal-300">WindowGroup</span>{" "}
-              <span className="text-gray-400">{"{"}</span>
-              {"\n"}
-              {"      "}
-              <span className="text-teal-300">PaywallView</span>
-              <span className="text-gray-400">()</span>
-              {"\n"}
-              {"        "}
-              <span className="text-gray-400">.</span>
-              <span className="text-white">onOpenURL</span>{" "}
-              <span className="text-gray-400">{"{"}</span>{" "}
-              <span className="text-white">url</span>{" "}
-              <span className="text-purple-400">in</span>
-              {"\n"}
-              {"          "}
-              <span className="text-teal-300">EuroPayCheckoutSheet</span>
-              <span className="text-gray-400">.</span>
-              <span className="text-white">handleReturnURL</span>
-              <span className="text-gray-400">(</span>
-              <span className="text-white">url</span>
-              <span className="text-gray-400">)</span>
-              {"\n"}
-              {"        "}
-              <span className="text-gray-400">{"}"}</span>
-              {"\n"}
-              {"        "}
-              <span className="text-gray-400">.</span>
-              <span className="text-white">euroPayCheckoutReturnHandler</span>
-              <span className="text-gray-400">()</span>
-              {"\n"}
-              {"    "}
-              <span className="text-gray-400">{"}"}</span>
-              {"\n"}
-              {"  "}
-              <span className="text-gray-400">{"}"}</span>
-              {"\n"}
-              <span className="text-gray-400">{"}"}</span>
-            </code>
-          </pre>
-        </div>
-      </section>
-
-      {/* Handling purchase results */}
-      <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">
-          Handling Purchase Results
-        </h2>
-        <p className="mt-3 text-sm text-gray-400">
-          The <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">purchase()</code> method returns an <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">EuroPayTransaction</code> on success or throws an <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">EuroPayError</code> on failure:
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">purchase()</code>{" "}
+          returns an <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">EuroPayTransaction</code>{" "}
+          on success or throws an <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">EuroPayError</code>:
         </p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
           <pre className="text-sm leading-relaxed font-mono">
@@ -156,30 +44,19 @@ export default function IntegrationGuidePage() {
               <span className="text-gray-400">!.</span>
               <span className="text-white">purchase</span>
               <span className="text-gray-400">(</span>
-              {"\n"}
-              {"    "}
               <span className="text-white">product</span>
               <span className="text-gray-400">:</span>{" "}
-              <span className="text-white">selectedProduct</span>
-              <span className="text-gray-400">,</span>
-              {"\n"}
-              {"    "}
+              <span className="text-white">product</span>
+              <span className="text-gray-400">,</span>{" "}
               <span className="text-white">userId</span>
               <span className="text-gray-400">:</span>{" "}
               <span className="text-orange-300">&quot;user_123&quot;</span>
-              <span className="text-gray-400">,</span>
-              {"\n"}
-              {"    "}
+              <span className="text-gray-400">,</span>{" "}
               <span className="text-white">presenting</span>
               <span className="text-gray-400">:</span>{" "}
-              <span className="text-white">viewController</span>
-              {"\n"}
-              {"  "}
+              <span className="text-white">vc</span>
               <span className="text-gray-400">)</span>
               {"\n\n"}
-              {"  "}
-              <span className="text-gray-500">// Success — unlock content</span>
-              {"\n"}
               {"  "}
               <span className="text-purple-400">switch</span>{" "}
               <span className="text-white">tx</span>
@@ -191,9 +68,7 @@ export default function IntegrationGuidePage() {
               <span className="text-purple-400">case</span>{" "}
               <span className="text-gray-400">.</span>
               <span className="text-teal-300">succeeded</span>
-              <span className="text-gray-400">:</span>
-              {"\n"}
-              {"    "}
+              <span className="text-gray-400">:</span>{" "}
               <span className="text-white">unlockPremium</span>
               <span className="text-gray-400">()</span>
               {"\n"}
@@ -201,9 +76,7 @@ export default function IntegrationGuidePage() {
               <span className="text-purple-400">case</span>{" "}
               <span className="text-gray-400">.</span>
               <span className="text-teal-300">pending</span>
-              <span className="text-gray-400">:</span>
-              {"\n"}
-              {"    "}
+              <span className="text-gray-400">:</span>{"  "}
               <span className="text-white">showPendingMessage</span>
               <span className="text-gray-400">()</span>
               {"\n"}
@@ -219,7 +92,7 @@ export default function IntegrationGuidePage() {
               {"\n"}
               {"  "}
               <span className="text-gray-500">// User dismissed — do nothing</span>
-              {"\n\n"}
+              {"\n"}
               <span className="text-gray-400">{"}"}</span>{" "}
               <span className="text-purple-400">catch</span>{" "}
               <span className="text-teal-300">EuroPayError</span>
@@ -228,12 +101,9 @@ export default function IntegrationGuidePage() {
               <span className="text-gray-400">{"{"}</span>
               {"\n"}
               {"  "}
-              <span className="text-gray-500">// Not in EU — use StoreKit</span>
-              {"\n"}
-              {"  "}
               <span className="text-white">fallbackToStoreKit</span>
               <span className="text-gray-400">()</span>
-              {"\n\n"}
+              {"\n"}
               <span className="text-gray-400">{"}"}</span>{" "}
               <span className="text-purple-400">catch</span>{" "}
               <span className="text-teal-300">EuroPayError</span>
@@ -242,12 +112,12 @@ export default function IntegrationGuidePage() {
               <span className="text-gray-400">{"{"}</span>
               {"\n"}
               {"  "}
-              <span className="text-gray-500">// Payment may have succeeded</span>
+              <span className="text-gray-500">// Payment may have succeeded — retry entitlement check</span>
               {"\n"}
               {"  "}
               <span className="text-white">showRetryMessage</span>
               <span className="text-gray-400">()</span>
-              {"\n\n"}
+              {"\n"}
               <span className="text-gray-400">{"}"}</span>{" "}
               <span className="text-purple-400">catch</span>{" "}
               <span className="text-gray-400">{"{"}</span>
@@ -277,8 +147,7 @@ export default function IntegrationGuidePage() {
             </li>
             <li>
               <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">.verificationTimeout</code>{" "}
-              — payment may have succeeded but entitlement wasn&apos;t confirmed in
-              time
+              — payment may have succeeded but entitlement wasn&apos;t confirmed in time
             </li>
             <li>
               <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">.networkError(Error)</code>{" "}
@@ -292,10 +161,10 @@ export default function IntegrationGuidePage() {
         </div>
       </section>
 
-      {/* Entitlement verification */}
+      {/* 2. Checking Entitlements */}
       <section className="mt-12">
         <h2 className="text-xl font-semibold text-white">
-          Entitlement Verification
+          2. Checking Entitlements
         </h2>
         <p className="mt-3 text-sm text-gray-400">
           After a successful purchase, entitlements are cached locally in the
@@ -346,77 +215,273 @@ export default function IntegrationGuidePage() {
         </p>
       </section>
 
-      {/* StoreKit fallback */}
+      {/* 3. Subscription Management */}
       <section className="mt-12">
         <h2 className="text-xl font-semibold text-white">
-          StoreKit Fallback for Non-EU Users
+          3. Subscription Management
         </h2>
         <p className="mt-3 text-sm text-gray-400">
-          EuroPay only works for users in EU App Store regions. Use{" "}
-          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">checkRegion()</code>{" "}
-          to decide which payment flow to show:
+          Let subscribers manage their plan through Stripe&apos;s Customer Portal:
         </p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
           <pre className="text-sm leading-relaxed font-mono">
             <code>
-              <span className="text-purple-400">switch await</span>{" "}
+              <span className="text-purple-400">try await</span>{" "}
               <span className="text-teal-300">EuroPayKit</span>
               <span className="text-gray-400">.</span>
               <span className="text-white">shared</span>
               <span className="text-gray-400">!.</span>
-              <span className="text-white">checkRegion</span>
-              <span className="text-gray-400">()</span>{" "}
+              <span className="text-white">openCustomerPortal</span>
+              <span className="text-gray-400">(</span>
+              {"\n"}
+              {"  "}
+              <span className="text-white">userId</span>
+              <span className="text-gray-400">:</span>{" "}
+              <span className="text-orange-300">&quot;user_123&quot;</span>
+              <span className="text-gray-400">,</span>
+              {"\n"}
+              {"  "}
+              <span className="text-white">presenting</span>
+              <span className="text-gray-400">:</span>{" "}
+              <span className="text-white">viewController</span>
+              {"\n"}
+              <span className="text-gray-400">)</span>
+            </code>
+          </pre>
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          The portal lets users update payment methods, view invoices, and cancel
+          or change their subscription. No additional UI needed on your side.
+        </p>
+      </section>
+
+      {/* 4. SwiftUI Integration */}
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-white">
+          4. SwiftUI Integration
+        </h2>
+        <p className="mt-3 text-sm text-gray-400">
+          A complete paywall view with product loading and purchase:
+        </p>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm leading-relaxed font-mono">
+            <code>
+              <span className="text-purple-400">struct</span>{" "}
+              <span className="text-teal-300">PaywallView</span>
+              <span className="text-gray-400">:</span>{" "}
+              <span className="text-teal-300">View</span>{" "}
               <span className="text-gray-400">{"{"}</span>
               {"\n"}
-              <span className="text-purple-400">case</span>{" "}
+              {"  "}
+              <span className="text-purple-400">@State</span>{" "}
+              <span className="text-purple-400">private var</span>{" "}
+              <span className="text-white">products</span>
+              <span className="text-gray-400">:</span>{" "}
+              <span className="text-gray-400">[</span>
+              <span className="text-teal-300">EuroPayProduct</span>
+              <span className="text-gray-400">]</span>{" "}
+              <span className="text-gray-400">=</span>{" "}
+              <span className="text-gray-400">[]</span>
+              {"\n\n"}
+              {"  "}
+              <span className="text-purple-400">var</span>{" "}
+              <span className="text-white">body</span>
+              <span className="text-gray-400">:</span>{" "}
+              <span className="text-purple-400">some</span>{" "}
+              <span className="text-teal-300">View</span>{" "}
+              <span className="text-gray-400">{"{"}</span>
+              {"\n"}
+              {"    "}
+              <span className="text-teal-300">ForEach</span>
+              <span className="text-gray-400">(</span>
+              <span className="text-white">products</span>
+              <span className="text-gray-400">)</span>{" "}
+              <span className="text-gray-400">{"{"}</span>{" "}
+              <span className="text-white">product</span>{" "}
+              <span className="text-purple-400">in</span>
+              {"\n"}
+              {"      "}
+              <span className="text-teal-300">Button</span>
+              <span className="text-gray-400">(</span>
+              <span className="text-white">product</span>
               <span className="text-gray-400">.</span>
-              <span className="text-teal-300">supported</span>
-              <span className="text-gray-400">:</span>
+              <span className="text-white">name</span>
+              <span className="text-gray-400">)</span>{" "}
+              <span className="text-gray-400">{"{"}</span>
               {"\n"}
-              {"  "}
-              <span className="text-gray-500">// EU user — show EuroPay checkout</span>
+              {"        "}
+              <span className="text-teal-300">Task</span>{" "}
+              <span className="text-gray-400">{"{"}</span>{" "}
+              <span className="text-purple-400">await</span>{" "}
+              <span className="text-white">buy</span>
+              <span className="text-gray-400">(</span>
+              <span className="text-white">product</span>
+              <span className="text-gray-400">)</span>{" "}
+              <span className="text-gray-400">{"}"}</span>
               {"\n"}
-              {"  "}
-              <span className="text-white">showEuroPayButton</span>
-              <span className="text-gray-400">()</span>
+              {"      "}
+              <span className="text-gray-400">{"}"}</span>
               {"\n"}
-              <span className="text-purple-400">case</span>{" "}
+              {"    "}
+              <span className="text-gray-400">{"}"}</span>
+              {"\n"}
+              {"    "}
               <span className="text-gray-400">.</span>
-              <span className="text-teal-300">notSupported</span>
-              <span className="text-gray-400">:</span>
+              <span className="text-white">task</span>{" "}
+              <span className="text-gray-400">{"{"}</span>
+              {"\n"}
+              {"      "}
+              <span className="text-white">products</span>{" "}
+              <span className="text-gray-400">=</span>{" "}
+              <span className="text-gray-400">(</span>
+              <span className="text-purple-400">try?</span>{" "}
+              <span className="text-purple-400">await</span>{" "}
+              <span className="text-teal-300">EuroPayKit</span>
+              <span className="text-gray-400">.</span>
+              <span className="text-white">shared</span>
+              <span className="text-gray-400">!.</span>
+              <span className="text-white">fetchProducts</span>
+              <span className="text-gray-400">())</span>{" "}
+              <span className="text-gray-400">??</span>{" "}
+              <span className="text-gray-400">[]</span>
+              {"\n"}
+              {"    "}
+              <span className="text-gray-400">{"}"}</span>
               {"\n"}
               {"  "}
-              <span className="text-gray-500">// Non-EU — use native StoreKit</span>
+              <span className="text-gray-400">{"}"}</span>
+              {"\n\n"}
+              {"  "}
+              <span className="text-purple-400">private func</span>{" "}
+              <span className="text-white">buy</span>
+              <span className="text-gray-400">(</span>
+              <span className="text-purple-400">_</span>{" "}
+              <span className="text-white">product</span>
+              <span className="text-gray-400">:</span>{" "}
+              <span className="text-teal-300">EuroPayProduct</span>
+              <span className="text-gray-400">)</span>{" "}
+              <span className="text-purple-400">async</span>{" "}
+              <span className="text-gray-400">{"{"}</span>
+              {"\n"}
+              {"    "}
+              <span className="text-purple-400">guard let</span>{" "}
+              <span className="text-white">vc</span>{" "}
+              <span className="text-gray-400">=</span>{" "}
+              <span className="text-teal-300">UIApplication</span>
+              <span className="text-gray-400">.</span>
+              <span className="text-white">shared</span>
+              <span className="text-gray-400">.</span>
+              <span className="text-white">connectedScenes</span>
+              {"\n"}
+              {"      "}
+              <span className="text-gray-400">.</span>
+              <span className="text-white">compactMap</span>
+              <span className="text-gray-400">({"{"}</span>{" "}
+              <span className="text-white">$0</span>{" "}
+              <span className="text-purple-400">as?</span>{" "}
+              <span className="text-teal-300">UIWindowScene</span>{" "}
+              <span className="text-gray-400">{"}"})</span>
+              {"\n"}
+              {"      "}
+              <span className="text-gray-400">.</span>
+              <span className="text-white">first</span>
+              <span className="text-gray-400">?.</span>
+              <span className="text-white">windows</span>
+              <span className="text-gray-400">.</span>
+              <span className="text-white">first</span>
+              <span className="text-gray-400">?.</span>
+              <span className="text-white">rootViewController</span>
+              {"\n"}
+              {"    "}
+              <span className="text-purple-400">else</span>{" "}
+              <span className="text-gray-400">{"{"}</span>{" "}
+              <span className="text-purple-400">return</span>{" "}
+              <span className="text-gray-400">{"}"}</span>
+              {"\n\n"}
+              {"    "}
+              <span className="text-purple-400">do</span>{" "}
+              <span className="text-gray-400">{"{"}</span>
+              {"\n"}
+              {"      "}
+              <span className="text-purple-400">let</span>{" "}
+              <span className="text-white">tx</span>{" "}
+              <span className="text-gray-400">=</span>{" "}
+              <span className="text-purple-400">try await</span>{" "}
+              <span className="text-teal-300">EuroPayKit</span>
+              <span className="text-gray-400">.</span>
+              <span className="text-white">shared</span>
+              <span className="text-gray-400">!.</span>
+              <span className="text-white">purchase</span>
+              <span className="text-gray-400">(</span>
+              <span className="text-white">product</span>
+              <span className="text-gray-400">:</span>{" "}
+              <span className="text-white">product</span>
+              <span className="text-gray-400">,</span>{" "}
+              <span className="text-white">userId</span>
+              <span className="text-gray-400">:</span>{" "}
+              <span className="text-orange-300">&quot;user_123&quot;</span>
+              <span className="text-gray-400">,</span>{" "}
+              <span className="text-white">presenting</span>
+              <span className="text-gray-400">:</span>{" "}
+              <span className="text-white">vc</span>
+              <span className="text-gray-400">)</span>
+              {"\n"}
+              {"      "}
+              <span className="text-purple-400">if</span>{" "}
+              <span className="text-white">tx</span>
+              <span className="text-gray-400">.</span>
+              <span className="text-white">status</span>{" "}
+              <span className="text-gray-400">==</span>{" "}
+              <span className="text-gray-400">.</span>
+              <span className="text-teal-300">succeeded</span>{" "}
+              <span className="text-gray-400">{"{"}</span>{" "}
+              <span className="text-white">unlockPremium</span>
+              <span className="text-gray-400">()</span>{" "}
+              <span className="text-gray-400">{"}"}</span>
+              {"\n"}
+              {"    "}
+              <span className="text-gray-400">{"}"}</span>{" "}
+              <span className="text-purple-400">catch</span>{" "}
+              <span className="text-teal-300">EuroPayError</span>
+              <span className="text-gray-400">.</span>
+              <span className="text-white">userCancelled</span>{" "}
+              <span className="text-gray-400">{"{"}</span>
+              {"\n"}
+              {"      "}
+              <span className="text-gray-500">// User dismissed</span>
+              {"\n"}
+              {"    "}
+              <span className="text-gray-400">{"}"}</span>{" "}
+              <span className="text-purple-400">catch</span>{" "}
+              <span className="text-gray-400">{"{"}</span>
+              {"\n"}
+              {"      "}
+              <span className="text-white">print</span>
+              <span className="text-gray-400">(</span>
+              <span className="text-white">error</span>
+              <span className="text-gray-400">)</span>
+              {"\n"}
+              {"    "}
+              <span className="text-gray-400">{"}"}</span>
               {"\n"}
               {"  "}
-              <span className="text-white">showStoreKitButton</span>
-              <span className="text-gray-400">()</span>
+              <span className="text-gray-400">{"}"}</span>
               {"\n"}
               <span className="text-gray-400">{"}"}</span>
             </code>
           </pre>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
-          Region detection uses StoreKit 2&apos;s <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">Storefront.current</code> — it checks the user&apos;s actual App Store country, not IP geolocation.
-        </p>
       </section>
 
-      {/* Checkout return handling */}
+      {/* 5. Checkout Return Handling */}
       <section className="mt-12">
         <h2 className="text-xl font-semibold text-white">
-          Checkout Return Handling
+          5. Checkout Return Handling
         </h2>
         <p className="mt-3 text-sm text-gray-400">
-          After the user completes payment in Stripe Checkout, the browser
-          redirects back to your app using the{" "}
-          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">returnScheme</code>{" "}
-          you configured. You must handle this URL for the SDK to verify the
-          payment and grant entitlements.
-        </p>
-        <p className="mt-3 text-sm text-gray-400">
-          The simplest approach is the{" "}
-          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">.euroPayCheckoutReturnHandler()</code>{" "}
-          modifier, which handles everything automatically:
+          After Stripe Checkout completes, the browser redirects back to your app via
+          the <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">returnScheme</code>{" "}
+          you configured. The simplest approach:
         </p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
           <pre className="text-sm leading-relaxed font-mono">
@@ -432,9 +497,7 @@ export default function IntegrationGuidePage() {
           </pre>
         </div>
         <p className="mt-3 text-sm text-gray-400">
-          If you need manual control (e.g. to log or route differently), use{" "}
-          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">.onOpenURL</code>{" "}
-          instead:
+          For manual control (e.g. logging), use <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">.onOpenURL</code> instead:
         </p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
           <pre className="text-sm leading-relaxed font-mono">
@@ -463,25 +526,150 @@ export default function IntegrationGuidePage() {
           </pre>
         </div>
         <p className="mt-3 text-sm text-gray-400">
-          Either approach works — pick one. Make sure the URL scheme registered
-          in your{" "}
+          Pick one — don&apos;t use both. Make sure the URL scheme in your{" "}
           <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">Info.plist</code>{" "}
           matches the{" "}
           <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">returnScheme</code>{" "}
-          you passed to{" "}
-          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">EuroPayConfig</code>
-          .
+          in <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">EuroPayConfig</code>.
         </p>
       </section>
 
-      {/* Sandbox / test mode */}
+      {/* 6. Apple Entitlement Setup */}
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-white">
+          6. Apple Entitlement Setup
+        </h2>
+        <p className="mt-3 text-sm text-gray-400">
+          Before submitting to the App Store, request the{" "}
+          <strong className="text-white">
+            External Purchase Link Entitlement
+          </strong>{" "}
+          in{" "}
+          <a
+            href="https://appstoreconnect.apple.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-teal-400 hover:underline"
+          >
+            App Store Connect
+          </a>
+          . Then add these keys to your{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">Info.plist</code>:
+        </p>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm leading-relaxed font-mono">
+            <code className="text-gray-300">
+              <span className="text-gray-500">&lt;</span>
+              <span className="text-teal-300">key</span>
+              <span className="text-gray-500">&gt;</span>
+              com.apple.developer.storekit.external-purchase-link
+              <span className="text-gray-500">&lt;/</span>
+              <span className="text-teal-300">key</span>
+              <span className="text-gray-500">&gt;</span>
+              {"\n"}
+              <span className="text-gray-500">&lt;</span>
+              <span className="text-teal-300">true</span>
+              <span className="text-gray-500">/&gt;</span>
+              {"\n\n"}
+              <span className="text-gray-500">&lt;</span>
+              <span className="text-teal-300">key</span>
+              <span className="text-gray-500">&gt;</span>
+              com.apple.developer.associated-domains
+              <span className="text-gray-500">&lt;/</span>
+              <span className="text-teal-300">key</span>
+              <span className="text-gray-500">&gt;</span>
+              {"\n"}
+              <span className="text-gray-500">&lt;</span>
+              <span className="text-teal-300">array</span>
+              <span className="text-gray-500">&gt;</span>
+              {"\n"}
+              {"  "}
+              <span className="text-gray-500">&lt;</span>
+              <span className="text-teal-300">string</span>
+              <span className="text-gray-500">&gt;</span>
+              applinks:europay.dev
+              <span className="text-gray-500">&lt;/</span>
+              <span className="text-teal-300">string</span>
+              <span className="text-gray-500">&gt;</span>
+              {"\n"}
+              <span className="text-gray-500">&lt;/</span>
+              <span className="text-teal-300">array</span>
+              <span className="text-gray-500">&gt;</span>
+            </code>
+          </pre>
+        </div>
+        <p className="mt-3 text-xs text-gray-500">
+          You must agree to Apple&apos;s Alternative Terms Addendum for Apps in the EU.
+          Approval typically takes 2–5 business days. See{" "}
+          <Link
+            href="/docs/dma-compliance"
+            className="text-teal-400 hover:underline"
+          >
+            DMA Compliance
+          </Link>{" "}
+          for full details.
+        </p>
+      </section>
+
+      {/* 7. Non-EU Users */}
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-white">
+          7. Non-EU Users
+        </h2>
+        <p className="mt-3 text-sm text-gray-400">
+          EuroPay only works for EU App Store regions. Use{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">checkRegion()</code>{" "}
+          to decide which flow to show:
+        </p>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm leading-relaxed font-mono">
+            <code>
+              <span className="text-purple-400">switch await</span>{" "}
+              <span className="text-teal-300">EuroPayKit</span>
+              <span className="text-gray-400">.</span>
+              <span className="text-white">shared</span>
+              <span className="text-gray-400">!.</span>
+              <span className="text-white">checkRegion</span>
+              <span className="text-gray-400">()</span>{" "}
+              <span className="text-gray-400">{"{"}</span>
+              {"\n"}
+              <span className="text-purple-400">case</span>{" "}
+              <span className="text-gray-400">.</span>
+              <span className="text-teal-300">supported</span>
+              <span className="text-gray-400">:</span>
+              {"\n"}
+              {"  "}
+              <span className="text-white">showEuroPayButton</span>
+              <span className="text-gray-400">()</span>
+              {"\n"}
+              <span className="text-purple-400">case</span>{" "}
+              <span className="text-gray-400">.</span>
+              <span className="text-teal-300">notSupported</span>
+              <span className="text-gray-400">:</span>
+              {"\n"}
+              {"  "}
+              <span className="text-white">showStoreKitButton</span>
+              <span className="text-gray-400">()</span>
+              {"\n"}
+              <span className="text-gray-400">{"}"}</span>
+            </code>
+          </pre>
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          Region detection uses StoreKit 2&apos;s{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">Storefront.current</code>{" "}
+          — it checks the user&apos;s actual App Store country, not IP geolocation.
+        </p>
+      </section>
+
+      {/* Sandbox */}
       <section className="mt-12">
         <h2 className="text-xl font-semibold text-white">
           Sandbox &amp; Test Mode
         </h2>
         <p className="mt-3 text-sm text-gray-400">
-          During development, EuroPay uses Stripe&apos;s test mode automatically when
-          your API key starts with <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">europay_test_</code>.
+          API keys starting with <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">europay_test_</code>{" "}
+          use Stripe test mode automatically.
         </p>
         <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] px-5 py-4">
           <p className="text-sm font-medium text-white">Test card numbers</p>

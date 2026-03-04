@@ -12,6 +12,16 @@ export default function ApiReferencePage() {
         and require a Bearer token unless noted otherwise.
       </p>
 
+      {/* SDK callout */}
+      <div className="mt-8 rounded-lg border border-teal-500/20 bg-teal-500/5 px-6 py-5">
+        <p className="text-sm text-gray-300">
+          <strong className="text-white">Most developers don&apos;t need this page.</strong>{" "}
+          The EuroPayKit iOS SDK handles checkout, entitlements, and portal sessions
+          automatically. You only need direct API access if you&apos;re building a custom
+          backend integration or non-iOS client.
+        </p>
+      </div>
+
       {/* Authentication */}
       <section className="mt-12">
         <h2 className="text-xl font-semibold text-white">Authentication</h2>
@@ -47,7 +57,8 @@ export default function ApiReferencePage() {
               <tr className="border-b border-white/10 text-left">
                 <th className="pb-3 pr-4 font-medium text-gray-400">Method</th>
                 <th className="pb-3 pr-4 font-medium text-gray-400">Path</th>
-                <th className="pb-3 font-medium text-gray-400">Description</th>
+                <th className="pb-3 pr-4 font-medium text-gray-400">Description</th>
+                <th className="pb-3 font-medium text-gray-400">Scope</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -61,7 +72,8 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 font-mono text-xs text-teal-300">
                   /v1/checkout/create
                 </td>
-                <td className="py-3 text-gray-400">Create a Stripe Checkout session</td>
+                <td className="py-3 pr-4 text-gray-400">Create a Stripe Checkout session</td>
+                <td className="py-3"><span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-400 border border-purple-500/20">SDK-managed</span></td>
               </tr>
               <tr>
                 <td className="py-3 pr-4">
@@ -72,7 +84,8 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 font-mono text-xs text-teal-300">
                   /v1/checkout/success
                 </td>
-                <td className="py-3 text-gray-400">Verify checkout session status</td>
+                <td className="py-3 pr-4 text-gray-400">Verify checkout session status</td>
+                <td className="py-3"><span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-400 border border-purple-500/20">SDK-managed</span></td>
               </tr>
               {/* Products */}
               <tr>
@@ -84,7 +97,8 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 font-mono text-xs text-teal-300">
                   /v1/products/:appId
                 </td>
-                <td className="py-3 text-gray-400">List active products for an app</td>
+                <td className="py-3 pr-4 text-gray-400">List active products for an app</td>
+                <td className="py-3"><span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-400 border border-purple-500/20">SDK-managed</span></td>
               </tr>
               {/* Entitlements */}
               <tr>
@@ -96,7 +110,8 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 font-mono text-xs text-teal-300">
                   /v1/entitlements/:userId
                 </td>
-                <td className="py-3 text-gray-400">Get entitlements for a user</td>
+                <td className="py-3 pr-4 text-gray-400">Get entitlements for a user</td>
+                <td className="py-3"><span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-400 border border-purple-500/20">SDK-managed</span></td>
               </tr>
               {/* Subscriptions */}
               <tr>
@@ -108,7 +123,8 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 font-mono text-xs text-teal-300">
                   /v1/subscriptions/cancel
                 </td>
-                <td className="py-3 text-gray-400">Cancel subscription or apply save offer</td>
+                <td className="py-3 pr-4 text-gray-400">Cancel subscription or apply save offer</td>
+                <td className="py-3"><span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-medium text-teal-400 border border-teal-500/20">Developer</span></td>
               </tr>
               <tr>
                 <td className="py-3 pr-4">
@@ -119,7 +135,8 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 font-mono text-xs text-teal-300">
                   /v1/subscriptions/pause
                 </td>
-                <td className="py-3 text-gray-400">Pause a subscription</td>
+                <td className="py-3 pr-4 text-gray-400">Pause a subscription</td>
+                <td className="py-3"><span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-medium text-teal-400 border border-teal-500/20">Developer</span></td>
               </tr>
               <tr>
                 <td className="py-3 pr-4">
@@ -130,7 +147,8 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 font-mono text-xs text-teal-300">
                   /v1/subscriptions/resume
                 </td>
-                <td className="py-3 text-gray-400">Resume a paused subscription</td>
+                <td className="py-3 pr-4 text-gray-400">Resume a paused subscription</td>
+                <td className="py-3"><span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-medium text-teal-400 border border-teal-500/20">Developer</span></td>
               </tr>
               {/* Portal */}
               <tr>
@@ -142,7 +160,8 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 font-mono text-xs text-teal-300">
                   /v1/portal
                 </td>
-                <td className="py-3 text-gray-400">Create a billing portal session</td>
+                <td className="py-3 pr-4 text-gray-400">Create a billing portal session</td>
+                <td className="py-3"><span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-400 border border-purple-500/20">SDK-managed</span></td>
               </tr>
               {/* GDPR */}
               <tr>
@@ -154,7 +173,8 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 font-mono text-xs text-teal-300">
                   /v1/gdpr/export
                 </td>
-                <td className="py-3 text-gray-400">Export user data (GDPR Art. 15 &amp; 20)</td>
+                <td className="py-3 pr-4 text-gray-400">Export user data (GDPR Art. 15 &amp; 20)</td>
+                <td className="py-3"><span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-medium text-teal-400 border border-teal-500/20">Developer</span></td>
               </tr>
               <tr>
                 <td className="py-3 pr-4">
@@ -165,7 +185,8 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 font-mono text-xs text-teal-300">
                   /v1/gdpr/delete
                 </td>
-                <td className="py-3 text-gray-400">Delete user data (GDPR Art. 17)</td>
+                <td className="py-3 pr-4 text-gray-400">Delete user data (GDPR Art. 17)</td>
+                <td className="py-3"><span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-medium text-teal-400 border border-teal-500/20">Developer</span></td>
               </tr>
               {/* Apple Reporting */}
               <tr>
@@ -177,7 +198,8 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 font-mono text-xs text-teal-300">
                   /v1/apple/report
                 </td>
-                <td className="py-3 text-gray-400">Report transaction to Apple (dashboard auth)</td>
+                <td className="py-3 pr-4 text-gray-400">Report transaction to Apple (dashboard auth)</td>
+                <td className="py-3"><span className="rounded-full bg-gray-500/10 px-2 py-0.5 text-xs font-medium text-gray-400 border border-gray-500/20">Internal</span></td>
               </tr>
               {/* Webhooks */}
               <tr>
@@ -189,7 +211,8 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 font-mono text-xs text-teal-300">
                   /v1/webhooks/stripe
                 </td>
-                <td className="py-3 text-gray-400">Stripe webhook receiver (no API key)</td>
+                <td className="py-3 pr-4 text-gray-400">Stripe webhook receiver (no API key)</td>
+                <td className="py-3"><span className="rounded-full bg-gray-500/10 px-2 py-0.5 text-xs font-medium text-gray-400 border border-gray-500/20">Internal</span></td>
               </tr>
             </tbody>
           </table>

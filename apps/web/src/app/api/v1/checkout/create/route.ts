@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Product not found' }, { status: 404 })
   }
 
-  // Require Stripe Connect for BYOS
+  // Require connected Stripe account
   if (!auth.app.stripeConnectId) {
     return NextResponse.json(
       { error: 'No Stripe account connected. Connect your Stripe account in the dashboard.' },

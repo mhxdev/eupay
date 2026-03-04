@@ -247,7 +247,7 @@ export default function OnboardingPage() {
               </ul>
             </button>
 
-            {/* BYOS */}
+            {/* Connect your Stripe account */}
             <button
               onClick={() => setPlan("byos")}
               className={`w-full rounded-xl border p-5 text-left transition-colors ${
@@ -257,7 +257,7 @@ export default function OnboardingPage() {
               }`}
             >
               <span className="text-base font-semibold text-white">
-                BYOS — Bring Your Own Stripe
+                Connect your own Stripe account
               </span>
               <p className="mt-3">
                 <span className="text-3xl font-bold text-white">~8%</span>

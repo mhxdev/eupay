@@ -201,12 +201,12 @@ function FeeComparison() {
               </li>
             </ul>
           </div>
-          {/* EuroPay BYOS */}
+          {/* EuroPay */}
           <div className="relative rounded-xl border border-teal-500/50 bg-teal-500/5 ring-1 ring-teal-500/20 p-6">
             <span className="absolute -top-3 left-6 rounded-full bg-teal-500 px-3 py-0.5 text-xs font-medium text-white">
               Recommended
             </span>
-            <h3 className="text-lg font-semibold text-white">EuroPay (BYOS)</h3>
+            <h3 className="text-lg font-semibold text-white">EuroPay</h3>
             <p className="mt-4">
               <span className="text-4xl font-bold text-white">~8%</span>
               <span className="ml-1 text-sm text-gray-400">total</span>
