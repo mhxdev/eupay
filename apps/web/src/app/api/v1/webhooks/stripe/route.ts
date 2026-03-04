@@ -17,6 +17,7 @@ import {
   sendWebhookFailureAlert,
 } from '@/lib/email'
 import { clerkClient } from '@clerk/nextjs/server'
+import { reportTransaction } from '@/lib/apple-reporting'
 
 export async function POST(req: Request) {
   const body = await req.text() // MUST be raw text, not parsed JSON
@@ -168,6 +169,9 @@ async function handleCheckoutSessionCompleted(
       vatCountry,
       status: 'SUCCEEDED',
       withdrawalWaivedAt: withdrawalWaived ? new Date() : undefined,
+      ...(metadata.appleExternalPurchaseToken
+        ? { appleExternalPurchaseToken: metadata.appleExternalPurchaseToken }
+        : {}),
     },
   })
 
@@ -250,6 +254,9 @@ async function handleCheckoutSessionCompleted(
       console.error('[Webhook] Email sending failed:', emailError)
     }
   }
+
+  // ── Report to Apple (fire-and-forget) ──────────────────
+  await reportToApple(appId, transaction.id)
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
@@ -354,7 +361,7 @@ async function handleInvoicePaymentSucceeded(
   const amountTax = invoice.total_taxes?.reduce((sum, t) => sum + t.amount, 0) ?? 0
 
   // Log renewal transaction
-  await prisma.transaction.create({
+  const renewalTx = await prisma.transaction.create({
     data: {
       appId: entitlement.customer.appId,
       customerId: entitlement.customerId,
@@ -367,6 +374,9 @@ async function handleInvoicePaymentSucceeded(
       status: 'SUCCEEDED',
     },
   })
+
+  // Report renewal to Apple
+  await reportToApple(entitlement.customer.appId, renewalTx.id)
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
@@ -422,6 +432,9 @@ async function handleChargeRefunded(
     where: { id: transaction.id },
     data: { status: 'REFUNDED' },
   })
+
+  // Report refund to Apple
+  await reportToApple(transaction.appId, transaction.id)
 
   // If fully refunded, revoke entitlement
   if (charge.refunded) {
@@ -507,6 +520,47 @@ async function handleDisputeCreated(
     }
   } catch (alertErr) {
     console.error('[Webhook] Dispute alert email failed:', alertErr)
+  }
+}
+
+// Helper: report transaction to Apple's External Purchase Server API
+async function reportToApple(appId: string, transactionId: string) {
+  try {
+    const app = await prisma.app.findUnique({ where: { id: appId } })
+    if (!app) return
+
+    if (!app.appleKeyId || !app.appleIssuerId || !app.applePrivateKey || !app.appleBundleId) {
+      console.warn(`[Webhook] Apple reporting skipped for app ${appId} — credentials not configured`)
+      return
+    }
+
+    // Use the best available identifier for Apple reporting
+    const tx = await prisma.transaction.findUnique({ where: { id: transactionId } })
+    if (!tx) return
+
+    const reportId = tx.stripePaymentIntentId ?? tx.stripeCheckoutSessionId ?? tx.id
+
+    const result = await reportTransaction(
+      {
+        appleKeyId: app.appleKeyId,
+        appleIssuerId: app.appleIssuerId,
+        applePrivateKey: app.applePrivateKey,
+        appleBundleId: app.appleBundleId,
+      },
+      reportId
+    )
+
+    await prisma.transaction.update({
+      where: { id: transactionId },
+      data: {
+        appleReportStatus: result.success ? 'REPORTED' : 'FAILED',
+        appleReportedAt: new Date(),
+        appleReportError: result.error ?? null,
+      },
+    })
+  } catch (appleErr) {
+    // Apple reporting failure must never break the webhook handler
+    console.error('[Webhook] Apple reporting failed:', appleErr)
   }
 }
 
