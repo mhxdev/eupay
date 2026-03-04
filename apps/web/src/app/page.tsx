@@ -60,13 +60,13 @@ function Hero() {
         <div className="grid gap-12 md:grid-cols-2 md:items-center">
           <div>
             <h1 className="text-4xl font-bold leading-tight tracking-tight text-white md:text-5xl lg:text-6xl">
-              Cut your EU app store fees by{" "}
-              <span className="text-teal-400">65%</span>
+              Pay{" "}
+              <span className="text-teal-400">~7%</span>{" "}
+              instead of 30%
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-gray-400 md:text-xl">
               EuroPay routes EU in-app purchases through Stripe instead of Apple.
-              Pay 7% instead of 20% — DMA-compliant, drop-in SDK, 15-minute
-              integration.
+              DMA-compliant, drop-in SDK, 15-minute integration.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
@@ -117,7 +117,7 @@ function Hero() {
                   <span className="text-gray-400">{"}"}</span>
                   {"\n"}
                   {"      "}
-                  <span className="text-yellow-300">.eupayCheckout</span>
+                  <span className="text-yellow-300">.europayCheckout</span>
                   <span className="text-gray-400">(</span>
                   <span className="text-white">productId</span>
                   <span className="text-gray-400">:</span>{" "}
@@ -143,7 +143,7 @@ function Hero() {
 
 function SocialProof() {
   const stats = [
-    { value: "65%", label: "lower fees" },
+    { value: "~7%", label: "total fees" },
     { value: "15-min", label: "integration" },
     { value: "EU DMA", label: "compliant" },
   ]
@@ -165,29 +165,6 @@ function SocialProof() {
 }
 
 function FeeComparison() {
-  const plans = [
-    {
-      name: "Apple IAP",
-      total: "20%",
-      fees: [
-        { label: "Apple commission", value: "15–30%" },
-      ],
-      note: "Reduced rate for Small Developer Program",
-      highlighted: false,
-    },
-    {
-      name: "EuroPay BYOS",
-      total: "7%",
-      fees: [
-        { label: "EuroPay fee", value: "0.5%" },
-        { label: "Apple CTC", value: "5%" },
-        { label: "Stripe", value: "~1.5%" },
-      ],
-      note: "Bring your own Stripe account",
-      highlighted: true,
-    },
-  ]
-
   return (
     <section className="py-20 px-6 md:py-28">
       <div className="mx-auto max-w-6xl">
@@ -198,52 +175,69 @@ function FeeComparison() {
           Compare your total cost per transaction across payment options.
         </p>
         <div className="mt-12 grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`relative rounded-xl border p-6 ${
-                plan.highlighted
-                  ? "border-teal-500/50 bg-teal-500/5 ring-1 ring-teal-500/20"
-                  : "border-white/10 bg-white/[0.02]"
-              }`}
-            >
-              {plan.highlighted && (
-                <span className="absolute -top-3 left-6 rounded-full bg-teal-500 px-3 py-0.5 text-xs font-medium text-white">
-                  Recommended
-                </span>
-              )}
-              <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
-              <p className="mt-4">
-                <span className="text-4xl font-bold text-white">
-                  {plan.total}
-                </span>
-                <span className="ml-1 text-sm text-gray-400">total</span>
-              </p>
-              <ul className="mt-6 space-y-2">
-                {plan.fees.map((fee) => (
-                  <li
-                    key={fee.label}
-                    className="flex items-center justify-between text-sm"
-                  >
-                    <span className="text-gray-400">{fee.label}</span>
-                    <span className="font-medium text-white">{fee.value}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-6 text-xs text-gray-500">{plan.note}</p>
-            </div>
-          ))}
+          {/* Apple IAP */}
+          <div className="rounded-xl border border-white/10 bg-white/[0.02] p-6">
+            <h3 className="text-lg font-semibold text-white">Apple IAP</h3>
+            <p className="mt-4">
+              <span className="text-4xl font-bold text-white">30%</span>
+              <span className="ml-1 text-sm text-gray-400">fee</span>
+            </p>
+            <p className="mt-1 text-sm text-gray-500">
+              15% for small developers under $1M/year
+            </p>
+            <ul className="mt-6 space-y-3 text-sm text-gray-400">
+              <li className="flex items-start gap-2">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-gray-500" />
+                Apple handles everything
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 h-4 w-4 shrink-0 text-center text-gray-500">&minus;</span>
+                No alternative payment methods
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 h-4 w-4 shrink-0 text-center text-gray-500">&minus;</span>
+                No developer control
+              </li>
+            </ul>
+          </div>
+          {/* EuroPay BYOS */}
+          <div className="relative rounded-xl border border-teal-500/50 bg-teal-500/5 ring-1 ring-teal-500/20 p-6">
+            <span className="absolute -top-3 left-6 rounded-full bg-teal-500 px-3 py-0.5 text-xs font-medium text-white">
+              Recommended
+            </span>
+            <h3 className="text-lg font-semibold text-white">EuroPay (BYOS)</h3>
+            <p className="mt-4">
+              <span className="text-4xl font-bold text-white">~7%</span>
+              <span className="ml-1 text-sm text-gray-400">total</span>
+            </p>
+            <ul className="mt-4 space-y-1 text-sm">
+              <li className="flex items-center justify-between">
+                <span className="text-gray-400">EuroPay fee</span>
+                <span className="font-medium text-white">0.5%</span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span className="text-gray-400">Stripe fee</span>
+                <span className="font-medium text-white">~1.5% + &euro;0.25</span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span className="text-gray-400">Apple Core Technology Fee</span>
+                <span className="font-medium text-white">~5%</span>
+              </li>
+            </ul>
+            <ul className="mt-6 space-y-3 text-sm text-gray-400">
+              <li className="flex items-start gap-2">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-teal-400" />
+                Full developer control
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-teal-400" />
+                Apple Pay, Google Pay, SEPA included
+              </li>
+            </ul>
+          </div>
         </div>
-        <p className="mt-10 text-center text-sm text-gray-400">
-          A{" "}
-          <span className="font-medium text-white">
-            &euro;10,000/month
-          </span>{" "}
-          app saves{" "}
-          <span className="font-medium text-teal-400">
-            &euro;15,600/year
-          </span>{" "}
-          on BYOS vs Apple IAP.
+        <p className="mt-10 text-center text-sm font-medium text-teal-400">
+          Save up to 23 percentage points vs Apple IAP
         </p>
       </div>
     </section>
@@ -384,7 +378,7 @@ function CtaSection() {
     <section className="border-t border-white/10 bg-white/[0.02] py-20 px-6 md:py-28">
       <div className="mx-auto max-w-2xl text-center">
         <h2 className="text-3xl font-bold text-white md:text-4xl">
-          Ready to cut your fees by 65%?
+          Ready to pay ~7% instead of 30%?
         </h2>
         <p className="mt-4 text-gray-400">
           Create your account in 30 seconds. No credit card required.
