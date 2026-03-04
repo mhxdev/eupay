@@ -4,44 +4,46 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 
-interface SidebarSection {
-  title: string
-  links: { href: string; label: string }[]
-}
+const guideLinks = [
+  { href: "/docs/getting-started", label: "Getting Started" },
+  { href: "/docs/integration-guide", label: "Integration Guide" },
+  { href: "/docs/dma-compliance", label: "DMA Compliance" },
+]
 
-export function DocsSidebar({ sections }: { sections: SidebarSection[] }) {
+const apiLinks = [
+  { href: "/docs/api-reference", label: "API Reference" },
+  { href: "/docs/changelog", label: "Changelog" },
+]
+
+const apiPaths = apiLinks.map((l) => l.href)
+
+export function DocsSidebar() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const links = apiPaths.includes(pathname) ? apiLinks : guideLinks
 
   const nav = (
-    <nav className="space-y-6">
-      {sections.map((section) => (
-        <div key={section.title}>
-          <p className="mb-2 text-[11px] font-semibold tracking-widest text-gray-500">
-            {section.title}
-          </p>
-          <ul className="space-y-1">
-            {section.links.map((link) => {
-              const active = pathname === link.href
-              return (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    onClick={() => setOpen(false)}
-                    className={`block rounded-md px-3 py-1.5 text-sm transition-colors ${
-                      active
-                        ? "bg-teal-500/10 font-medium text-teal-400"
-                        : "text-gray-400 hover:bg-white/5 hover:text-white"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      ))}
+    <nav>
+      <ul className="space-y-1">
+        {links.map((link) => {
+          const active = pathname === link.href
+          return (
+            <li key={link.href}>
+              <Link
+                href={link.href}
+                onClick={() => setOpen(false)}
+                className={`block rounded-md px-3 py-1.5 text-sm transition-colors ${
+                  active
+                    ? "bg-teal-500/10 font-medium text-teal-400"
+                    : "text-gray-400 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                {link.label}
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
     </nav>
   )
 

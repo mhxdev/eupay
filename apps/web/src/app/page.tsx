@@ -27,7 +27,7 @@ function Nav() {
               Docs
             </Link>
             <div className="pointer-events-none absolute left-1/2 top-full pt-2 -translate-x-1/2 opacity-0 transition-all group-hover:pointer-events-auto group-hover:opacity-100">
-              <div className="w-56 rounded-lg border border-white/10 bg-[#0f1629] p-1.5 shadow-xl">
+              <div className="w-52 rounded-lg border border-white/10 bg-[#0f1629] p-1.5 shadow-xl">
                 <Link
                   href="/docs/getting-started"
                   className="block rounded-md px-3 py-2.5 transition-colors hover:bg-white/5"
@@ -39,8 +39,8 @@ function Nav() {
                   href="/docs/api-reference"
                   className="block rounded-md px-3 py-2.5 transition-colors hover:bg-white/5"
                 >
-                  <span className="text-sm font-medium text-white">API Reference</span>
-                  <span className="mt-0.5 block text-xs text-gray-500">Full technical docs</span>
+                  <span className="text-sm font-medium text-white">API</span>
+                  <span className="mt-0.5 block text-xs text-gray-500">Full technical reference</span>
                 </Link>
               </div>
             </div>
