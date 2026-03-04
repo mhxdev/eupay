@@ -14,6 +14,7 @@ const checkoutCreateSchema = z.object({
   successUrl: z.string().url(),
   cancelUrl: z.string().url(),
   locale: z.string().length(2).default('de'),
+  appleExternalPurchaseToken: z.string().optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const { productId, userId, userEmail, successUrl, cancelUrl, locale } = parsed.data
+  const { productId, userId, userEmail, successUrl, cancelUrl, locale, appleExternalPurchaseToken } = parsed.data
 
   // Validate product belongs to this app
   const product = await prisma.product.findFirst({
@@ -100,7 +101,14 @@ export async function POST(req: NextRequest) {
       appId: auth.appId,
       productId: product.id,
       externalUserId: userId,
+      ...(appleExternalPurchaseToken ? { appleExternalPurchaseToken } : {}),
     },
+    // EuroPay 1.5% platform fee (one-time payments)
+    ...(product.productType !== 'SUBSCRIPTION' ? {
+      payment_intent_data: {
+        application_fee_amount: Math.round(product.amountCents * 0.015),
+      },
+    } : {}),
     // Phone collection off (GDPR minimisation)
     phone_number_collection: { enabled: false },
     // Custom fields for Widerrufsrecht waiver
@@ -120,11 +128,14 @@ export async function POST(req: NextRequest) {
     ],
   }
 
-  // Add trial if applicable
-  if (product.productType === 'SUBSCRIPTION' && product.trialDays && product.trialDays > 0) {
+  // Subscription: always apply 1.5% platform fee, add trial if applicable
+  if (product.productType === 'SUBSCRIPTION') {
     sessionParams.subscription_data = {
-      trial_period_days: product.trialDays,
+      application_fee_percent: 1.5,
       metadata: { appId: auth.appId, productId: product.id },
+      ...(product.trialDays && product.trialDays > 0
+        ? { trial_period_days: product.trialDays }
+        : {}),
     }
   }
 
