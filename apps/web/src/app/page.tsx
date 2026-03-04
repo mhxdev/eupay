@@ -12,20 +12,29 @@ import {
   LayoutDashboard,
   BadgeCheck,
 } from "lucide-react"
+import { SignedIn, SignedOut } from "@clerk/nextjs"
 import { RevenueCalculator } from "@/components/RevenueCalculator"
 
 function Nav() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#0a0f1e]/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="text-lg font-bold text-white">
-          EuroPay
-        </Link>
+      <div className="mx-auto flex h-16 max-w-6xl items-center px-6">
+        {/* Left: Logo */}
+        <div className="flex-1">
+          <Link href="/" className="text-lg font-bold text-white">
+            EuroPay
+          </Link>
+        </div>
+
+        {/* Center: Navigation (desktop) */}
         <div className="hidden items-center gap-6 text-sm md:flex">
           <div className="group relative">
-            <Link href="/docs" className="text-gray-400 hover:text-white transition-colors">
-              Docs
-            </Link>
+            <button className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors">
+              Documentation
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
             <div className="pointer-events-none absolute left-1/2 top-full pt-2 -translate-x-1/2 opacity-0 transition-all group-hover:pointer-events-auto group-hover:opacity-100">
               <div className="w-52 rounded-lg border border-white/10 bg-[#0f1629] p-1.5 shadow-xl">
                 <Link
@@ -48,27 +57,27 @@ function Nav() {
           <Link href="/pricing" className="text-gray-400 hover:text-white transition-colors">
             Pricing
           </Link>
-          <a
-            href="https://github.com/mhxdev/EuroPayKit"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            GitHub
-          </a>
-          <Link
-            href="/sign-up"
-            className="rounded-md bg-teal-500 px-4 py-2 text-sm font-medium text-white hover:bg-teal-400 transition-colors"
-          >
-            Get Started
-          </Link>
         </div>
-        <Link
-          href="/sign-up"
-          className="rounded-md bg-teal-500 px-3 py-1.5 text-sm font-medium text-white md:hidden"
-        >
-          Get Started
-        </Link>
+
+        {/* Right: Auth-aware button */}
+        <div className="flex flex-1 justify-end">
+          <SignedOut>
+            <Link
+              href="/sign-up"
+              className="rounded-full border border-teal-500 px-4 py-1.5 text-sm font-medium text-teal-400 transition-colors hover:bg-teal-500/10"
+            >
+              Get Started
+            </Link>
+          </SignedOut>
+          <SignedIn>
+            <Link
+              href="/dashboard"
+              className="rounded-full border border-teal-500 px-4 py-1.5 text-sm font-medium text-teal-400 transition-colors hover:bg-teal-500/10"
+            >
+              Dashboard
+            </Link>
+          </SignedIn>
+        </div>
       </div>
     </nav>
   )
