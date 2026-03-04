@@ -90,8 +90,8 @@ export async function POST(req: NextRequest) {
     automatic_tax: { enabled: process.env.STRIPE_TAX_ENABLED === 'true' },
     // Collect billing address for VAT calculation
     billing_address_collection: 'required',
-    // Payment methods popular in Germany/EU
-    payment_method_types: ['card', 'sepa_debit'],
+    // Payment methods auto-detected from Stripe Dashboard config per device/browser/location
+    // (omitting payment_method_types enables all configured methods including Apple Pay, Google Pay, SEPA, Link, etc.)
     success_url: successUrl,
     cancel_url: cancelUrl,
     locale: locale as Stripe.Checkout.SessionCreateParams['locale'],
