@@ -18,7 +18,7 @@ export default function IntegrationGuidePage() {
         </h2>
         <p className="mt-3 text-sm text-gray-400">
           A typical integration has three parts: configure the SDK at launch,
-          fetch products, and present the purchase flow.
+          handle checkout return URLs, and present the purchase flow.
         </p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
           <pre className="text-sm leading-relaxed font-mono">
@@ -65,7 +65,7 @@ export default function IntegrationGuidePage() {
               {"      "}
               <span className="text-white">returnScheme</span>
               <span className="text-gray-400">:</span>{" "}
-              <span className="text-orange-300">&quot;myapp://eupay-return&quot;</span>
+              <span className="text-orange-300">&quot;europay-myapp://return&quot;</span>
               <span className="text-gray-400">,</span>
               {"\n"}
               {"      "}
@@ -94,6 +94,29 @@ export default function IntegrationGuidePage() {
               {"\n"}
               {"      "}
               <span className="text-teal-300">PaywallView</span>
+              <span className="text-gray-400">()</span>
+              {"\n"}
+              {"        "}
+              <span className="text-gray-400">.</span>
+              <span className="text-white">onOpenURL</span>{" "}
+              <span className="text-gray-400">{"{"}</span>{" "}
+              <span className="text-white">url</span>{" "}
+              <span className="text-purple-400">in</span>
+              {"\n"}
+              {"          "}
+              <span className="text-teal-300">EuroPayCheckoutSheet</span>
+              <span className="text-gray-400">.</span>
+              <span className="text-white">handleReturnURL</span>
+              <span className="text-gray-400">(</span>
+              <span className="text-white">url</span>
+              <span className="text-gray-400">)</span>
+              {"\n"}
+              {"        "}
+              <span className="text-gray-400">{"}"}</span>
+              {"\n"}
+              {"        "}
+              <span className="text-gray-400">.</span>
+              <span className="text-white">euroPayCheckoutReturnHandler</span>
               <span className="text-gray-400">()</span>
               {"\n"}
               {"    "}
@@ -375,6 +398,79 @@ export default function IntegrationGuidePage() {
         </div>
         <p className="mt-3 text-sm text-gray-400">
           Region detection uses StoreKit 2&apos;s <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">Storefront.current</code> — it checks the user&apos;s actual App Store country, not IP geolocation.
+        </p>
+      </section>
+
+      {/* Checkout return handling */}
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-white">
+          Checkout Return Handling
+        </h2>
+        <p className="mt-3 text-sm text-gray-400">
+          After the user completes payment in Stripe Checkout, the browser
+          redirects back to your app using the{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">returnScheme</code>{" "}
+          you configured. You must handle this URL for the SDK to verify the
+          payment and grant entitlements.
+        </p>
+        <p className="mt-3 text-sm text-gray-400">
+          The simplest approach is the{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">.euroPayCheckoutReturnHandler()</code>{" "}
+          modifier, which handles everything automatically:
+        </p>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm leading-relaxed font-mono">
+            <code>
+              <span className="text-teal-300">ContentView</span>
+              <span className="text-gray-400">()</span>
+              {"\n"}
+              {"  "}
+              <span className="text-gray-400">.</span>
+              <span className="text-white">euroPayCheckoutReturnHandler</span>
+              <span className="text-gray-400">()</span>
+            </code>
+          </pre>
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          If you need manual control (e.g. to log or route differently), use{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">.onOpenURL</code>{" "}
+          instead:
+        </p>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm leading-relaxed font-mono">
+            <code>
+              <span className="text-teal-300">ContentView</span>
+              <span className="text-gray-400">()</span>
+              {"\n"}
+              {"  "}
+              <span className="text-gray-400">.</span>
+              <span className="text-white">onOpenURL</span>{" "}
+              <span className="text-gray-400">{"{"}</span>{" "}
+              <span className="text-white">url</span>{" "}
+              <span className="text-purple-400">in</span>
+              {"\n"}
+              {"    "}
+              <span className="text-teal-300">EuroPayCheckoutSheet</span>
+              <span className="text-gray-400">.</span>
+              <span className="text-white">handleReturnURL</span>
+              <span className="text-gray-400">(</span>
+              <span className="text-white">url</span>
+              <span className="text-gray-400">)</span>
+              {"\n"}
+              {"  "}
+              <span className="text-gray-400">{"}"}</span>
+            </code>
+          </pre>
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          Either approach works — pick one. Make sure the URL scheme registered
+          in your{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">Info.plist</code>{" "}
+          matches the{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">returnScheme</code>{" "}
+          you passed to{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">EuroPayConfig</code>
+          .
         </p>
       </section>
 
