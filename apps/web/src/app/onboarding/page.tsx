@@ -260,11 +260,11 @@ export default function OnboardingPage() {
                 BYOS — Bring Your Own Stripe
               </span>
               <p className="mt-3">
-                <span className="text-3xl font-bold text-white">7%</span>
+                <span className="text-3xl font-bold text-white">~8%</span>
                 <span className="ml-1 text-sm text-gray-400">total per transaction</span>
               </p>
               <ul className="mt-3 space-y-1 text-sm text-gray-400">
-                <li>EuroPay 0.5% + Apple CTC 5% + Stripe ~1.5%</li>
+                <li>EuroPay 1.5% + Apple CTC 5% + Stripe ~1.5%</li>
                 <li>Connect your own Stripe account</li>
                 <li>You manage VAT and disputes</li>
               </ul>

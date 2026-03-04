@@ -93,7 +93,7 @@ export default async function AdminPage() {
   const totalApps = allApps.length
   const totalTxCount = txAgg._count
   const totalVolume = txAgg._sum.amountTotal ?? 0
-  const europayRevenue = Math.round(totalVolume * 0.005)
+  const europayRevenue = Math.round(totalVolume * 0.015)
 
   // Group recent apps by clerkUserId for developer table
   const developerMap = new Map<
@@ -162,7 +162,7 @@ export default async function AdminPage() {
         <StatCard
           title="EuroPay Revenue"
           value={formatCurrency(europayRevenue)}
-          sub="0.5% platform fee"
+          sub="1.5% platform fee"
           icon={<DollarSign className="h-4 w-4" />}
         />
         <StatCard
@@ -307,7 +307,7 @@ export default async function AdminPage() {
                       {formatCurrency(vol)}
                     </TableCell>
                     <TableCell className="text-right">
-                      {formatCurrency(Math.round(vol * 0.005))}
+                      {formatCurrency(Math.round(vol * 0.015))}
                     </TableCell>
                   </TableRow>
                 )

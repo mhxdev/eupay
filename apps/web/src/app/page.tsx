@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   BadgeCheck,
 } from "lucide-react"
+import { RevenueCalculator } from "@/components/RevenueCalculator"
 
 function Nav() {
   return (
@@ -61,7 +62,7 @@ function Hero() {
           <div>
             <h1 className="text-4xl font-bold leading-tight tracking-tight text-white md:text-5xl lg:text-6xl">
               Pay{" "}
-              <span className="text-teal-400">~7%</span>{" "}
+              <span className="text-teal-400">~8%</span>{" "}
               instead of 30%
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-gray-400 md:text-xl">
@@ -143,7 +144,7 @@ function Hero() {
 
 function SocialProof() {
   const stats = [
-    { value: "~7%", label: "total fees" },
+    { value: "~8%", label: "total fees" },
     { value: "15-min", label: "integration" },
     { value: "EU DMA", label: "compliant" },
   ]
@@ -207,13 +208,13 @@ function FeeComparison() {
             </span>
             <h3 className="text-lg font-semibold text-white">EuroPay (BYOS)</h3>
             <p className="mt-4">
-              <span className="text-4xl font-bold text-white">~7%</span>
+              <span className="text-4xl font-bold text-white">~8%</span>
               <span className="ml-1 text-sm text-gray-400">total</span>
             </p>
             <ul className="mt-4 space-y-1 text-sm">
               <li className="flex items-center justify-between">
                 <span className="text-gray-400">EuroPay fee</span>
-                <span className="font-medium text-white">0.5%</span>
+                <span className="font-medium text-white">1.5%</span>
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-gray-400">Stripe fee</span>
@@ -237,8 +238,13 @@ function FeeComparison() {
           </div>
         </div>
         <p className="mt-10 text-center text-sm font-medium text-teal-400">
-          Save up to 23 percentage points vs Apple IAP
+          Save up to 22 percentage points vs Apple IAP
         </p>
+
+        {/* Interactive calculator */}
+        <div className="mt-12 max-w-3xl mx-auto">
+          <RevenueCalculator />
+        </div>
       </div>
     </section>
   )
@@ -378,7 +384,7 @@ function CtaSection() {
     <section className="border-t border-white/10 bg-white/[0.02] py-20 px-6 md:py-28">
       <div className="mx-auto max-w-2xl text-center">
         <h2 className="text-3xl font-bold text-white md:text-4xl">
-          Ready to pay ~7% instead of 30%?
+          Ready to pay ~8% instead of 30%?
         </h2>
         <p className="mt-4 text-gray-400">
           Create your account in 30 seconds. No credit card required.

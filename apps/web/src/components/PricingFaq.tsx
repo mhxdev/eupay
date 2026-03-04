@@ -12,7 +12,7 @@ const FAQS = [
   {
     question: "When do I get paid?",
     answer:
-      "Stripe pays out directly to your bank account, typically 2 business days after a transaction. You receive 100% of the charge minus Stripe\u2019s processing fee \u2014 EuroPay\u2019s 0.5% is deducted separately via monthly invoice.",
+      "Stripe pays out directly to your bank account, typically 2 business days after a transaction. You receive 100% of the charge minus Stripe\u2019s processing fee \u2014 EuroPay\u2019s 1.5% is deducted separately via monthly invoice.",
   },
   {
     question: "Do I need a registered business?",

@@ -23,7 +23,7 @@ const FEE_BREAKDOWN = [
   {
     icon: Zap,
     name: "EuroPay",
-    fee: "0.5%",
+    fee: "1.5%",
     description:
       "SDK, developer dashboard, DMA reporting, webhook delivery, GDPR tools",
   },
@@ -92,7 +92,7 @@ export default function PricingPage() {
             </div>
 
             <div className="mt-6">
-              <span className="text-4xl font-bold">0.5%</span>
+              <span className="text-4xl font-bold">1.5%</span>
               <span className="ml-1 text-sm text-gray-400">
                 EuroPay fee per transaction
               </span>
@@ -104,7 +104,7 @@ export default function PricingPage() {
             </div>
 
             <p className="mt-3 text-xs text-gray-500">
-              Total: from ~7% depending on transaction size
+              Total: from ~8% depending on transaction size
             </p>
 
             <ul className="mt-6 space-y-2.5">
@@ -130,8 +130,9 @@ export default function PricingPage() {
         <div className="mx-auto mt-8 max-w-lg text-center">
           <p className="text-sm text-gray-400">
             Apple IAP charges{" "}
-            <span className="font-medium text-white">20% minimum</span>. With
-            EuroPay BYOS you pay 0.5% to us + Stripe fees + Apple CTC. A{" "}
+            <span className="font-medium text-white">30%</span> (15% for small
+            developers). With EuroPay BYOS you pay 1.5% to us + Stripe fees +
+            Apple CTC. A{" "}
             <span className="font-medium text-white">
               &euro;10,000/month
             </span>{" "}

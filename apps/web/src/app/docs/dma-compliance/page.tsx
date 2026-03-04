@@ -360,7 +360,7 @@ export default function DMACompliancePage() {
             <p className="px-5 pb-4 text-sm text-gray-400">
               Yes. EuroPay uses Stripe Connect to process payments directly into
               your Stripe account. You&apos;ll connect your Stripe account during
-              onboarding. EuroPay charges a 0.5% platform fee on each transaction,
+              onboarding. EuroPay charges a 1.5% platform fee on each transaction,
               collected automatically via Stripe Connect.
             </p>
           </details>
@@ -371,8 +371,8 @@ export default function DMACompliancePage() {
             </summary>
             <p className="px-5 pb-4 text-sm text-gray-400">
               With Apple IAP you pay 15–30%. With EuroPay, your total fees are:
-              Stripe processing (~2.9% + &#8364;0.25), Apple&apos;s 5% CTF, and
-              EuroPay&apos;s 0.5% — roughly 8.4% total versus Apple&apos;s 15–30%.
+              Stripe processing (~1.5% + &#8364;0.25), Apple&apos;s 5% CTF, and
+              EuroPay&apos;s 1.5% — roughly 8% total versus Apple&apos;s 15–30%.
               For most developers this means significantly more revenue per
               transaction.
             </p>
