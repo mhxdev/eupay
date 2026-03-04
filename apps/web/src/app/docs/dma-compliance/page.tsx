@@ -286,6 +286,42 @@ export default function DMACompliancePage() {
             </div>
             <div>
               <p className="text-sm font-medium text-white">
+                Upload your Apple credentials in the EuroPay dashboard
+              </p>
+              <p className="mt-1 text-sm text-gray-400">
+                For automated transaction reporting, EuroPay needs to sign JWT
+                tokens for Apple&apos;s External Purchase Server API on your behalf.
+                In the dashboard under your app&apos;s{" "}
+                <strong className="text-white">Apple Reporting</strong>{" "}
+                settings, provide:
+              </p>
+              <ul className="mt-2 space-y-1.5 text-sm text-gray-400">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 text-teal-400">&#8226;</span>
+                  <strong className="text-white">Key ID</strong> — from the App Store Connect API keys page
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 text-teal-400">&#8226;</span>
+                  <strong className="text-white">Issuer ID</strong> — shown at the top of the API keys page
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 text-teal-400">&#8226;</span>
+                  <strong className="text-white">Private Key (.p8 file)</strong> — the key file you downloaded when creating the API key
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 text-teal-400">&#8226;</span>
+                  <strong className="text-white">Bundle ID</strong> — your app&apos;s bundle identifier (e.g. com.example.myapp)
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">
+              4
+            </div>
+            <div>
+              <p className="text-sm font-medium text-white">
                 That&apos;s it
               </p>
               <p className="mt-1 text-sm text-gray-400">
@@ -316,7 +352,7 @@ export default function DMACompliancePage() {
             <ul className="mt-1.5 space-y-1 text-gray-400">
               <li>Request Apple entitlement</li>
               <li>Add Info.plist key</li>
-              <li>Nothing else</li>
+              <li>Upload Apple credentials to dashboard</li>
             </ul>
           </div>
         </div>

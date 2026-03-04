@@ -51,6 +51,7 @@ export default function ApiReferencePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
+              {/* Checkout */}
               <tr>
                 <td className="py-3 pr-4">
                   <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
@@ -69,10 +70,23 @@ export default function ApiReferencePage() {
                   </span>
                 </td>
                 <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/checkout/success
+                </td>
+                <td className="py-3 text-gray-400">Verify checkout session status</td>
+              </tr>
+              {/* Products */}
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-medium text-blue-400">
+                    GET
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
                   /v1/products/:appId
                 </td>
                 <td className="py-3 text-gray-400">List active products for an app</td>
               </tr>
+              {/* Entitlements */}
               <tr>
                 <td className="py-3 pr-4">
                   <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-medium text-blue-400">
@@ -84,6 +98,88 @@ export default function ApiReferencePage() {
                 </td>
                 <td className="py-3 text-gray-400">Get entitlements for a user</td>
               </tr>
+              {/* Subscriptions */}
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+                    POST
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/subscriptions/cancel
+                </td>
+                <td className="py-3 text-gray-400">Cancel subscription or apply save offer</td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+                    POST
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/subscriptions/pause
+                </td>
+                <td className="py-3 text-gray-400">Pause a subscription</td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+                    POST
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/subscriptions/resume
+                </td>
+                <td className="py-3 text-gray-400">Resume a paused subscription</td>
+              </tr>
+              {/* Portal */}
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+                    POST
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/portal
+                </td>
+                <td className="py-3 text-gray-400">Create a billing portal session</td>
+              </tr>
+              {/* GDPR */}
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-medium text-blue-400">
+                    GET
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/gdpr/export
+                </td>
+                <td className="py-3 text-gray-400">Export user data (GDPR Art. 15 &amp; 20)</td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-red-500/10 px-2 py-0.5 text-xs font-mono font-medium text-red-400">
+                    DELETE
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/gdpr/delete
+                </td>
+                <td className="py-3 text-gray-400">Delete user data (GDPR Art. 17)</td>
+              </tr>
+              {/* Apple Reporting */}
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+                    POST
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/apple/report
+                </td>
+                <td className="py-3 text-gray-400">Report transaction to Apple (dashboard auth)</td>
+              </tr>
+              {/* Webhooks */}
               <tr>
                 <td className="py-3 pr-4">
                   <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
@@ -100,8 +196,13 @@ export default function ApiReferencePage() {
         </div>
       </section>
 
+      {/* ════════ Checkout ════════ */}
+      <section className="mt-16">
+        <h2 className="text-xl font-semibold text-white">Checkout</h2>
+      </section>
+
       {/* POST /v1/checkout/create */}
-      <section className="mt-12">
+      <section className="mt-8">
         <div className="flex items-center gap-3">
           <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
             POST
@@ -154,7 +255,7 @@ export default function ApiReferencePage() {
                 <span className="text-orange-300">&quot;string&quot;</span>
                 <span className="text-gray-400">,</span>
                 {"       "}
-                <span className="text-gray-500">// required</span>
+                <span className="text-gray-500">// required, valid URL</span>
                 {"\n"}
                 {"  "}
                 <span className="text-teal-300">&quot;cancelUrl&quot;</span>
@@ -162,22 +263,14 @@ export default function ApiReferencePage() {
                 <span className="text-orange-300">&quot;string&quot;</span>
                 <span className="text-gray-400">,</span>
                 {"        "}
-                <span className="text-gray-500">// required</span>
+                <span className="text-gray-500">// required, valid URL</span>
                 {"\n"}
                 {"  "}
                 <span className="text-teal-300">&quot;locale&quot;</span>
                 <span className="text-gray-400">:</span>{" "}
-                <span className="text-orange-300">&quot;string?&quot;</span>
-                <span className="text-gray-400">,</span>
-                {"          "}
-                <span className="text-gray-500">// &quot;de&quot;, &quot;fr&quot;, etc.</span>
-                {"\n"}
-                {"  "}
-                <span className="text-teal-300">&quot;appleExternalPurchaseToken&quot;</span>
-                <span className="text-gray-400">:</span>{" "}
-                <span className="text-orange-300">&quot;string?&quot;</span>
-                {"  "}
-                <span className="text-gray-500">// Apple DMA token</span>
+                <span className="text-orange-300">&quot;string&quot;</span>
+                {"           "}
+                <span className="text-gray-500">// 2-letter code, default &quot;de&quot;</span>
                 {"\n"}
                 <span className="text-gray-400">{"}"}</span>
               </code>
@@ -218,8 +311,79 @@ export default function ApiReferencePage() {
         </div>
       </section>
 
-      {/* GET /v1/products/:appId */}
+      {/* GET /v1/checkout/success */}
       <section className="mt-12">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-medium text-blue-400">
+            GET
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/checkout/success
+          </h3>
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          Verifies a completed checkout session and confirms whether the
+          entitlement was granted. Called by the iOS SDK after the user returns
+          from Stripe Checkout.
+        </p>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Query parameters
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-teal-300">sessionId</span>
+                <span className="text-gray-400">=</span>
+                <span className="text-orange-300">cs_live_...</span>
+                {"  "}
+                <span className="text-gray-500">// required</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Response
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;sessionId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;cs_live_...&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;paymentStatus&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;paid | unpaid | no_payment_required&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;transactionStatus&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;PENDING | SUCCEEDED | UNKNOWN&quot;</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════ Products ════════ */}
+      <section className="mt-16">
+        <h2 className="text-xl font-semibold text-white">Products</h2>
+      </section>
+
+      {/* GET /v1/products/:appId */}
+      <section className="mt-8">
         <div className="flex items-center gap-3">
           <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-medium text-blue-400">
             GET
@@ -321,8 +485,13 @@ export default function ApiReferencePage() {
         </div>
       </section>
 
+      {/* ════════ Entitlements ════════ */}
+      <section className="mt-16">
+        <h2 className="text-xl font-semibold text-white">Entitlements</h2>
+      </section>
+
       {/* GET /v1/entitlements/:userId */}
-      <section className="mt-12">
+      <section className="mt-8">
         <div className="flex items-center gap-3">
           <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-medium text-blue-400">
             GET
@@ -409,8 +578,636 @@ export default function ApiReferencePage() {
         </div>
       </section>
 
-      {/* POST /v1/webhooks/stripe */}
+      {/* ════════ Subscriptions ════════ */}
+      <section className="mt-16">
+        <h2 className="text-xl font-semibold text-white">Subscriptions</h2>
+      </section>
+
+      {/* POST /v1/subscriptions/cancel */}
+      <section className="mt-8">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+            POST
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/subscriptions/cancel
+          </h3>
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          Cancels a subscription at the end of the current billing period. Set{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
+            acceptSaveOffer
+          </code>{" "}
+          to{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
+            true
+          </code>{" "}
+          to apply a 20%-off-for-3-months discount instead of cancelling.
+        </p>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Request body
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;userId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;string&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"            "}
+                <span className="text-gray-500">// required</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;entitlementId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;string&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"     "}
+                <span className="text-gray-500">// required</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;acceptSaveOffer&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">false</span>
+                {"          "}
+                <span className="text-gray-500">// optional, default false</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Response (cancellation)
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;success&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">true</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;cancelAtPeriodEnd&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">true</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Response (save offer accepted)
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;success&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">true</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;saveOfferApplied&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">true</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;discount&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"    "}
+                <span className="text-teal-300">&quot;percentOff&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">20</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"    "}
+                <span className="text-teal-300">&quot;durationMonths&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">3</span>
+                {"\n"}
+                {"  "}
+                <span className="text-gray-400">{"}"}</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+      </section>
+
+      {/* POST /v1/subscriptions/pause */}
       <section className="mt-12">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+            POST
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/subscriptions/pause
+          </h3>
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          Pauses an active subscription. Invoices will not be generated while
+          paused. Only active subscriptions can be paused.
+        </p>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Request body
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;userId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;string&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"        "}
+                <span className="text-gray-500">// required</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;entitlementId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;string&quot;</span>
+                {"  "}
+                <span className="text-gray-500">// required</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Response
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;success&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">true</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;status&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;PAUSED&quot;</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+      </section>
+
+      {/* POST /v1/subscriptions/resume */}
+      <section className="mt-12">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+            POST
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/subscriptions/resume
+          </h3>
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          Resumes a paused subscription. Billing restarts immediately.
+        </p>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Request body
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;userId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;string&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"        "}
+                <span className="text-gray-500">// required</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;entitlementId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;string&quot;</span>
+                {"  "}
+                <span className="text-gray-500">// required</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Response
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;success&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">true</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;status&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;ACTIVE&quot;</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════ Billing Portal ════════ */}
+      <section className="mt-16">
+        <h2 className="text-xl font-semibold text-white">Billing Portal</h2>
+      </section>
+
+      {/* POST /v1/portal */}
+      <section className="mt-8">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+            POST
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/portal
+          </h3>
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          Creates a billing portal session so an end user can manage their
+          subscription, update payment methods, and view invoices.
+        </p>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Request body
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;userId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;string&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"     "}
+                <span className="text-gray-500">// required</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;returnUrl&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;string&quot;</span>
+                {"  "}
+                <span className="text-gray-500">// required, URL to return to after portal</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Response
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;url&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;https://billing.stripe.com/...&quot;</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════ GDPR ════════ */}
+      <section className="mt-16">
+        <h2 className="text-xl font-semibold text-white">GDPR</h2>
+      </section>
+
+      {/* GET /v1/gdpr/export */}
+      <section className="mt-8">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-medium text-blue-400">
+            GET
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/gdpr/export
+          </h3>
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          Returns all data held for a user as JSON. Implements GDPR Article 15
+          (right of access) and Article 20 (data portability). Stripe internal
+          IDs are redacted from the export.
+        </p>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Query parameters
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-teal-300">userId</span>
+                <span className="text-gray-400">=</span>
+                <span className="text-orange-300">user_123</span>
+                {"  "}
+                <span className="text-gray-500">// required</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Response
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;customer&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"    "}
+                <span className="text-teal-300">&quot;externalUserId&quot;</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;email&quot;</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;name&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"    "}
+                <span className="text-teal-300">&quot;countryCode&quot;</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;gdprConsentAt&quot;</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;createdAt&quot;</span>
+                {"\n"}
+                {"  "}
+                <span className="text-gray-400">{"}"}</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;entitlements&quot;</span>
+                <span className="text-gray-400">: [</span>
+                {"\n"}
+                {"    "}
+                <span className="text-gray-400">{"{"}</span>{" "}
+                <span className="text-teal-300">&quot;productName&quot;</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;status&quot;</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;source&quot;</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;currentPeriodEnd&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"      "}
+                <span className="text-teal-300">&quot;cancelAtPeriodEnd&quot;</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;createdAt&quot;</span>{" "}
+                <span className="text-gray-400">{"}"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-gray-400">]</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;transactions&quot;</span>
+                <span className="text-gray-400">: [</span>
+                {"\n"}
+                {"    "}
+                <span className="text-gray-400">{"{"}</span>{" "}
+                <span className="text-teal-300">&quot;amountTotal&quot;</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;amountSubtotal&quot;</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;amountTax&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"      "}
+                <span className="text-teal-300">&quot;vatRate&quot;</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;vatCountry&quot;</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;currency&quot;</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;status&quot;</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;createdAt&quot;</span>{" "}
+                <span className="text-gray-400">{"}"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-gray-400">]</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+      </section>
+
+      {/* DELETE /v1/gdpr/delete */}
+      <section className="mt-12">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-red-500/10 px-2 py-0.5 text-xs font-mono font-medium text-red-400">
+            DELETE
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/gdpr/delete
+          </h3>
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          Anonymises all PII for a user (GDPR Article 17 — right to erasure).
+          Email, name, and Stripe customer ID are scrubbed. Financial records
+          (amounts, dates, tax info) are retained for 10-year tax compliance
+          (GoBD). The Stripe customer is also deleted.
+        </p>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Query parameters
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-teal-300">userId</span>
+                <span className="text-gray-400">=</span>
+                <span className="text-orange-300">user_123</span>
+                {"  "}
+                <span className="text-gray-500">// required</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Response
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;success&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">true</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;deletedAt&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;2026-03-04T10:30:00.000Z&quot;</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════ Apple Reporting ════════ */}
+      <section className="mt-16">
+        <h2 className="text-xl font-semibold text-white">Apple Reporting</h2>
+      </section>
+
+      {/* POST /v1/apple/report */}
+      <section className="mt-8">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+            POST
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/apple/report
+          </h3>
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          Manually triggers a transaction report to Apple&apos;s External Purchase
+          Server API. Requires Apple credentials (Key ID, Issuer ID, Private
+          Key, Bundle ID) to be configured in the dashboard.
+        </p>
+        <div className="mt-2 rounded-md border border-yellow-500/20 bg-yellow-500/5 px-4 py-2.5">
+          <p className="text-xs text-yellow-300">
+            This endpoint uses <strong>dashboard session auth</strong> (Clerk),
+            not Bearer token auth. It is intended for use from the dashboard,
+            not from client apps.
+          </p>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Request body
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;appId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;string&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"          "}
+                <span className="text-gray-500">// required</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;transactionId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;string&quot;</span>
+                {"  "}
+                <span className="text-gray-500">// required</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Response
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;success&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">true</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════ Webhooks ════════ */}
+      <section className="mt-16">
+        <h2 className="text-xl font-semibold text-white">Webhooks</h2>
+      </section>
+
+      {/* POST /v1/webhooks/stripe */}
+      <section className="mt-8">
         <div className="flex items-center gap-3">
           <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
             POST
@@ -463,7 +1260,7 @@ export default function ApiReferencePage() {
       </section>
 
       {/* Error responses */}
-      <section className="mt-12">
+      <section className="mt-16">
         <h2 className="text-xl font-semibold text-white">Error Responses</h2>
         <p className="mt-3 text-sm text-gray-400">
           All error responses follow a consistent format:
@@ -498,6 +1295,10 @@ export default function ApiReferencePage() {
             </thead>
             <tbody className="divide-y divide-white/5">
               <tr>
+                <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">400</td>
+                <td className="py-2.5 text-gray-400">Invalid JSON or validation error</td>
+              </tr>
+              <tr>
                 <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">401</td>
                 <td className="py-2.5 text-gray-400">Missing or invalid API key</td>
               </tr>
@@ -510,8 +1311,12 @@ export default function ApiReferencePage() {
                 <td className="py-2.5 text-gray-400">Resource not found</td>
               </tr>
               <tr>
+                <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">409</td>
+                <td className="py-2.5 text-gray-400">Conflict (e.g. already paused, already deleted)</td>
+              </tr>
+              <tr>
                 <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">422</td>
-                <td className="py-2.5 text-gray-400">Validation error (check request body)</td>
+                <td className="py-2.5 text-gray-400">Precondition not met (e.g. no Stripe account connected)</td>
               </tr>
               <tr>
                 <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">500</td>

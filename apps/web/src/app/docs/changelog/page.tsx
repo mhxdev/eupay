@@ -29,7 +29,7 @@ export default function ChangelogPage() {
             <ul className="mt-2 space-y-1.5 text-sm text-gray-400">
               <li className="flex items-start gap-2">
                 <span className="mt-1 text-teal-400">&#8226;</span>
-                SwiftUI checkout flow with one-line <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">.eupayCheckout(productId:)</code> modifier
+                Checkout flow via <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">purchase(product:userId:presenting:)</code> with automatic DMA disclosure
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-1 text-teal-400">&#8226;</span>
