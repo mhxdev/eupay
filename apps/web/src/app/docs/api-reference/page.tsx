@@ -1,3 +1,5 @@
+import { DocsNavigation } from "../DocsNavigation"
+
 export default function ApiReferencePage() {
   return (
     <article className="prose-docs">
@@ -1349,6 +1351,11 @@ export default function ApiReferencePage() {
           </table>
         </div>
       </section>
+
+      <DocsNavigation
+        prev={{ href: "/docs/dma-compliance", label: "DMA Compliance" }}
+        next={{ href: "/docs/changelog", label: "Changelog" }}
+      />
     </article>
   )
 }

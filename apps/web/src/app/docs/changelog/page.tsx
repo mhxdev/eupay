@@ -1,3 +1,5 @@
+import { DocsNavigation } from "../DocsNavigation"
+
 export default function ChangelogPage() {
   return (
     <article className="prose-docs">
@@ -127,6 +129,10 @@ export default function ChangelogPage() {
           </div>
         </div>
       </section>
+
+      <DocsNavigation
+        prev={{ href: "/docs/api-reference", label: "API Reference" }}
+      />
     </article>
   )
 }

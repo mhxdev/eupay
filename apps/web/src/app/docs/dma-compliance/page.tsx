@@ -1,3 +1,5 @@
+import { DocsNavigation } from "../DocsNavigation"
+
 export default function DMACompliancePage() {
   return (
     <article className="prose-docs">
@@ -428,6 +430,11 @@ export default function DMACompliancePage() {
           </details>
         </div>
       </section>
+
+      <DocsNavigation
+        prev={{ href: "/docs/integration-guide", label: "Integration Guide" }}
+        next={{ href: "/docs/api-reference", label: "API Reference" }}
+      />
     </article>
   )
 }

@@ -48,7 +48,7 @@ export function DocsSidebar({ sections }: { sections: SidebarSection[] }) {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="fixed top-14 left-0 hidden h-[calc(100vh-3.5rem)] w-64 overflow-y-auto border-r border-white/10 bg-[#0a0f1e] px-4 py-8 md:block">
+      <aside className="fixed top-14 left-0 hidden h-[calc(100vh-3.5rem)] w-64 overflow-y-auto border-r border-white/10 bg-white/[0.02] px-4 py-8 md:block">
         {nav}
       </aside>
 

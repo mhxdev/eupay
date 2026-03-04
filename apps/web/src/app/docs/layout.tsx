@@ -3,23 +3,19 @@ import { DocsSidebar } from "./DocsSidebar"
 
 const sections = [
   {
-    title: "GET STARTED",
-    links: [{ href: "/docs/getting-started", label: "Getting Started" }],
-  },
-  {
-    title: "INTEGRATION",
+    title: "GUIDES",
     links: [
+      { href: "/docs/getting-started", label: "Getting Started" },
       { href: "/docs/integration-guide", label: "Integration Guide" },
-      { href: "/docs/api-reference", label: "API Reference" },
+      { href: "/docs/dma-compliance", label: "DMA Compliance" },
     ],
   },
   {
-    title: "COMPLIANCE",
-    links: [{ href: "/docs/dma-compliance", label: "DMA Compliance" }],
-  },
-  {
-    title: "MORE",
-    links: [{ href: "/docs/changelog", label: "Changelog" }],
+    title: "REFERENCE",
+    links: [
+      { href: "/docs/api-reference", label: "API Reference" },
+      { href: "/docs/changelog", label: "Changelog" },
+    ],
   },
 ]
 

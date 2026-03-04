@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { DocsNavigation } from "../DocsNavigation"
 
 export default function IntegrationGuidePage() {
   return (
@@ -701,27 +702,10 @@ export default function IntegrationGuidePage() {
         </p>
       </section>
 
-      {/* Next */}
-      <section className="mt-12 rounded-lg border border-white/10 bg-white/[0.03] px-6 py-5">
-        <p className="text-sm font-medium text-white">Next steps</p>
-        <p className="mt-1 text-sm text-gray-400">
-          See the{" "}
-          <Link
-            href="/docs/api-reference"
-            className="text-teal-400 underline underline-offset-2 hover:text-teal-300"
-          >
-            API Reference
-          </Link>{" "}
-          for the full REST API, or read about{" "}
-          <Link
-            href="/docs/dma-compliance"
-            className="text-teal-400 underline underline-offset-2 hover:text-teal-300"
-          >
-            DMA Compliance
-          </Link>{" "}
-          to understand what Apple requires.
-        </p>
-      </section>
+      <DocsNavigation
+        prev={{ href: "/docs/getting-started", label: "Getting Started" }}
+        next={{ href: "/docs/dma-compliance", label: "DMA Compliance" }}
+      />
     </article>
   )
 }

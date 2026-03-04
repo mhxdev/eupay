@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { DocsNavigation } from "../DocsNavigation"
 
 export default function GettingStartedPage() {
   return (
@@ -250,39 +251,9 @@ export default function GettingStartedPage() {
         </p>
       </section>
 
-      {/* Next steps */}
-      <section className="mt-12 rounded-lg border border-white/10 bg-white/[0.03] px-6 py-5">
-        <p className="text-sm font-medium text-white">Next steps</p>
-        <ul className="mt-2 space-y-1.5 text-sm text-gray-400">
-          <li>
-            <Link
-              href="/docs/integration-guide"
-              className="text-teal-400 underline underline-offset-2 hover:text-teal-300"
-            >
-              Integration Guide
-            </Link>{" "}
-            — error handling, entitlements, subscriptions, non-EU fallback
-          </li>
-          <li>
-            <Link
-              href="/docs/dma-compliance"
-              className="text-teal-400 underline underline-offset-2 hover:text-teal-300"
-            >
-              DMA Compliance
-            </Link>{" "}
-            — Apple entitlement setup and what the SDK handles for you
-          </li>
-          <li>
-            <Link
-              href="/docs/api-reference"
-              className="text-teal-400 underline underline-offset-2 hover:text-teal-300"
-            >
-              API Reference
-            </Link>{" "}
-            — full REST API documentation
-          </li>
-        </ul>
-      </section>
+      <DocsNavigation
+        next={{ href: "/docs/integration-guide", label: "Integration Guide" }}
+      />
     </article>
   )
 }
