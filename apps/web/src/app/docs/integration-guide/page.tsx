@@ -4,7 +4,7 @@ import { DocsNavigation } from "../DocsNavigation"
 export default function IntegrationGuidePage() {
   return (
     <article className="prose-docs">
-      <h1 className="text-3xl font-bold tracking-tight text-white">
+      <h1 className="text-4xl font-bold tracking-tight text-white">
         Integration Guide
       </h1>
       <p className="mt-4 text-lg text-gray-400">
@@ -20,10 +20,10 @@ export default function IntegrationGuidePage() {
 
       {/* 1. Handling Errors */}
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-white">
           1. Handling Errors
         </h2>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">purchase()</code>{" "}
           returns an <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">EuroPayTransaction</code>{" "}
           on success or throws an <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">EuroPayError</code>:
@@ -134,10 +134,10 @@ export default function IntegrationGuidePage() {
           </pre>
         </div>
         <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] px-5 py-4">
-          <p className="text-sm text-gray-400">
+          <p className="text-base text-gray-300 leading-relaxed">
             <strong className="text-white">Error types:</strong>
           </p>
-          <ul className="mt-2 space-y-1.5 text-sm text-gray-400">
+          <ul className="mt-2 space-y-1.5 text-base text-gray-300 leading-relaxed">
             <li>
               <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">.userCancelled</code>{" "}
               — user dismissed the disclosure or checkout
@@ -164,10 +164,10 @@ export default function IntegrationGuidePage() {
 
       {/* 2. Checking Entitlements */}
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-white">
           2. Checking Entitlements
         </h2>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           After a successful purchase, entitlements are cached locally in the
           Keychain. Refresh them on app launch and check access anywhere:
         </p>
@@ -211,17 +211,17 @@ export default function IntegrationGuidePage() {
             </code>
           </pre>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           The SDK publishes <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">@Published entitlements</code> — observe it in SwiftUI to reactively update your UI when access changes.
         </p>
       </section>
 
       {/* 3. Subscription Management */}
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-white">
           3. Subscription Management
         </h2>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Let subscribers manage their plan through Stripe&apos;s Customer Portal:
         </p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
@@ -250,7 +250,7 @@ export default function IntegrationGuidePage() {
             </code>
           </pre>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           The portal lets users update payment methods, view invoices, and cancel
           or change their subscription. No additional UI needed on your side.
         </p>
@@ -258,10 +258,10 @@ export default function IntegrationGuidePage() {
 
       {/* 4. SwiftUI Integration */}
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-white">
           4. SwiftUI Integration
         </h2>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           A complete paywall view with product loading and purchase:
         </p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
@@ -476,10 +476,10 @@ export default function IntegrationGuidePage() {
 
       {/* 5. Checkout Return Handling */}
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-white">
           5. Checkout Return Handling
         </h2>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           After Stripe Checkout completes, the browser redirects back to your app via
           the <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">returnScheme</code>{" "}
           you configured. The simplest approach:
@@ -497,7 +497,7 @@ export default function IntegrationGuidePage() {
             </code>
           </pre>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           For manual control (e.g. logging), use <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">.onOpenURL</code> instead:
         </p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
@@ -526,7 +526,7 @@ export default function IntegrationGuidePage() {
             </code>
           </pre>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Pick one — don&apos;t use both. Make sure the URL scheme in your{" "}
           <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">Info.plist</code>{" "}
           matches the{" "}
@@ -537,10 +537,10 @@ export default function IntegrationGuidePage() {
 
       {/* 6. Apple Entitlement Setup */}
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-white">
           6. Apple Entitlement Setup
         </h2>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Before submitting to the App Store, request the{" "}
           <strong className="text-white">
             External Purchase Link Entitlement
@@ -614,10 +614,10 @@ export default function IntegrationGuidePage() {
 
       {/* 7. Non-EU Users */}
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-white">
           7. Non-EU Users
         </h2>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           EuroPay only works for EU App Store regions. Use{" "}
           <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">checkRegion()</code>{" "}
           to decide which flow to show:
@@ -656,7 +656,7 @@ export default function IntegrationGuidePage() {
             </code>
           </pre>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Region detection uses StoreKit 2&apos;s{" "}
           <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">Storefront.current</code>{" "}
           — it checks the user&apos;s actual App Store country, not IP geolocation.
@@ -665,16 +665,16 @@ export default function IntegrationGuidePage() {
 
       {/* Sandbox */}
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-white">
           Sandbox &amp; Test Mode
         </h2>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           API keys starting with <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">europay_test_</code>{" "}
           use Stripe test mode automatically.
         </p>
         <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] px-5 py-4">
           <p className="text-sm font-medium text-white">Test card numbers</p>
-          <ul className="mt-2 space-y-1.5 text-sm text-gray-400">
+          <ul className="mt-2 space-y-1.5 text-base text-gray-300 leading-relaxed">
             <li>
               <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">4242 4242 4242 4242</code>{" "}
               — Successful payment
@@ -688,11 +688,11 @@ export default function IntegrationGuidePage() {
               — Card declined
             </li>
           </ul>
-          <p className="mt-3 text-sm text-gray-400">
+          <p className="mt-3 text-base text-gray-300 leading-relaxed">
             Use any future expiry date and any 3-digit CVC.
           </p>
         </div>
-        <p className="mt-4 text-sm text-gray-400">
+        <p className="mt-4 text-base text-gray-300 leading-relaxed">
           To test EU region detection in the Simulator, set the storefront to
           an EU country in{" "}
           <strong className="text-white">

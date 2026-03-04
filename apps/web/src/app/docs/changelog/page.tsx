@@ -3,7 +3,7 @@ import { DocsNavigation } from "../DocsNavigation"
 export default function ChangelogPage() {
   return (
     <article className="prose-docs">
-      <h1 className="text-3xl font-bold tracking-tight text-white">
+      <h1 className="text-4xl font-bold tracking-tight text-white">
         Changelog
       </h1>
       <p className="mt-4 text-lg text-gray-400">
@@ -13,13 +13,13 @@ export default function ChangelogPage() {
       {/* v1.0.0 */}
       <section className="mt-12">
         <div className="flex items-baseline gap-3">
-          <h2 className="text-xl font-semibold text-white">v1.0.0</h2>
+          <h2 className="text-2xl font-semibold text-white">v1.0.0</h2>
           <span className="rounded-full bg-teal-500/10 px-3 py-0.5 text-xs font-medium text-teal-400 border border-teal-500/20">
             Latest
           </span>
         </div>
         <p className="mt-1 text-sm text-gray-500">March 2026</p>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Initial release of the EuroPay platform and EuroPayKit iOS SDK.
         </p>
 
@@ -28,7 +28,7 @@ export default function ChangelogPage() {
             <h3 className="text-sm font-semibold text-white">
               EuroPayKit iOS SDK
             </h3>
-            <ul className="mt-2 space-y-1.5 text-sm text-gray-400">
+            <ul className="mt-2 space-y-1.5 text-base text-gray-300 leading-relaxed">
               <li className="flex items-start gap-2">
                 <span className="mt-1 text-teal-400">&#8226;</span>
                 Checkout flow via <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">purchase(product:userId:presenting:)</code> with automatic DMA disclosure
@@ -68,7 +68,7 @@ export default function ChangelogPage() {
             <h3 className="text-sm font-semibold text-white">
               Backend API
             </h3>
-            <ul className="mt-2 space-y-1.5 text-sm text-gray-400">
+            <ul className="mt-2 space-y-1.5 text-base text-gray-300 leading-relaxed">
               <li className="flex items-start gap-2">
                 <span className="mt-1 text-teal-400">&#8226;</span>
                 Stripe Checkout session creation with EU VAT via Stripe Tax
@@ -100,7 +100,7 @@ export default function ChangelogPage() {
             <h3 className="text-sm font-semibold text-white">
               Developer Dashboard
             </h3>
-            <ul className="mt-2 space-y-1.5 text-sm text-gray-400">
+            <ul className="mt-2 space-y-1.5 text-base text-gray-300 leading-relaxed">
               <li className="flex items-start gap-2">
                 <span className="mt-1 text-teal-400">&#8226;</span>
                 Revenue overview — MRR, active subscriptions, churn rate, 12-month chart

@@ -3,7 +3,7 @@ import { DocsNavigation } from "../DocsNavigation"
 export default function ApiReferencePage() {
   return (
     <article className="prose-docs">
-      <h1 className="text-3xl font-bold tracking-tight text-white">
+      <h1 className="text-4xl font-bold tracking-tight text-white">
         API Reference
       </h1>
       <p className="mt-4 text-lg text-gray-400">
@@ -26,8 +26,8 @@ export default function ApiReferencePage() {
 
       {/* Authentication */}
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">Authentication</h2>
-        <p className="mt-3 text-sm text-gray-400">
+        <h2 className="text-2xl font-semibold text-white">Authentication</h2>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Include your API key in the{" "}
           <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
             Authorization
@@ -43,7 +43,7 @@ export default function ApiReferencePage() {
             </code>
           </pre>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           API keys are generated in the{" "}
           <strong className="text-white">Dashboard &rarr; Apps</strong> section.
           Keys are shown once at creation — store them securely.
@@ -52,7 +52,7 @@ export default function ApiReferencePage() {
 
       {/* Endpoints table */}
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">Endpoints</h2>
+        <h2 className="text-2xl font-semibold text-white">Endpoints</h2>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -223,7 +223,7 @@ export default function ApiReferencePage() {
 
       {/* ════════ Checkout ════════ */}
       <section className="mt-16">
-        <h2 className="text-xl font-semibold text-white">Checkout</h2>
+        <h2 className="text-2xl font-semibold text-white">Checkout</h2>
       </section>
 
       {/* POST /v1/checkout/create */}
@@ -236,7 +236,7 @@ export default function ApiReferencePage() {
             /v1/checkout/create
           </h3>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Creates a Stripe Checkout Session. This is the main endpoint called
           by the iOS SDK to initiate a purchase.
         </p>
@@ -346,7 +346,7 @@ export default function ApiReferencePage() {
             /v1/checkout/success
           </h3>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Verifies a completed checkout session and confirms whether the
           entitlement was granted. Called by the iOS SDK after the user returns
           from Stripe Checkout.
@@ -404,7 +404,7 @@ export default function ApiReferencePage() {
 
       {/* ════════ Products ════════ */}
       <section className="mt-16">
-        <h2 className="text-xl font-semibold text-white">Products</h2>
+        <h2 className="text-2xl font-semibold text-white">Products</h2>
       </section>
 
       {/* GET /v1/products/:appId */}
@@ -417,7 +417,7 @@ export default function ApiReferencePage() {
             /v1/products/:appId
           </h3>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Returns all active products for a given app. Called by the iOS SDK to
           display available purchase options.
         </p>
@@ -512,7 +512,7 @@ export default function ApiReferencePage() {
 
       {/* ════════ Entitlements ════════ */}
       <section className="mt-16">
-        <h2 className="text-xl font-semibold text-white">Entitlements</h2>
+        <h2 className="text-2xl font-semibold text-white">Entitlements</h2>
       </section>
 
       {/* GET /v1/entitlements/:userId */}
@@ -525,7 +525,7 @@ export default function ApiReferencePage() {
             /v1/entitlements/:userId
           </h3>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Returns all entitlements for a user. Use the optional{" "}
           <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
             ?includeExpired=true
@@ -605,7 +605,7 @@ export default function ApiReferencePage() {
 
       {/* ════════ Subscriptions ════════ */}
       <section className="mt-16">
-        <h2 className="text-xl font-semibold text-white">Subscriptions</h2>
+        <h2 className="text-2xl font-semibold text-white">Subscriptions</h2>
       </section>
 
       {/* POST /v1/subscriptions/cancel */}
@@ -618,7 +618,7 @@ export default function ApiReferencePage() {
             /v1/subscriptions/cancel
           </h3>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Cancels a subscription at the end of the current billing period. Set{" "}
           <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
             acceptSaveOffer
@@ -751,7 +751,7 @@ export default function ApiReferencePage() {
             /v1/subscriptions/pause
           </h3>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Pauses an active subscription. Invoices will not be generated while
           paused. Only active subscriptions can be paused.
         </p>
@@ -823,7 +823,7 @@ export default function ApiReferencePage() {
             /v1/subscriptions/resume
           </h3>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Resumes a paused subscription. Billing restarts immediately.
         </p>
 
@@ -886,7 +886,7 @@ export default function ApiReferencePage() {
 
       {/* ════════ Billing Portal ════════ */}
       <section className="mt-16">
-        <h2 className="text-xl font-semibold text-white">Billing Portal</h2>
+        <h2 className="text-2xl font-semibold text-white">Billing Portal</h2>
       </section>
 
       {/* POST /v1/portal */}
@@ -899,7 +899,7 @@ export default function ApiReferencePage() {
             /v1/portal
           </h3>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Creates a billing portal session so an end user can manage their
           subscription, update payment methods, and view invoices.
         </p>
@@ -957,7 +957,7 @@ export default function ApiReferencePage() {
 
       {/* ════════ GDPR ════════ */}
       <section className="mt-16">
-        <h2 className="text-xl font-semibold text-white">GDPR</h2>
+        <h2 className="text-2xl font-semibold text-white">GDPR</h2>
       </section>
 
       {/* GET /v1/gdpr/export */}
@@ -970,7 +970,7 @@ export default function ApiReferencePage() {
             /v1/gdpr/export
           </h3>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Returns all data held for a user as JSON. Implements GDPR Article 15
           (right of access) and Article 20 (data portability). Stripe internal
           IDs are redacted from the export.
@@ -1096,7 +1096,7 @@ export default function ApiReferencePage() {
             /v1/gdpr/delete
           </h3>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Anonymises all PII for a user (GDPR Article 17 — right to erasure).
           Email, name, and Stripe customer ID are scrubbed. Financial records
           (amounts, dates, tax info) are retained for 10-year tax compliance
@@ -1149,7 +1149,7 @@ export default function ApiReferencePage() {
 
       {/* ════════ Apple Reporting ════════ */}
       <section className="mt-16">
-        <h2 className="text-xl font-semibold text-white">Apple Reporting</h2>
+        <h2 className="text-2xl font-semibold text-white">Apple Reporting</h2>
       </section>
 
       {/* POST /v1/apple/report */}
@@ -1162,7 +1162,7 @@ export default function ApiReferencePage() {
             /v1/apple/report
           </h3>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Manually triggers a transaction report to Apple&apos;s External Purchase
           Server API. Requires Apple credentials (Key ID, Issuer ID, Private
           Key, Bundle ID) to be configured in the dashboard.
@@ -1228,7 +1228,7 @@ export default function ApiReferencePage() {
 
       {/* ════════ Webhooks ════════ */}
       <section className="mt-16">
-        <h2 className="text-xl font-semibold text-white">Webhooks</h2>
+        <h2 className="text-2xl font-semibold text-white">Webhooks</h2>
       </section>
 
       {/* POST /v1/webhooks/stripe */}
@@ -1241,11 +1241,11 @@ export default function ApiReferencePage() {
             /v1/webhooks/stripe
           </h3>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Receives Stripe webhook events. Authenticated via Stripe signature
           verification (no API key required). This endpoint processes:
         </p>
-        <ul className="mt-3 space-y-1.5 text-sm text-gray-400">
+        <ul className="mt-3 space-y-1.5 text-base text-gray-300 leading-relaxed">
           <li className="flex items-start gap-2">
             <span className="mt-1 text-teal-400">&#8226;</span>
             <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">checkout.session.completed</code>{" "}
@@ -1286,8 +1286,8 @@ export default function ApiReferencePage() {
 
       {/* Error responses */}
       <section className="mt-16">
-        <h2 className="text-xl font-semibold text-white">Error Responses</h2>
-        <p className="mt-3 text-sm text-gray-400">
+        <h2 className="text-2xl font-semibold text-white">Error Responses</h2>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           All error responses follow a consistent format:
         </p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">

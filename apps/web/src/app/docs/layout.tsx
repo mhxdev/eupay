@@ -13,7 +13,7 @@ export default function DocsLayout({
 
       {/* Main content */}
       <main className="pt-14 md:pl-64">
-        <div className="mx-auto max-w-3xl px-6 py-12 md:py-16">
+        <div className="max-w-[800px] px-8 py-12 md:py-16">
           {children}
         </div>
       </main>

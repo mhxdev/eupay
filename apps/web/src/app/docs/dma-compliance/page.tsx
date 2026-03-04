@@ -3,7 +3,7 @@ import { DocsNavigation } from "../DocsNavigation"
 export default function DMACompliancePage() {
   return (
     <article className="prose-docs">
-      <h1 className="text-3xl font-bold tracking-tight text-white">
+      <h1 className="text-4xl font-bold tracking-tight text-white">
         DMA Compliance
       </h1>
       <p className="mt-4 text-lg text-gray-400">
@@ -13,10 +13,10 @@ export default function DMACompliancePage() {
 
       {/* What you need to do — moved to top */}
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-white">
           What You Need to Do
         </h2>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           Your only requirement is to request the External Purchase Link
           Entitlement from Apple. EuroPay handles everything else.
         </p>
@@ -30,7 +30,7 @@ export default function DMACompliancePage() {
               <p className="text-sm font-medium text-white">
                 Request the entitlement in App Store Connect
               </p>
-              <p className="mt-1 text-sm text-gray-400">
+              <p className="mt-1 text-base text-gray-300 leading-relaxed">
                 Go to your app in{" "}
                 <a
                   href="https://appstoreconnect.apple.com"
@@ -89,14 +89,14 @@ export default function DMACompliancePage() {
               <p className="text-sm font-medium text-white">
                 Upload your Apple credentials in the EuroPay dashboard
               </p>
-              <p className="mt-1 text-sm text-gray-400">
+              <p className="mt-1 text-base text-gray-300 leading-relaxed">
                 For automated transaction reporting, EuroPay needs to sign JWT
                 tokens for Apple&apos;s External Purchase Server API on your behalf.
                 In the dashboard under your app&apos;s{" "}
                 <strong className="text-white">Apple Reporting</strong>{" "}
                 settings, provide:
               </p>
-              <ul className="mt-2 space-y-1.5 text-sm text-gray-400">
+              <ul className="mt-2 space-y-1.5 text-base text-gray-300 leading-relaxed">
                 <li className="flex items-start gap-2">
                   <span className="mt-1 text-teal-400">&#8226;</span>
                   <strong className="text-white">Key ID</strong> — from the App Store Connect API keys page
@@ -125,7 +125,7 @@ export default function DMACompliancePage() {
               <p className="text-sm font-medium text-white">
                 That&apos;s it
               </p>
-              <p className="mt-1 text-sm text-gray-400">
+              <p className="mt-1 text-base text-gray-300 leading-relaxed">
                 EuroPay handles the disclosure UI, transaction reporting, null
                 reports, and CTF tracking. You ship your app as normal.
               </p>
@@ -202,19 +202,19 @@ export default function DMACompliancePage() {
 
       {/* What the DMA requires */}
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-white">
           What the Digital Markets Act Requires
         </h2>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           The EU Digital Markets Act (DMA), specifically Article 5(7), requires
           Apple to allow iOS developers to use alternative payment processors
           for users in EU member states. This has been in effect since March
           2024.
         </p>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           In practice, this means:
         </p>
-        <ul className="mt-4 space-y-3 text-sm text-gray-400">
+        <ul className="mt-4 space-y-3 text-base text-gray-300 leading-relaxed">
           <li className="flex items-start gap-3">
             <span className="mt-0.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-teal-400" />
             <span>
@@ -256,10 +256,10 @@ export default function DMACompliancePage() {
 
       {/* How EuroPay handles it */}
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-white">
           How EuroPay Handles It
         </h2>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
           EuroPay automates every DMA requirement so your integration stays
           simple.
         </p>
@@ -267,10 +267,10 @@ export default function DMACompliancePage() {
         <div className="mt-6 space-y-6">
           {/* Disclosure modal */}
           <div className="rounded-lg border border-white/10 bg-white/[0.03] px-5 py-4">
-            <h3 className="text-base font-semibold text-white">
+            <h3 className="text-xl font-semibold text-white">
               Disclosure Modal
             </h3>
-            <p className="mt-2 text-sm text-gray-400">
+            <p className="mt-2 text-base text-gray-300 leading-relaxed">
               On iOS 18.1+, the SDK calls Apple&apos;s{" "}
               <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
                 ExternalPurchaseCustomLink.showNotice()
@@ -284,14 +284,14 @@ export default function DMACompliancePage() {
 
           {/* Apple reporting */}
           <div className="rounded-lg border border-white/10 bg-white/[0.03] px-5 py-4">
-            <h3 className="text-base font-semibold text-white">
+            <h3 className="text-xl font-semibold text-white">
               Apple Transaction Reporting
             </h3>
-            <p className="mt-2 text-sm text-gray-400">
+            <p className="mt-2 text-base text-gray-300 leading-relaxed">
               EuroPay automatically reports every transaction to Apple&apos;s
               External Purchase Server API. This includes:
             </p>
-            <ul className="mt-2 space-y-1.5 text-sm text-gray-400">
+            <ul className="mt-2 space-y-1.5 text-base text-gray-300 leading-relaxed">
               <li className="flex items-start gap-2">
                 <span className="mt-1 text-teal-400">&#8226;</span>
                 Completed purchases — reported via Stripe webhook handler
@@ -318,17 +318,17 @@ export default function DMACompliancePage() {
 
           {/* CTF */}
           <div className="rounded-lg border border-white/10 bg-white/[0.03] px-5 py-4">
-            <h3 className="text-base font-semibold text-white">
+            <h3 className="text-xl font-semibold text-white">
               Core Technology Fee (CTF)
             </h3>
-            <p className="mt-2 text-sm text-gray-400">
+            <p className="mt-2 text-base text-gray-300 leading-relaxed">
               Apple&apos;s 5% CTF is calculated on each transaction and included in
               the fee breakdown shown in your dashboard. EuroPay tracks this
               automatically — you don&apos;t need to calculate or remit it
               separately. Apple invoices developers directly based on the
               transaction reports.
             </p>
-            <div className="mt-4 rounded-md border border-white/5 bg-white/[0.02] px-4 py-3 space-y-2 text-sm text-gray-400">
+            <div className="mt-4 rounded-md border border-white/5 bg-white/[0.02] px-4 py-3 space-y-2 text-base text-gray-300 leading-relaxed">
               <p className="font-medium text-gray-300">CTF Details</p>
               <ul className="space-y-1.5">
                 <li className="flex items-start gap-2">
@@ -362,7 +362,7 @@ export default function DMACompliancePage() {
 
       {/* FAQ */}
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-white">
           Frequently Asked Questions
         </h2>
         <div className="mt-6 space-y-4">
@@ -370,7 +370,7 @@ export default function DMACompliancePage() {
             <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-white select-none">
               Does this only apply to EU users?
             </summary>
-            <p className="px-5 pb-4 text-sm text-gray-400">
+            <p className="px-5 pb-4 text-base text-gray-300 leading-relaxed">
               Yes. The DMA only applies to users located in EU member states.
               EuroPay&apos;s iOS SDK detects the user&apos;s App Store storefront and only
               offers alternative checkout for EU storefronts. Users outside the EU
@@ -382,7 +382,7 @@ export default function DMACompliancePage() {
             <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-white select-none">
               What happens if I don&apos;t report transactions to Apple?
             </summary>
-            <p className="px-5 pb-4 text-sm text-gray-400">
+            <p className="px-5 pb-4 text-base text-gray-300 leading-relaxed">
               Apple requires all external purchase transactions to be reported
               within 24&nbsp;hours. Failure to report may result in Apple revoking
               your External Purchase Link Entitlement and removing your app from
@@ -395,7 +395,7 @@ export default function DMACompliancePage() {
             <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-white select-none">
               Do I need my own Stripe account?
             </summary>
-            <p className="px-5 pb-4 text-sm text-gray-400">
+            <p className="px-5 pb-4 text-base text-gray-300 leading-relaxed">
               Yes. EuroPay uses Stripe Connect to process payments directly into
               your Stripe account. You&apos;ll connect your Stripe account during
               onboarding. EuroPay charges a 1.5% platform fee on each transaction,
@@ -407,7 +407,7 @@ export default function DMACompliancePage() {
             <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-white select-none">
               How do fees stack up compared to Apple IAP?
             </summary>
-            <p className="px-5 pb-4 text-sm text-gray-400">
+            <p className="px-5 pb-4 text-base text-gray-300 leading-relaxed">
               With Apple IAP you pay 15–30%. With EuroPay, your total fees are:
               Stripe processing (~1.5% + &#8364;0.25), Apple&apos;s 5% CTF, and
               EuroPay&apos;s 1.5% — roughly 8% total versus Apple&apos;s 15–30%.
@@ -420,7 +420,7 @@ export default function DMACompliancePage() {
             <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-white select-none">
               How long does the entitlement approval take?
             </summary>
-            <p className="px-5 pb-4 text-sm text-gray-400">
+            <p className="px-5 pb-4 text-base text-gray-300 leading-relaxed">
               Apple typically reviews and approves External Purchase Link
               Entitlement requests within 2–5 business days. You must first agree
               to Apple&apos;s Alternative Terms Addendum for Apps in the EU. Once
