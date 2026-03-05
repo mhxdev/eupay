@@ -159,6 +159,18 @@ export default function DMACompliancePage() {
         </div>
       </section>
 
+      {/* Digital content scope note */}
+      <div className="mt-8 rounded-lg border border-teal-500/20 bg-teal-500/5 px-6 py-5">
+        <p className="text-sm font-medium text-white">Digital content only</p>
+        <p className="mt-2 text-sm text-gray-300 leading-relaxed">
+          EuroPay&apos;s checkout is designed for digital content and services
+          (in-app purchases, subscriptions, premium features). If your app sells
+          physical goods, the standard 14-day EU withdrawal right applies and
+          cannot be waived — you must implement your own return and withdrawal
+          process independently of EuroPay.
+        </p>
+      </div>
+
       {/* Legal Basis */}
       <section className="mt-12">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
