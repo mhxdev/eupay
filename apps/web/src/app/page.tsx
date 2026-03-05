@@ -432,42 +432,23 @@ function CtaSection() {
 
 function Footer() {
   return (
-    <footer className="border-t border-white/10 py-12 px-6">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 md:flex-row">
-        <div className="flex items-center gap-6 text-sm text-gray-500">
-          <Link href="/docs" className="hover:text-gray-300 transition-colors">
-            Docs
+    <footer className="border-t border-white/10 py-6 px-6">
+      <div className="mx-auto flex max-w-6xl items-center justify-center gap-6 text-sm text-gray-500">
+        <p>
+          &copy; 2026{" "}
+          <Link href="/" className="hover:text-gray-300 transition-colors">
+            EuroPay
           </Link>
-          <a
-            href="https://github.com/mhxdev/EuroPayKit"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-gray-300 transition-colors"
-          >
-            GitHub
-          </a>
-          <Link href="/pricing" className="hover:text-gray-300 transition-colors">
-            Pricing
-          </Link>
-          <Link href="/dashboard" className="hover:text-gray-300 transition-colors">
-            Dashboard
-          </Link>
-          <Link href="/privacy" className="hover:text-gray-300 transition-colors">
-            Privacy Policy
-          </Link>
-          <Link href="/impressum" className="hover:text-gray-300 transition-colors">
-            Impressum
-          </Link>
-          <Link href="/changelog" className="hover:text-gray-300 transition-colors">
-            Changelog
-          </Link>
-          <Link href="/status" className="hover:text-gray-300 transition-colors">
-            Status
-          </Link>
-        </div>
-        <p className="text-xs text-gray-600">
-          &copy; 2026 EuroPay. All rights reserved.
         </p>
+        <Link href="/impressum" className="hover:text-gray-300 transition-colors">
+          Impressum
+        </Link>
+        <Link href="/privacy" className="hover:text-gray-300 transition-colors">
+          Privacy
+        </Link>
+        <Link href="/terms" className="hover:text-gray-300 transition-colors">
+          Terms
+        </Link>
       </div>
     </footer>
   )

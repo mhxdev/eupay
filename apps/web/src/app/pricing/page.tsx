@@ -192,18 +192,26 @@ export default function PricingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-8 px-6">
-        <div className="mx-auto max-w-4xl flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-300 transition-colors"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to EuroPay
-          </Link>
-          <p className="text-xs text-gray-600">
-            &copy; 2026 EuroPay. All rights reserved.
+      <footer className="border-t border-white/10 py-6 px-6">
+        <div className="mx-auto flex max-w-4xl items-center justify-center gap-6 text-sm text-gray-500">
+          <p>
+            &copy; 2026{" "}
+            <Link
+              href="/"
+              className="hover:text-gray-300 transition-colors"
+            >
+              EuroPay
+            </Link>
           </p>
+          <Link href="/impressum" className="hover:text-gray-300 transition-colors">
+            Impressum
+          </Link>
+          <Link href="/privacy" className="hover:text-gray-300 transition-colors">
+            Privacy
+          </Link>
+          <Link href="/terms" className="hover:text-gray-300 transition-colors">
+            Terms
+          </Link>
         </div>
       </footer>
     </div>
