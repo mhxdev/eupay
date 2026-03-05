@@ -13,9 +13,116 @@ const checkoutCreateSchema = z.object({
   userEmail: z.string().email().optional(),
   successUrl: z.string().url(),
   cancelUrl: z.string().url(),
-  locale: z.string().length(2).default('de'),
+  // iOS SDK should send: Locale.current.language.languageCode?.identifier ?? "en"
+  locale: z.string().length(2).default('en'),
   appleExternalPurchaseToken: z.string().optional(),
 })
+
+// Localized withdrawal-right (Widerrufsrecht) waiver text for EU Checkout.
+// Under EU Consumer Rights Directive 2011/83/EU Art. 16(m), the consumer must
+// expressly agree and confirm knowledge that beginning performance waives their
+// 14-day withdrawal right. The text MUST be in the consumer's language.
+//
+// ⚠️  LEGAL REVIEW REQUIRED: These translations must be reviewed by a qualified
+// legal translator before production use. Machine translations of legal waiver
+// text carry risk — the structure and meaning must be legally equivalent across
+// all languages. In particular, both required elements must be present:
+//   (1) express consent to begin performance immediately
+//   (2) acknowledgment that this waives the 14-day withdrawal right
+const withdrawalWaiverTranslations: Record<string, { label: string; option: string }> = {
+  de: {
+    label: 'Widerrufsrecht-Verzicht bestätigen',
+    option: 'Ja, Lieferung sofort — Widerruf entfällt',
+  },
+  en: {
+    label: 'Confirm withdrawal right waiver',
+    option: 'Yes, deliver immediately — I waive my 14-day withdrawal right',
+  },
+  fr: {
+    label: 'Confirmer la renonciation au droit de rétractation',
+    option: 'Oui, livraison immédiate — je renonce à mon droit de rétractation de 14 jours',
+  },
+  nl: {
+    label: 'Bevestig afstand van herroepingsrecht',
+    option: 'Ja, direct leveren — ik doe afstand van mijn herroepingsrecht van 14 dagen',
+  },
+  it: {
+    label: 'Conferma rinuncia al diritto di recesso',
+    option: 'Sì, consegna immediata — rinuncio al mio diritto di recesso di 14 giorni',
+  },
+  es: {
+    label: 'Confirmar renuncia al derecho de desistimiento',
+    option: 'Sí, entrega inmediata — renuncio a mi derecho de desistimiento de 14 días',
+  },
+  pt: {
+    label: 'Confirmar renúncia ao direito de retratação',
+    option: 'Sim, entrega imediata — renuncio ao meu direito de retratação de 14 dias',
+  },
+  pl: {
+    label: 'Potwierdź zrzeczenie się prawa do odstąpienia',
+    option: 'Tak, natychmiastowa dostawa — zrzekam się 14-dniowego prawa do odstąpienia',
+  },
+  sv: {
+    label: 'Bekräfta avstående av ångerrätt',
+    option: 'Ja, leverera omedelbart — jag avstår min 14 dagars ångerrätt',
+  },
+  da: {
+    label: 'Bekræft frafald af fortrydelsesret',
+    option: 'Ja, lever straks — jeg frafalder min 14-dages fortrydelsesret',
+  },
+  fi: {
+    label: 'Vahvista peruuttamisoikeudesta luopuminen',
+    option: 'Kyllä, toimita heti — luovun 14 päivän peruuttamisoikeudestani',
+  },
+  el: {
+    label: 'Επιβεβαίωση παραίτησης από το δικαίωμα υπαναχώρησης',
+    option: 'Ναι, άμεση παράδοση — παραιτούμαι από το 14ήμερο δικαίωμα υπαναχώρησής μου',
+  },
+  cs: {
+    label: 'Potvrdit vzdání se práva na odstoupení',
+    option: 'Ano, dodat ihned — vzdávám se svého 14denního práva na odstoupení',
+  },
+  ro: {
+    label: 'Confirmați renunțarea la dreptul de retragere',
+    option: 'Da, livrare imediată — renunț la dreptul meu de retragere de 14 zile',
+  },
+  hu: {
+    label: 'Elállási jog lemondásának megerősítése',
+    option: 'Igen, azonnali szállítás — lemondok a 14 napos elállási jogomról',
+  },
+  bg: {
+    label: 'Потвърждение за отказ от правото на отказ',
+    option: 'Да, незабавна доставка — отказвам се от 14-дневното си право на отказ',
+  },
+  hr: {
+    label: 'Potvrdi odricanje od prava na odustajanje',
+    option: 'Da, isporuči odmah — odričem se svog 14-dnevnog prava na odustajanje',
+  },
+  sk: {
+    label: 'Potvrdiť vzdanie sa práva na odstúpenie',
+    option: 'Áno, dodať ihneď — vzdávam sa svojho 14-dňového práva na odstúpenie',
+  },
+  sl: {
+    label: 'Potrditev odpovedi pravici do odstopa',
+    option: 'Da, dostavi takoj — odpovedujem se 14-dnevni pravici do odstopa',
+  },
+  et: {
+    label: 'Kinnita taganemisõigusest loobumine',
+    option: 'Jah, tarni kohe — loobun oma 14-päevasest taganemisõigusest',
+  },
+  lv: {
+    label: 'Apstiprināt atteikšanos no atteikuma tiesībām',
+    option: 'Jā, piegādāt nekavējoties — es atsakos no savām 14 dienu atteikuma tiesībām',
+  },
+  lt: {
+    label: 'Patvirtinti atsisakymą nuo teisės atsisakyti sutarties',
+    option: 'Taip, pristatyti nedelsiant — atsisakau savo 14 dienų teisės atsisakyti sutarties',
+  },
+  mt: {
+    label: "Ikkonferma r-rinunzja għad-dritt ta' rtirar",
+    option: "Iva, wassal immedjatament — nirrinunzja d-dritt ta' rtirar ta' 14-il ġurnata tiegħi",
+  },
+}
 
 export async function POST(req: NextRequest) {
   const auth = await authenticateRequest(req)
@@ -76,6 +183,9 @@ export async function POST(req: NextRequest) {
     })
   }
 
+  // Look up localized withdrawal waiver text (falls back to English)
+  const waiver = withdrawalWaiverTranslations[locale] ?? withdrawalWaiverTranslations.en
+
   // Build Checkout Session parameters
   const sessionParams: Stripe.Checkout.SessionCreateParams = {
     customer: customer.stripeCustomerId,
@@ -111,17 +221,17 @@ export async function POST(req: NextRequest) {
     } : {}),
     // Phone collection off (GDPR minimisation)
     phone_number_collection: { enabled: false },
-    // Custom fields for Widerrufsrecht waiver
+    // Custom fields for Widerrufsrecht (withdrawal right) waiver — localized per EU locale
     custom_fields: [
       {
         key: 'withdrawal_waiver',
         label: {
           type: 'custom',
-          custom: 'Widerrufsrecht-Verzicht bestätigen',
+          custom: waiver.label,
         },
         type: 'dropdown',
         dropdown: {
-          options: [{ label: 'Ja, Lieferung sofort — Widerruf entfällt', value: 'agreed' }],
+          options: [{ label: waiver.option, value: 'agreed' }],
         },
         optional: false,
       },
