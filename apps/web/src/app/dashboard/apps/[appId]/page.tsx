@@ -10,6 +10,7 @@ import { ModeToggle } from "@/components/dashboard/ModeToggle"
 import { SandboxBanner } from "@/components/dashboard/SandboxBanner"
 import { AppHealthBadge, type HealthData } from "@/components/dashboard/AppHealthBadge"
 import { AppleCredentialsForm } from "@/components/dashboard/AppleCredentialsForm"
+import { CustomerEmailToggle } from "@/components/dashboard/CustomerEmailToggle"
 import { StripeConnect } from "@/components/dashboard/StripeConnect"
 import { AppRevenueChart } from "@/components/dashboard/AppRevenueChart"
 import { Package, Users, Webhook, ExternalLink, FileText, BarChart3, Shield } from "lucide-react"
@@ -185,6 +186,8 @@ export default async function AppDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      <CustomerEmailToggle appId={appId} enabled={app.sendCustomerEmails} />
 
       <Card>
         <CardHeader>

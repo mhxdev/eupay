@@ -702,6 +702,43 @@ export default function IntegrationGuidePage() {
         </p>
       </section>
 
+      {/* Custom Email Handling */}
+      <section className="mt-12">
+        <h2 className="text-2xl font-semibold text-white">
+          Custom Email Handling
+        </h2>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          By default, EuroPay sends transactional emails to your end customers
+          on your behalf: purchase confirmations, withdrawal waiver
+          confirmations (Widerrufsrecht), and cancellation notifications. These
+          emails identify your app as the merchant and comply with EU consumer
+          law requirements.
+        </p>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          If you prefer to send your own branded emails, you can disable
+          EuroPay&apos;s end-customer emails in your app settings
+          (&quot;End-customer emails&quot; toggle). When disabled, all data
+          needed for legally compliant emails is included in webhook events
+          under the{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
+            europay
+          </code>{" "}
+          key: customer email, product name, amount, currency, transaction ID,
+          and withdrawal waiver details (accepted status, timestamp, locale,
+          and the exact text the customer agreed to).
+        </p>
+        <div className="mt-4 rounded-lg border border-orange-200/30 bg-orange-500/5 px-5 py-4">
+          <p className="text-sm text-orange-300 leading-relaxed">
+            <strong className="text-orange-200">Warning:</strong> If you handle
+            emails yourself, you are responsible for sending legally required
+            purchase confirmations and withdrawal waiver confirmations under EU
+            consumer law (Consumer Rights Directive 2011/83/EU, German BGB
+            &sect;&sect;312d, 356). Failure to send these may expose you to
+            legal liability.
+          </p>
+        </div>
+      </section>
+
       <DocsNavigation
         prev={{ href: "/docs/getting-started", label: "Getting Started" }}
         next={{ href: "/docs/dma-compliance", label: "DMA Compliance" }}

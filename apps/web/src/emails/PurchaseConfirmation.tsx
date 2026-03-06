@@ -26,6 +26,9 @@ export interface PurchaseConfirmationEmailProps {
   portalUrl: string
   isSubscription: boolean
   withdrawalWaived: boolean
+  appName: string
+  companyName?: string
+  supportEmail?: string
 }
 
 function fmt(cents: number, currency: string) {
@@ -49,6 +52,9 @@ export default function PurchaseConfirmation({
   portalUrl,
   isSubscription,
   withdrawalWaived,
+  appName,
+  companyName,
+  supportEmail,
 }: PurchaseConfirmationEmailProps) {
   const date =
     transactionDate instanceof Date
@@ -60,13 +66,13 @@ export default function PurchaseConfirmation({
     <Html lang="en">
       <Head />
       <Preview>
-        Your receipt for {productName} — {fmt(amountTotal, currency)}
+        Your receipt from {appName} — {fmt(amountTotal, currency)}
       </Preview>
       <Body style={body}>
         <Container style={container}>
           {/* Header */}
           <Section style={header}>
-            <Text style={logo}>EuroPay</Text>
+            <Text style={logo}>{appName}</Text>
           </Section>
 
           <Section style={content}>
@@ -161,10 +167,24 @@ export default function PurchaseConfirmation({
 
           {/* Footer */}
           <Section style={footer}>
+            <Hr style={footerDivider} />
             <Text style={footerText}>
-              EuroPay — EU Alternative Payment Platform
+              This purchase was made from {appName}
+              {companyName ? ` by ${companyName}` : ""}.
+            </Text>
+            {supportEmail && (
+              <Text style={footerText}>
+                For questions about your purchase, contact {supportEmail}.
+              </Text>
+            )}
+            <Text style={footerText}>
+              Payment processed securely via Stripe.
             </Text>
             <Text style={footerText}>
+              This email was sent by EuroPay, a payment facilitator, on behalf
+              of {appName}.
+            </Text>
+            <Text style={footerSubtext}>
               This email serves as your VAT receipt for tax purposes.
             </Text>
           </Section>
@@ -330,9 +350,21 @@ const footer = {
   backgroundColor: "#f8fafc",
 }
 
+const footerDivider = {
+  borderColor: "#e2e8f0",
+  margin: "0 0 16px",
+}
+
 const footerText = {
   fontSize: "12px",
   color: "#94a3b8",
   margin: "0 0 4px",
+  textAlign: "center" as const,
+}
+
+const footerSubtext = {
+  fontSize: "11px",
+  color: "#94a3b8",
+  margin: "8px 0 0",
   textAlign: "center" as const,
 }

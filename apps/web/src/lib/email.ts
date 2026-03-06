@@ -9,11 +9,18 @@ import DisputeAlert from "@/emails/DisputeAlert"
 import DeveloperWelcome from "@/emails/DeveloperWelcome"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "receipts@europay.dev"
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "noreply@europay.dev"
+
+/** Merchant context passed to all end-customer emails */
+export interface MerchantContext {
+  appName: string
+  companyName?: string
+  supportEmail?: string
+}
 
 // ── Purchase Confirmation ─────────────────────────────────────
 
-export interface PurchaseConfirmationParams {
+export interface PurchaseConfirmationParams extends MerchantContext {
   to: string
   customerName: string
   productName: string
@@ -35,9 +42,9 @@ export async function sendPurchaseConfirmation(
 ) {
   try {
     await resend.emails.send({
-      from: FROM_EMAIL,
+      from: `${params.appName} <${FROM_EMAIL}>`,
       to: params.to,
-      subject: `Your receipt for ${params.productName}`,
+      subject: `Your receipt from ${params.appName}`,
       react: PurchaseConfirmation({
         customerName: params.customerName,
         productName: params.productName,
@@ -52,6 +59,9 @@ export async function sendPurchaseConfirmation(
         portalUrl: params.portalUrl,
         isSubscription: params.isSubscription,
         withdrawalWaived: params.withdrawalWaived,
+        appName: params.appName,
+        companyName: params.companyName,
+        supportEmail: params.supportEmail,
       }),
     })
   } catch (error) {
@@ -61,7 +71,7 @@ export async function sendPurchaseConfirmation(
 
 // ── Widerrufsrecht Waiver Confirmation ────────────────────────
 
-export interface WiderrufsrechtWaiverParams {
+export interface WiderrufsrechtWaiverParams extends MerchantContext {
   to: string
   customerName: string
   productName: string
@@ -76,9 +86,9 @@ export async function sendWiderrufsrechtWaiver(
 ) {
   try {
     await resend.emails.send({
-      from: FROM_EMAIL,
+      from: `${params.appName} <${FROM_EMAIL}>`,
       to: params.to,
-      subject: `Bestätigung: Verzicht auf Ihr Widerrufsrecht — ${params.productName}`,
+      subject: `Withdrawal waiver confirmation — ${params.appName}`,
       react: WiderrufsrechtWaiver({
         customerName: params.customerName,
         productName: params.productName,
@@ -86,6 +96,9 @@ export async function sendWiderrufsrechtWaiver(
         transactionDate: params.transactionDate,
         amountTotal: params.amountTotal,
         currency: params.currency,
+        appName: params.appName,
+        companyName: params.companyName,
+        supportEmail: params.supportEmail,
       }),
     })
   } catch (error) {
@@ -95,7 +108,7 @@ export async function sendWiderrufsrechtWaiver(
 
 // ── Cancellation Confirmation ─────────────────────────────────
 
-export interface CancellationConfirmationParams {
+export interface CancellationConfirmationParams extends MerchantContext {
   to: string
   customerName: string
   productName: string
@@ -107,13 +120,16 @@ export async function sendCancellationConfirmation(
 ) {
   try {
     await resend.emails.send({
-      from: FROM_EMAIL,
+      from: `${params.appName} <${FROM_EMAIL}>`,
       to: params.to,
-      subject: `Your ${params.productName} subscription has been cancelled`,
+      subject: `Subscription cancelled — ${params.appName}`,
       react: CancellationConfirmation({
         customerName: params.customerName,
         productName: params.productName,
         currentPeriodEnd: params.currentPeriodEnd,
+        appName: params.appName,
+        companyName: params.companyName,
+        supportEmail: params.supportEmail,
       }),
     })
   } catch (error) {

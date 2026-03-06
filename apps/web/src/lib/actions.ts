@@ -77,6 +77,22 @@ export async function deleteApp(appId: string) {
   revalidatePath("/dashboard/apps")
 }
 
+// ─── App Settings Actions ─────────────────────────────────────
+
+export async function updateSendCustomerEmails(appId: string, enabled: boolean) {
+  const userId = await requireUser()
+  const app = await prisma.app.findUnique({ where: { id: appId } })
+  if (!app || app.clerkUserId !== userId) throw new Error("Not found")
+
+  await prisma.app.update({
+    where: { id: appId },
+    data: { sendCustomerEmails: enabled },
+  })
+
+  revalidatePath(`/dashboard/apps/${appId}`)
+  return { success: true }
+}
+
 // ─── Product Actions ──────────────────────────────────────────
 
 export async function createProduct(formData: FormData) {

@@ -16,6 +16,8 @@ model App {
   updatedAt        DateTime @updatedAt
 
   name             String
+  companyName      String?            // Developer's company/business name
+  supportEmail     String?            // End-customer support email
   bundleId         String   @unique   // e.g. "com.acme.myapp"
   clerkUserId      String             // Developer's Clerk user ID
 
@@ -51,6 +53,9 @@ model App {
   // DMA compliance setup
   setupChecklist                 Json?       // JSONB checklist state
   iapExclusivityAcknowledgedAt   DateTime?
+
+  // End-customer email preferences
+  sendCustomerEmails Boolean @default(true)
 
   // Alerting
   lastWebhookAlertAt             DateTime?

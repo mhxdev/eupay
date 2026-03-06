@@ -137,7 +137,10 @@ async function handleCheckoutSessionCompleted(
   })
   if (!customer) throw new Error(`Customer not found: ${externalUserId}`)
 
-  const product = await prisma.product.findUnique({ where: { id: productId } })
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: { app: true },
+  })
   if (!product) throw new Error(`Product not found: ${productId}`)
 
   // Extract VAT data from Stripe
@@ -212,7 +215,7 @@ async function handleCheckoutSessionCompleted(
   }
 
   // ── Send transactional emails (fire-and-forget) ──────────
-  if (customer.email) {
+  if (customer.email && product.app.sendCustomerEmails) {
     try {
       // Create a portal URL for the email
       const portalSession = await stripe.billingPortal.sessions.create({
@@ -235,6 +238,9 @@ async function handleCheckoutSessionCompleted(
         portalUrl: portalSession.url,
         isSubscription: product.productType === 'SUBSCRIPTION',
         withdrawalWaived: !!transaction.withdrawalWaivedAt,
+        appName: product.app.name,
+        companyName: product.app.companyName ?? undefined,
+        supportEmail: product.app.supportEmail ?? undefined,
       })
 
       // Send Widerrufsrecht waiver confirmation if applicable
@@ -247,6 +253,9 @@ async function handleCheckoutSessionCompleted(
           transactionDate: transaction.createdAt,
           amountTotal: transaction.amountTotal,
           currency: transaction.currency,
+          appName: product.app.name,
+          companyName: product.app.companyName ?? undefined,
+          supportEmail: product.app.supportEmail ?? undefined,
         })
       }
     } catch (emailError) {
@@ -254,6 +263,43 @@ async function handleCheckoutSessionCompleted(
       console.error('[Webhook] Email sending failed:', emailError)
     }
   }
+
+  // ── Notify developer webhook with enriched payload ──────
+  const withdrawalWaiverField = session.custom_fields?.find(
+    (f) => f.key === 'withdrawal_waiver'
+  )
+  await notifyDeveloper(product.app, 'checkout.session.completed', {
+    userId: externalUserId,
+    productId: product.id,
+    europay: {
+      event: 'purchase.completed',
+      transaction: {
+        id: transaction.id,
+        productName: product.name,
+        amountCents: transaction.amountTotal,
+        currency: transaction.currency,
+        status: transaction.status,
+        createdAt: transaction.createdAt.toISOString(),
+        stripePaymentIntentId: transaction.stripePaymentIntentId,
+      },
+      customer: {
+        email: customer.email,
+        userId: externalUserId,
+      },
+      withdrawal_waiver: {
+        accepted: !!transaction.withdrawalWaivedAt,
+        acceptedAt: transaction.withdrawalWaivedAt?.toISOString() ?? null,
+        locale: withdrawalWaiverField?.dropdown?.value === 'agreed' ? 'de' : null,
+        text: withdrawalWaiverField?.dropdown?.value === 'agreed'
+          ? 'Ja, Lieferung sofort — Widerruf entfällt'
+          : null,
+      },
+      app: {
+        id: product.app.id,
+        name: product.app.name,
+      },
+    },
+  })
 
   // ── Report to Apple (fire-and-forget) ──────────────────
   await reportToApple(appId, transaction.id)
@@ -292,7 +338,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const entitlement = await prisma.entitlement.findUnique({
     where: { stripeSubscriptionId: subscription.id },
-    include: { customer: true, product: true },
+    include: { customer: { include: { app: true } }, product: true },
   })
   if (!entitlement) return
 
@@ -302,7 +348,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   })
 
   // Send cancellation confirmation email
-  if (entitlement.customer.email) {
+  if (entitlement.customer.email && entitlement.customer.app.sendCustomerEmails) {
     try {
       const firstItem = subscription.items.data[0]
       const periodEnd = firstItem
@@ -314,11 +360,32 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
         customerName: entitlement.customer.name ?? entitlement.customer.email,
         productName: entitlement.product.name,
         currentPeriodEnd: periodEnd,
+        appName: entitlement.customer.app.name,
+        companyName: entitlement.customer.app.companyName ?? undefined,
+        supportEmail: entitlement.customer.app.supportEmail ?? undefined,
       })
     } catch (emailError) {
       console.error('[Webhook] Cancellation email failed:', emailError)
     }
   }
+
+  // Notify developer webhook with enriched payload
+  await notifyDeveloper(entitlement.customer.app, 'customer.subscription.deleted', {
+    userId: entitlement.customer.externalUserId,
+    productId: entitlement.productId,
+    europay: {
+      event: 'subscription.cancelled',
+      subscription: {
+        id: subscription.id,
+        productName: entitlement.product.name,
+        cancelledAt: new Date().toISOString(),
+      },
+      customer: {
+        email: entitlement.customer.email,
+        userId: entitlement.customer.externalUserId,
+      },
+    },
+  })
 }
 
 async function handleInvoicePaymentSucceeded(
@@ -408,6 +475,13 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     amountDue: invoice.amount_due,
     currency: invoice.currency,
     attemptCount: invoice.attempt_count,
+    europay: {
+      event: 'payment.failed',
+      customer: {
+        email: entitlement.customer.email,
+        userId: entitlement.customer.externalUserId,
+      },
+    },
   })
 }
 
@@ -423,7 +497,7 @@ async function handleChargeRefunded(
 
   const transaction = await prisma.transaction.findUnique({
     where: { stripePaymentIntentId: paymentIntentId },
-    include: { customer: true, product: true },
+    include: { customer: { include: { app: true } }, product: true },
   })
   if (!transaction) return
 
@@ -435,6 +509,29 @@ async function handleChargeRefunded(
 
   // Report refund to Apple
   await reportToApple(transaction.appId, transaction.id)
+
+  // Notify developer webhook with enriched payload
+  await notifyDeveloper(transaction.customer.app, 'charge.refunded', {
+    userId: transaction.customer.externalUserId,
+    productId: transaction.productId,
+    transactionId: transaction.id,
+    europay: {
+      event: 'purchase.refunded',
+      transaction: {
+        id: transaction.id,
+        productName: transaction.product.name,
+        amountCents: transaction.amountTotal,
+        currency: transaction.currency,
+        status: 'REFUNDED',
+        createdAt: transaction.createdAt.toISOString(),
+        stripePaymentIntentId: transaction.stripePaymentIntentId,
+      },
+      customer: {
+        email: transaction.customer.email,
+        userId: transaction.customer.externalUserId,
+      },
+    },
+  })
 
   // If fully refunded, revoke entitlement
   if (charge.refunded) {

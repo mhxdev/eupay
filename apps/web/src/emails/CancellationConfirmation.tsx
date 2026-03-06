@@ -13,12 +13,18 @@ export interface CancellationConfirmationEmailProps {
   customerName: string
   productName: string
   currentPeriodEnd: Date
+  appName: string
+  companyName?: string
+  supportEmail?: string
 }
 
 export default function CancellationConfirmation({
   customerName,
   productName,
   currentPeriodEnd,
+  appName,
+  companyName,
+  supportEmail,
 }: CancellationConfirmationEmailProps) {
   const endDate =
     currentPeriodEnd instanceof Date
@@ -28,12 +34,12 @@ export default function CancellationConfirmation({
   return (
     <Html lang="en">
       <Head />
-      <Preview>Your {productName} subscription has been cancelled</Preview>
+      <Preview>Subscription cancelled — {appName}</Preview>
       <Body style={body}>
         <Container style={container}>
           {/* Header */}
           <Section style={header}>
-            <Text style={logo}>EuroPay</Text>
+            <Text style={logo}>{appName}</Text>
           </Section>
 
           <Section style={content}>
@@ -70,8 +76,22 @@ export default function CancellationConfirmation({
 
           {/* Footer */}
           <Section style={footer}>
+            <Hr style={footerDivider} />
             <Text style={footerText}>
-              EuroPay — EU Alternative Payment Platform
+              This purchase was made from {appName}
+              {companyName ? ` by ${companyName}` : ""}.
+            </Text>
+            {supportEmail && (
+              <Text style={footerText}>
+                For questions about your purchase, contact {supportEmail}.
+              </Text>
+            )}
+            <Text style={footerText}>
+              Payment processed securely via Stripe.
+            </Text>
+            <Text style={footerText}>
+              This email was sent by EuroPay, a payment facilitator, on behalf
+              of {appName}.
             </Text>
           </Section>
         </Container>
@@ -161,6 +181,11 @@ const smallText = {
 const footer = {
   padding: "24px 32px",
   backgroundColor: "#f8fafc",
+}
+
+const footerDivider = {
+  borderColor: "#e2e8f0",
+  margin: "0 0 16px",
 }
 
 const footerText = {
