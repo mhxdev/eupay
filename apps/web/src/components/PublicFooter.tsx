@@ -19,6 +19,9 @@ export function PublicFooter() {
         <Link href="/terms" className="hover:text-gray-300 transition-colors">
           Terms
         </Link>
+        <Link href="/dpa" className="hover:text-gray-300 transition-colors">
+          DPA
+        </Link>
       </div>
     </footer>
   )

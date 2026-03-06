@@ -23,6 +23,8 @@ export default function DocsLayout({
             <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy</Link>
             <span className="mx-2">&middot;</span>
             <Link href="/terms" className="hover:text-gray-300 transition-colors">Terms</Link>
+            <span className="mx-2">&middot;</span>
+            <Link href="/dpa" className="hover:text-gray-300 transition-colors">DPA</Link>
           </footer>
         </div>
       </main>
