@@ -8,6 +8,6 @@ const nextConfig: NextConfig = {
 
 export default withSentryConfig(nextConfig, {
   silent: true,
-  org: "[TODO: sentry-org]",
-  project: "[TODO: sentry-project]",
+  org: "mhx-ventures-h3",
+  project: "javascript-nextjs",
 });
