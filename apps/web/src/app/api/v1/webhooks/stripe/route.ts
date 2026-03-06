@@ -13,6 +13,9 @@ import {
   sendPurchaseConfirmation,
   sendWiderrufsrechtWaiver,
   sendCancellationConfirmation,
+  sendRefundConfirmation,
+  sendRenewalReceipt,
+  sendPaymentFailed,
   sendDisputeAlert,
   sendWebhookFailureAlert,
 } from '@/lib/email'
@@ -402,7 +405,7 @@ async function handleInvoicePaymentSucceeded(
 
   const entitlement = await prisma.entitlement.findUnique({
     where: { stripeSubscriptionId: subscriptionId },
-    include: { customer: true, product: true },
+    include: { customer: { include: { app: true } }, product: true },
   })
   if (!entitlement) return
 
@@ -442,6 +445,30 @@ async function handleInvoicePaymentSucceeded(
     },
   })
 
+  // Send renewal receipt email
+  if (entitlement.customer.email && entitlement.customer.app.sendCustomerEmails) {
+    try {
+      const nextRenewalDate = firstItem
+        ? new Date(firstItem.current_period_end * 1000)
+        : undefined
+
+      await sendRenewalReceipt({
+        to: entitlement.customer.email,
+        productName: entitlement.product.name,
+        amountCents: invoice.amount_paid,
+        currency: invoice.currency,
+        transactionId: renewalTx.id,
+        renewedAt: new Date(),
+        nextRenewalDate,
+        appName: entitlement.customer.app.name,
+        companyName: entitlement.customer.app.companyName ?? undefined,
+        supportEmail: entitlement.customer.app.supportEmail ?? undefined,
+      })
+    } catch (emailError) {
+      console.error('[Webhook] Renewal receipt email failed:', emailError)
+    }
+  }
+
   // Report renewal to Apple
   await reportToApple(entitlement.customer.appId, renewalTx.id)
 }
@@ -456,7 +483,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
 
   const entitlement = await prisma.entitlement.findUnique({
     where: { stripeSubscriptionId: subscriptionId },
-    include: { customer: { include: { app: true } } },
+    include: { customer: { include: { app: true } }, product: true },
   })
   if (!entitlement) return
 
@@ -466,6 +493,24 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     where: { id: entitlement.id },
     data: { status: 'EXPIRED' },
   })
+
+  // Send payment failed email
+  if (entitlement.customer.email && entitlement.customer.app.sendCustomerEmails) {
+    try {
+      await sendPaymentFailed({
+        to: entitlement.customer.email,
+        productName: entitlement.product.name,
+        amountCents: invoice.amount_due,
+        currency: invoice.currency,
+        failedAt: new Date(),
+        appName: entitlement.customer.app.name,
+        companyName: entitlement.customer.app.companyName ?? undefined,
+        supportEmail: entitlement.customer.app.supportEmail ?? undefined,
+      })
+    } catch (emailError) {
+      console.error('[Webhook] Payment failed email failed:', emailError)
+    }
+  }
 
   // Notify developer via their registered webhook URL
   await notifyDeveloper(entitlement.customer.app, 'invoice.payment_failed', {
@@ -506,6 +551,25 @@ async function handleChargeRefunded(
     where: { id: transaction.id },
     data: { status: 'REFUNDED' },
   })
+
+  // Send refund confirmation email
+  if (transaction.customer.email && transaction.customer.app.sendCustomerEmails) {
+    try {
+      await sendRefundConfirmation({
+        to: transaction.customer.email,
+        productName: transaction.product.name,
+        amountCents: transaction.amountTotal,
+        currency: transaction.currency,
+        transactionId: transaction.id,
+        refundedAt: new Date(),
+        appName: transaction.customer.app.name,
+        companyName: transaction.customer.app.companyName ?? undefined,
+        supportEmail: transaction.customer.app.supportEmail ?? undefined,
+      })
+    } catch (emailError) {
+      console.error('[Webhook] Refund confirmation email failed:', emailError)
+    }
+  }
 
   // Report refund to Apple
   await reportToApple(transaction.appId, transaction.id)

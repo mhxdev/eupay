@@ -4,6 +4,9 @@ import { Resend } from "resend"
 import PurchaseConfirmation from "@/emails/PurchaseConfirmation"
 import WiderrufsrechtWaiver from "@/emails/WiderrufsrechtWaiver"
 import CancellationConfirmation from "@/emails/CancellationConfirmation"
+import RefundConfirmation from "@/emails/RefundConfirmation"
+import RenewalReceipt from "@/emails/RenewalReceipt"
+import PaymentFailed from "@/emails/PaymentFailed"
 import WebhookFailureAlert from "@/emails/WebhookFailureAlert"
 import DisputeAlert from "@/emails/DisputeAlert"
 import DeveloperWelcome from "@/emails/DeveloperWelcome"
@@ -134,6 +137,114 @@ export async function sendCancellationConfirmation(
     })
   } catch (error) {
     console.error("[Email] Failed to send cancellation confirmation:", error)
+  }
+}
+
+// ── Refund Confirmation ──────────────────────────────────────
+
+export interface RefundConfirmationParams extends MerchantContext {
+  to: string
+  productName: string
+  amountCents: number
+  currency: string
+  transactionId: string
+  refundedAt: Date
+}
+
+export async function sendRefundConfirmation(
+  params: RefundConfirmationParams
+) {
+  try {
+    await resend.emails.send({
+      from: `${params.appName} <${FROM_EMAIL}>`,
+      to: params.to,
+      subject: `Refund confirmation — ${params.appName}`,
+      react: RefundConfirmation({
+        appName: params.appName,
+        companyName: params.companyName,
+        supportEmail: params.supportEmail,
+        customerEmail: params.to,
+        productName: params.productName,
+        amountCents: params.amountCents,
+        currency: params.currency,
+        transactionId: params.transactionId,
+        refundedAt: params.refundedAt,
+      }),
+    })
+  } catch (error) {
+    console.error("[Email] Failed to send refund confirmation:", error)
+  }
+}
+
+// ── Renewal Receipt ─────────────────────────────────────────
+
+export interface RenewalReceiptParams extends MerchantContext {
+  to: string
+  productName: string
+  amountCents: number
+  currency: string
+  transactionId: string
+  renewedAt: Date
+  nextRenewalDate?: Date
+}
+
+export async function sendRenewalReceipt(
+  params: RenewalReceiptParams
+) {
+  try {
+    await resend.emails.send({
+      from: `${params.appName} <${FROM_EMAIL}>`,
+      to: params.to,
+      subject: `Subscription renewed — ${params.appName}`,
+      react: RenewalReceipt({
+        appName: params.appName,
+        companyName: params.companyName,
+        supportEmail: params.supportEmail,
+        customerEmail: params.to,
+        productName: params.productName,
+        amountCents: params.amountCents,
+        currency: params.currency,
+        transactionId: params.transactionId,
+        renewedAt: params.renewedAt,
+        nextRenewalDate: params.nextRenewalDate,
+      }),
+    })
+  } catch (error) {
+    console.error("[Email] Failed to send renewal receipt:", error)
+  }
+}
+
+// ── Payment Failed ──────────────────────────────────────────
+
+export interface PaymentFailedParams extends MerchantContext {
+  to: string
+  productName: string
+  amountCents: number
+  currency: string
+  failedAt: Date
+}
+
+export async function sendPaymentFailed(
+  params: PaymentFailedParams
+) {
+  try {
+    await resend.emails.send({
+      from: `${params.appName} <${FROM_EMAIL}>`,
+      to: params.to,
+      subject: `Payment failed — ${params.appName}`,
+      react: PaymentFailed({
+        appName: params.appName,
+        companyName: params.companyName,
+        supportEmail: params.supportEmail,
+        customerEmail: params.to,
+        productName: params.productName,
+        amountCents: params.amountCents,
+        currency: params.currency,
+        failedAt: params.failedAt,
+      }),
+    })
+  } catch (error) {
+    console.error("[Email] Failed to send payment failed email:", error)
   }
 }
 
