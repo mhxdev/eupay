@@ -6,6 +6,8 @@
 // Connected accounts' enabled.
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { createHmac } from 'crypto'
+import * as Sentry from '@sentry/nextjs'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { EU_VAT_RATES } from '@/lib/eu-vat'
@@ -71,12 +73,17 @@ export async function POST(req: Request) {
   })
 
   try {
-    await handleStripeEvent(event, connectOpts)
+    const resolvedAppId = await handleStripeEvent(event, connectOpts)
     await prisma.webhookEvent.update({
       where: { id: event.id },
-      data: { status: 'PROCESSED', processedAt: new Date() },
+      data: {
+        status: 'PROCESSED',
+        processedAt: new Date(),
+        ...(resolvedAppId ? { appId: resolvedAppId } : {}),
+      },
     })
   } catch (error: unknown) {
+    Sentry.captureException(error)
     const message = error instanceof Error ? error.message : 'Unknown error'
     await prisma.webhookEvent.update({
       where: { id: event.id },
@@ -92,39 +99,32 @@ export async function POST(req: Request) {
 async function handleStripeEvent(
   event: Stripe.Event,
   connectOpts: { stripeAccount: string } | undefined
-) {
+): Promise<string | null> {
   switch (event.type) {
     case 'checkout.session.completed':
-      await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session, connectOpts)
-      break
+      return await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session, connectOpts)
     case 'customer.subscription.updated':
-      await handleSubscriptionUpdated(event.data.object as Stripe.Subscription)
-      break
+      return await handleSubscriptionUpdated(event.data.object as Stripe.Subscription)
     case 'customer.subscription.deleted':
-      await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
-      break
+      return await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
     case 'invoice.payment_succeeded':
-      await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice, connectOpts)
-      break
+      return await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice, connectOpts)
     case 'invoice.payment_failed':
-      await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice)
-      break
+      return await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice)
     case 'charge.refunded':
-      await handleChargeRefunded(event.data.object as Stripe.Charge, connectOpts)
-      break
+      return await handleChargeRefunded(event.data.object as Stripe.Charge, connectOpts)
     case 'charge.dispute.created':
-      await handleDisputeCreated(event.data.object as Stripe.Dispute, connectOpts)
-      break
+      return await handleDisputeCreated(event.data.object as Stripe.Dispute, connectOpts)
     default:
       // Unhandled event type — log but don't error
-      break
+      return null
   }
 }
 
 async function handleCheckoutSessionCompleted(
   session: Stripe.Checkout.Session,
   connectOpts: { stripeAccount: string } | undefined
-) {
+): Promise<string | null> {
   const metadata = session.metadata
   if (!metadata?.appId || !metadata?.productId || !metadata?.externalUserId) {
     throw new Error('Missing metadata on checkout session')
@@ -133,7 +133,7 @@ async function handleCheckoutSessionCompleted(
   const { appId, productId, externalUserId } = metadata
 
   // Verify payment succeeded
-  if (session.payment_status !== 'paid') return
+  if (session.payment_status !== 'paid') return null
 
   const customer = await prisma.customer.findUnique({
     where: { appId_externalUserId: { appId, externalUserId } },
@@ -306,13 +306,16 @@ async function handleCheckoutSessionCompleted(
 
   // ── Report to Apple (fire-and-forget) ──────────────────
   await reportToApple(appId, transaction.id)
+
+  return appId
 }
 
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<string | null> {
   const entitlement = await prisma.entitlement.findUnique({
     where: { stripeSubscriptionId: subscription.id },
+    include: { customer: { select: { appId: true } } },
   })
-  if (!entitlement) return
+  if (!entitlement) return null
 
   let status: 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'PAUSED' = 'ACTIVE'
   if (subscription.status === 'canceled') status = 'CANCELLED'
@@ -336,14 +339,16 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
     },
   })
+
+  return entitlement.customer.appId
 }
 
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<string | null> {
   const entitlement = await prisma.entitlement.findUnique({
     where: { stripeSubscriptionId: subscription.id },
     include: { customer: { include: { app: true } }, product: true },
   })
-  if (!entitlement) return
+  if (!entitlement) return null
 
   await prisma.entitlement.update({
     where: { id: entitlement.id },
@@ -389,15 +394,17 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       },
     },
   })
+
+  return entitlement.customer.app.id
 }
 
 async function handleInvoicePaymentSucceeded(
   invoice: Stripe.Invoice,
   connectOpts: { stripeAccount: string } | undefined
-) {
+): Promise<string | null> {
   // Only handle subscription renewal invoices (not the first invoice from checkout)
   const subDetails = invoice.parent?.subscription_details
-  if (!subDetails?.subscription || invoice.billing_reason === 'subscription_create') return
+  if (!subDetails?.subscription || invoice.billing_reason === 'subscription_create') return null
 
   const subscriptionId = typeof subDetails.subscription === 'string'
     ? subDetails.subscription
@@ -407,7 +414,7 @@ async function handleInvoicePaymentSucceeded(
     where: { stripeSubscriptionId: subscriptionId },
     include: { customer: { include: { app: true } }, product: true },
   })
-  if (!entitlement) return
+  if (!entitlement) return null
 
   // Retrieve updated subscription to get new period dates
   const subscription = await stripe.subscriptions.retrieve(subscriptionId, {}, connectOpts)
@@ -471,11 +478,13 @@ async function handleInvoicePaymentSucceeded(
 
   // Report renewal to Apple
   await reportToApple(entitlement.customer.appId, renewalTx.id)
+
+  return entitlement.customer.app.id
 }
 
-async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<string | null> {
   const subDetails = invoice.parent?.subscription_details
-  if (!subDetails?.subscription) return
+  if (!subDetails?.subscription) return null
 
   const subscriptionId = typeof subDetails.subscription === 'string'
     ? subDetails.subscription
@@ -485,7 +494,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     where: { stripeSubscriptionId: subscriptionId },
     include: { customer: { include: { app: true } }, product: true },
   })
-  if (!entitlement) return
+  if (!entitlement) return null
 
   // Mark entitlement as expired (Stripe will retry — if it succeeds, the
   // subscription.updated webhook will flip it back to ACTIVE)
@@ -528,23 +537,25 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
       },
     },
   })
+
+  return entitlement.customer.app.id
 }
 
 async function handleChargeRefunded(
   charge: Stripe.Charge,
   connectOpts: { stripeAccount: string } | undefined
-) {
+): Promise<string | null> {
   const paymentIntentId = typeof charge.payment_intent === 'string'
     ? charge.payment_intent
     : charge.payment_intent?.id
 
-  if (!paymentIntentId) return
+  if (!paymentIntentId) return null
 
   const transaction = await prisma.transaction.findUnique({
     where: { stripePaymentIntentId: paymentIntentId },
     include: { customer: { include: { app: true } }, product: true },
   })
-  if (!transaction) return
+  if (!transaction) return null
 
   // Update transaction status to REFUNDED
   await prisma.transaction.update({
@@ -622,29 +633,31 @@ async function handleChargeRefunded(
       })
     }
   }
+
+  return transaction.customer.app.id
 }
 
 async function handleDisputeCreated(
   dispute: Stripe.Dispute,
   connectOpts: { stripeAccount: string } | undefined
-) {
+): Promise<string | null> {
   const charge = typeof dispute.charge === 'string'
     ? await stripe.charges.retrieve(dispute.charge, connectOpts)
     : dispute.charge
 
-  if (!charge) return
+  if (!charge) return null
 
   const paymentIntentId = typeof charge.payment_intent === 'string'
     ? charge.payment_intent
     : charge.payment_intent?.id
 
-  if (!paymentIntentId) return
+  if (!paymentIntentId) return null
 
   const transaction = await prisma.transaction.findUnique({
     where: { stripePaymentIntentId: paymentIntentId },
     include: { customer: { include: { app: true } } },
   })
-  if (!transaction) return
+  if (!transaction) return null
 
   // Mark transaction as disputed
   await prisma.transaction.update({
@@ -682,6 +695,8 @@ async function handleDisputeCreated(
   } catch (alertErr) {
     console.error('[Webhook] Dispute alert email failed:', alertErr)
   }
+
+  return transaction.customer.app.id
 }
 
 // Helper: report transaction to Apple's External Purchase Server API
@@ -744,15 +759,25 @@ async function notifyDeveloper(
   let deliveryError = ''
 
   try {
+    const bodyStr = JSON.stringify({ type: eventType, data: payload })
+    const timestamp = Math.floor(Date.now() / 1000).toString()
+
+    const signatureHeaders: Record<string, string> = {}
+    if (app.webhookSecret) {
+      const signature = createHmac('sha256', app.webhookSecret)
+        .update(`${timestamp}.${bodyStr}`)
+        .digest('hex')
+      signatureHeaders['X-EuroPay-Signature'] = signature
+      signatureHeaders['X-EuroPay-Timestamp'] = timestamp
+    }
+
     const res = await fetch(app.webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(app.webhookSecret
-          ? { 'X-EuroPay-Signature': app.webhookSecret }
-          : {}),
+        ...signatureHeaders,
       },
-      body: JSON.stringify({ type: eventType, data: payload }),
+      body: bodyStr,
     })
     if (!res.ok) {
       deliveryFailed = true

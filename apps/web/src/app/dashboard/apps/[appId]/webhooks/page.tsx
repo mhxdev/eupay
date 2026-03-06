@@ -33,9 +33,7 @@ export default async function WebhooksPage({
   if (!app || app.clerkUserId !== userId) notFound()
 
   const rawEvents = await prisma.webhookEvent.findMany({
-    where: {
-      OR: [{ appId }, { appId: null }],
-    },
+    where: { appId },
     orderBy: { createdAt: "desc" },
     take: 100,
   })

@@ -16,6 +16,12 @@ function periodToDays(period: Period): number {
   }
 }
 
+interface DailyStat {
+  day: Date
+  transaction_count: bigint
+  total_revenue: bigint
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ appId: string }> }
@@ -49,53 +55,47 @@ export async function GET(
   since.setDate(since.getDate() - days)
   since.setHours(0, 0, 0, 0)
 
-  // Fetch succeeded transactions in the period
-  const transactions = await prisma.transaction.findMany({
-    where: {
-      appId,
-      status: "SUCCEEDED",
-      createdAt: { gte: since },
-    },
-    select: {
-      createdAt: true,
-      amountTotal: true,
-    },
-    orderBy: { createdAt: "asc" },
-  })
+  // Single aggregation query — groups by day
+  const dailyStats = await prisma.$queryRaw<DailyStat[]>`
+    SELECT
+      date_trunc('day', "createdAt") as day,
+      COUNT(*) as transaction_count,
+      SUM("amountTotal") as total_revenue
+    FROM "Transaction"
+    WHERE "appId" = ${appId}
+      AND "createdAt" >= ${since}
+      AND "status" = 'SUCCEEDED'
+    GROUP BY date_trunc('day', "createdAt")
+    ORDER BY day ASC
+  `
 
-  // Build daily series with every day in the range
-  const seriesMap = new Map<string, { revenue: number; transactions: number }>()
+  // Build a lookup map from the raw results
+  const statsMap = new Map<string, { revenue: number; transactions: number }>()
+  for (const row of dailyStats) {
+    const dateKey = row.day.toISOString().slice(0, 10)
+    statsMap.set(dateKey, {
+      revenue: Number(row.total_revenue),
+      transactions: Number(row.transaction_count),
+    })
+  }
+
+  // Fill in every day in the range (including days with 0 transactions)
+  const series: { date: string; revenue: number; transactions: number }[] = []
+  let totalRevenue = 0
+  let totalTransactions = 0
   const cursor = new Date(since)
   const today = new Date()
   today.setHours(23, 59, 59, 999)
   while (cursor <= today) {
-    seriesMap.set(cursor.toISOString().slice(0, 10), {
-      revenue: 0,
-      transactions: 0,
-    })
+    const dateKey = cursor.toISOString().slice(0, 10)
+    const entry = statsMap.get(dateKey) ?? { revenue: 0, transactions: 0 }
+    series.push({ date: dateKey, ...entry })
+    totalRevenue += entry.revenue
+    totalTransactions += entry.transactions
     cursor.setDate(cursor.getDate() + 1)
   }
 
-  let totalRevenue = 0
-  let totalTransactions = 0
-  for (const tx of transactions) {
-    const dateKey = tx.createdAt.toISOString().slice(0, 10)
-    const entry = seriesMap.get(dateKey)
-    if (entry) {
-      entry.revenue += tx.amountTotal
-      entry.transactions += 1
-    }
-    totalRevenue += tx.amountTotal
-    totalTransactions += 1
-  }
-
-  const series = Array.from(seriesMap.entries()).map(([date, data]) => ({
-    date,
-    revenue: data.revenue,
-    transactions: data.transactions,
-  }))
-
-  // MRR = sum of amountSubtotal of active SUBSCRIPTION entitlements for this app
+  // MRR = sum of amountCents of active SUBSCRIPTION entitlements for this app
   const activeSubEntitlements = await prisma.entitlement.findMany({
     where: {
       status: "ACTIVE",

@@ -1284,6 +1284,90 @@ export default function ApiReferencePage() {
         </ul>
       </section>
 
+      {/* Developer Webhook Signature Verification */}
+      <section className="mt-8">
+        <h3 className="text-lg font-semibold text-white">
+          Webhook Signature Verification
+        </h3>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          EuroPay signs webhook payloads using HMAC-SHA256. Each request
+          includes{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
+            X-EuroPay-Signature
+          </code>{" "}
+          (the hex-encoded HMAC of{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
+            {"{timestamp}.{payload}"}
+          </code>{" "}
+          using your webhook secret) and{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
+            X-EuroPay-Timestamp
+          </code>
+          . Verify by computing the HMAC on your end and comparing:
+        </p>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm leading-relaxed font-mono">
+            <code>
+              <span className="text-gray-500">{"// Node.js verification example"}</span>
+              {"\n"}
+              <span className="text-purple-400">const</span>{" "}
+              <span className="text-white">crypto</span>{" "}
+              <span className="text-gray-400">=</span>{" "}
+              <span className="text-teal-300">require</span>
+              <span className="text-gray-400">(</span>
+              <span className="text-orange-300">&quot;crypto&quot;</span>
+              <span className="text-gray-400">);</span>
+              {"\n\n"}
+              <span className="text-purple-400">const</span>{" "}
+              <span className="text-white">timestamp</span>{" "}
+              <span className="text-gray-400">=</span>{" "}
+              <span className="text-white">headers</span>
+              <span className="text-gray-400">[</span>
+              <span className="text-orange-300">&quot;x-europay-timestamp&quot;</span>
+              <span className="text-gray-400">];</span>
+              {"\n"}
+              <span className="text-purple-400">const</span>{" "}
+              <span className="text-white">expected</span>{" "}
+              <span className="text-gray-400">=</span>{" "}
+              <span className="text-white">crypto</span>
+              {"\n"}
+              {"  "}
+              <span className="text-gray-400">.</span>
+              <span className="text-teal-300">createHmac</span>
+              <span className="text-gray-400">(</span>
+              <span className="text-orange-300">&quot;sha256&quot;</span>
+              <span className="text-gray-400">,</span>{" "}
+              <span className="text-white">webhookSecret</span>
+              <span className="text-gray-400">)</span>
+              {"\n"}
+              {"  "}
+              <span className="text-gray-400">.</span>
+              <span className="text-teal-300">update</span>
+              <span className="text-gray-400">(</span>
+              <span className="text-orange-300">{"`${timestamp}.${rawBody}`"}</span>
+              <span className="text-gray-400">)</span>
+              {"\n"}
+              {"  "}
+              <span className="text-gray-400">.</span>
+              <span className="text-teal-300">digest</span>
+              <span className="text-gray-400">(</span>
+              <span className="text-orange-300">&quot;hex&quot;</span>
+              <span className="text-gray-400">);</span>
+              {"\n\n"}
+              <span className="text-purple-400">const</span>{" "}
+              <span className="text-white">valid</span>{" "}
+              <span className="text-gray-400">=</span>{" "}
+              <span className="text-white">expected</span>{" "}
+              <span className="text-gray-400">===</span>{" "}
+              <span className="text-white">headers</span>
+              <span className="text-gray-400">[</span>
+              <span className="text-orange-300">&quot;x-europay-signature&quot;</span>
+              <span className="text-gray-400">];</span>
+            </code>
+          </pre>
+        </div>
+      </section>
+
       {/* Error responses */}
       <section className="mt-16">
         <h2 className="text-2xl font-semibold text-white">Error Responses</h2>

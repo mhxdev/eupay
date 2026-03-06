@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import Stripe from 'stripe'
+import * as Sentry from '@sentry/nextjs'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { authenticateRequest, isAuthError, authErrorResponse } from '@/lib/auth'
@@ -254,6 +255,7 @@ export async function POST(req: NextRequest) {
     session = await stripe.checkout.sessions.create(sessionParams, connectOpts)
   } catch (err) {
     if (err instanceof Stripe.errors.StripeError) {
+      Sentry.captureException(err)
       return NextResponse.json(
         { error: err.message, code: err.code },
         { status: err.statusCode ?? 500 }
