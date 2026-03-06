@@ -167,6 +167,10 @@ export default async function AppDetailPage({
               )}
             </div>
             <div className="flex justify-between">
+              <span className="text-muted-foreground">Platform Fee</span>
+              <span className="font-medium">{app.platformFeePercent ?? 1.5}%</span>
+            </div>
+            <div className="flex justify-between">
               <span className="text-muted-foreground">Total Revenue</span>
               <span className="font-medium">{app._count.transactions} transactions</span>
             </div>
@@ -177,6 +181,9 @@ export default async function AppDetailPage({
                 <AppHealthBadge data={healthData} showDetails />
               </div>
             </div>
+            <p className="text-xs text-muted-foreground pt-1">
+              Contact support@europay.dev to discuss custom pricing.
+            </p>
           </CardContent>
         </Card>
 

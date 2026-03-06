@@ -57,6 +57,10 @@ model App {
   // End-customer email preferences
   sendCustomerEmails Boolean @default(true)
 
+  // Custom pricing (admin-managed)
+  platformFeePercent   Float     @default(1.5)
+  platformFeeUpdatedAt DateTime?
+
   // Alerting
   lastWebhookAlertAt             DateTime?
 

@@ -13,6 +13,7 @@ type AuthSuccess = {
     stripeConnectId: string | null
     rootlineAccountId: string | null
     dmaEntitlementConfirmed: boolean
+    platformFeePercent: number
     webhookUrl: string | null
     webhookSecret: string | null
     createdAt: Date

@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Users, Layers, CreditCard, DollarSign, Mail } from "lucide-react"
+import { PlatformFeeEditor } from "@/components/admin/PlatformFeeEditor"
 
 function formatCurrency(cents: number) {
   return new Intl.NumberFormat("de-DE", {
@@ -128,7 +129,7 @@ export default async function AdminPage() {
   const topAppIds = topApps.map((t) => t.appId)
   const topAppRecords = await prisma.app.findMany({
     where: { id: { in: topAppIds } },
-    select: { id: true, name: true, bundleId: true },
+    select: { id: true, name: true, bundleId: true, platformFeePercent: true, platformFeeUpdatedAt: true },
   })
   const appLookup = new Map(topAppRecords.map((a) => [a.id, a]))
 
@@ -289,13 +290,15 @@ export default async function AdminPage() {
                 <TableHead>Bundle ID</TableHead>
                 <TableHead className="text-right">Transactions</TableHead>
                 <TableHead className="text-right">Total Volume</TableHead>
-                <TableHead className="text-right">EuroPay Fee</TableHead>
+                <TableHead>Fee</TableHead>
+                <TableHead className="text-right">EuroPay Revenue</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {topApps.map((row) => {
                 const app = appLookup.get(row.appId)
                 const vol = row._sum.amountTotal ?? 0
+                const fee = app?.platformFeePercent ?? 1.5
                 return (
                   <TableRow key={row.appId}>
                     <TableCell>{app?.name ?? row.appId}</TableCell>
@@ -306,15 +309,22 @@ export default async function AdminPage() {
                     <TableCell className="text-right">
                       {formatCurrency(vol)}
                     </TableCell>
+                    <TableCell>
+                      {app ? (
+                        <PlatformFeeEditor appId={app.id} currentFee={fee} />
+                      ) : (
+                        "1.5%"
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
-                      {formatCurrency(Math.round(vol * 0.015))}
+                      {formatCurrency(Math.round(vol * (fee / 100)))}
                     </TableCell>
                   </TableRow>
                 )
               })}
               {topApps.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
                     No transaction data yet
                   </TableCell>
                 </TableRow>

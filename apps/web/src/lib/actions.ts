@@ -93,6 +93,29 @@ export async function updateSendCustomerEmails(appId: string, enabled: boolean) 
   return { success: true }
 }
 
+// ─── Admin Actions ───────────────────────────────────────────
+
+export async function updatePlatformFee(appId: string, feePercent: number) {
+  const userId = await requireUser()
+  if (userId !== process.env.ADMIN_CLERK_USER_ID) {
+    throw new Error("Unauthorized")
+  }
+  if (typeof feePercent !== "number" || isNaN(feePercent) || feePercent < 0 || feePercent > 15) {
+    throw new Error("Fee must be between 0% and 15%")
+  }
+
+  await prisma.app.update({
+    where: { id: appId },
+    data: {
+      platformFeePercent: feePercent,
+      platformFeeUpdatedAt: new Date(),
+    },
+  })
+
+  revalidatePath("/admin")
+  return { success: true }
+}
+
 // ─── Product Actions ──────────────────────────────────────────
 
 export async function createProduct(formData: FormData) {

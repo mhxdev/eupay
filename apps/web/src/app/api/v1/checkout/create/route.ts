@@ -214,10 +214,10 @@ export async function POST(req: NextRequest) {
       externalUserId: userId,
       ...(appleExternalPurchaseToken ? { appleExternalPurchaseToken } : {}),
     },
-    // EuroPay 1.5% platform fee (one-time payments)
+    // Per-app platform fee (one-time payments)
     ...(product.productType !== 'SUBSCRIPTION' ? {
       payment_intent_data: {
-        application_fee_amount: Math.round(product.amountCents * 0.015),
+        application_fee_amount: Math.round(product.amountCents * ((auth.app.platformFeePercent ?? 1.5) / 100)),
       },
     } : {}),
     // Phone collection off (GDPR minimisation)
@@ -239,10 +239,10 @@ export async function POST(req: NextRequest) {
     ],
   }
 
-  // Subscription: always apply 1.5% platform fee, add trial if applicable
+  // Subscription: apply per-app platform fee, add trial if applicable
   if (product.productType === 'SUBSCRIPTION') {
     sessionParams.subscription_data = {
-      application_fee_percent: 1.5,
+      application_fee_percent: auth.app.platformFeePercent ?? 1.5,
       metadata: { appId: auth.appId, productId: product.id },
       ...(product.trialDays && product.trialDays > 0
         ? { trial_period_days: product.trialDays }
