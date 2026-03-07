@@ -800,6 +800,101 @@ export default function IntegrationGuidePage() {
         </div>
       </section>
 
+      {/* Save the Sale — Cancellation Interception */}
+      <section className="mt-16">
+        <h2 className="text-2xl font-semibold text-white">
+          Save the Sale — Cancellation Interception
+        </h2>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Intercept cancellation requests with a survey and retention offer.
+          Instead of letting users cancel silently, redirect them through a
+          branded cancellation page that presents alternatives (discount, pause,
+          or downgrade).
+        </p>
+
+        <h3 className="mt-8 text-lg font-medium text-white">How it works</h3>
+        <ol className="mt-4 space-y-3 text-base text-gray-300 leading-relaxed list-decimal list-inside">
+          <li>
+            <strong className="text-white">Configure retention</strong> — In the
+            Dashboard &rarr; Retention, enable Save the Sale, define survey
+            questions, and configure retention offers.
+          </li>
+          <li>
+            <strong className="text-white">Generate a cancel token</strong> —
+            When the user initiates cancellation, call{" "}
+            <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
+              POST /api/v1/retention/token
+            </code>{" "}
+            with the user&apos;s ID. This returns a short-lived JWT and a{" "}
+            <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">cancelUrl</code>.
+          </li>
+          <li>
+            <strong className="text-white">Redirect to the cancel page</strong> —
+            Open the <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">cancelUrl</code>{" "}
+            in a web view or browser. The page shows a survey, then retention
+            offers, with a clearly visible cancel button (EU compliant).
+          </li>
+          <li>
+            <strong className="text-white">Outcome</strong> — If the user
+            accepts an offer, EuroPay applies it to their Stripe subscription
+            automatically. If they decline, the subscription is set to cancel at
+            period end.
+          </li>
+        </ol>
+
+        <h3 className="mt-8 text-lg font-medium text-white">Example: generating a cancel token</h3>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm font-mono">
+            <code>
+{`POST /api/v1/retention/token
+Authorization: Bearer ep_live_xxx
+Content-Type: application/json
+
+{
+  "userId": "user_abc123",
+  "productId": "clxxx..."       // optional — defaults to first active sub
+}
+
+// Response
+{
+  "token": "eyJhbGciOi...",
+  "cancelUrl": "https://app.europay.dev/cancel/eyJhbGci...",
+  "expiresIn": 3600,
+  "productName": "Pro Monthly"
+}`}
+            </code>
+          </pre>
+        </div>
+
+        <h3 className="mt-8 text-lg font-medium text-white">Retention offers</h3>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Configure up to 3 offer types in the dashboard:
+        </p>
+        <ul className="mt-3 space-y-2 text-base text-gray-300 leading-relaxed list-disc list-inside">
+          <li>
+            <strong className="text-white">Discount</strong> — Apply a
+            percentage discount for N months (e.g. 20% off for 3 months)
+          </li>
+          <li>
+            <strong className="text-white">Pause</strong> — Pause billing for N
+            days (subscription resumes automatically)
+          </li>
+          <li>
+            <strong className="text-white">Downgrade</strong> — Switch to a
+            lower-priced plan
+          </li>
+        </ul>
+
+        <div className="mt-6 rounded-lg border border-amber-500/20 bg-amber-500/5 px-6 py-5">
+          <p className="text-sm text-gray-300">
+            <strong className="text-white">EU Compliance:</strong> The cancel
+            button is always visible and accessible throughout the flow. The
+            survey is optional (skippable), and the maximum number of steps is 3.
+            No dark patterns — users can cancel with a single click at any point.
+          </p>
+        </div>
+      </section>
+
       <DocsNavigation
         prev={{ href: "/docs/getting-started", label: "Getting Started" }}
         next={{ href: "/docs/dma-compliance", label: "DMA Compliance" }}

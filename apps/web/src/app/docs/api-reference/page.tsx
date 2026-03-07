@@ -227,6 +227,43 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 text-gray-400">Report transaction to Apple (dashboard auth)</td>
                 <td className="py-3"><span className="rounded-full bg-gray-500/10 px-2 py-0.5 text-xs font-medium text-gray-400 border border-gray-500/20">Internal</span></td>
               </tr>
+              {/* Retention */}
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+                    POST
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/retention/token
+                </td>
+                <td className="py-3 pr-4 text-gray-400">Generate cancel page JWT token</td>
+                <td className="py-3"><span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-400 border border-purple-500/20">SDK-managed</span></td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+                    POST
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/retention/accept
+                </td>
+                <td className="py-3 pr-4 text-gray-400">Accept a retention offer (public, JWT auth)</td>
+                <td className="py-3"><span className="rounded-full bg-gray-500/10 px-2 py-0.5 text-xs font-medium text-gray-400 border border-gray-500/20">Internal</span></td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+                    POST
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/retention/cancel
+                </td>
+                <td className="py-3 pr-4 text-gray-400">Cancel subscription at period end (public, JWT auth)</td>
+                <td className="py-3"><span className="rounded-full bg-gray-500/10 px-2 py-0.5 text-xs font-medium text-gray-400 border border-gray-500/20">Internal</span></td>
+              </tr>
               {/* Webhooks */}
               <tr>
                 <td className="py-3 pr-4">
@@ -1436,6 +1473,154 @@ export default function ApiReferencePage() {
                 <span className="text-gray-400">{"}"}</span>
               </code>
             </pre>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════ Retention ════════ */}
+      <section className="mt-16">
+        <h2 className="text-2xl font-semibold text-white">Retention (Save the Sale)</h2>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Intercept cancellation requests with a branded survey and retention offer flow.
+        </p>
+      </section>
+
+      {/* POST /v1/retention/token */}
+      <section className="mt-8">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+            POST
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/retention/token
+          </h3>
+        </div>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Generate a short-lived JWT token for the public cancellation page. Requires API key auth.
+        </p>
+
+        <div className="mt-4 space-y-4">
+          <div>
+            <h4 className="text-sm font-medium text-white mb-2">Request body</h4>
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+              <pre className="text-sm font-mono">
+                <code>
+{`{
+  "userId": "user_abc123",        // required — external user ID
+  "productId": "clxxx..."         // optional — specific product
+}`}
+                </code>
+              </pre>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium text-white mb-2">Response</h4>
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+              <pre className="text-sm font-mono">
+                <code>
+{`{
+  "token": "eyJhbGciOi...",
+  "cancelUrl": "https://app.europay.dev/cancel/eyJhbGci...",
+  "expiresIn": 3600,
+  "productName": "Pro Monthly"
+}`}
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* POST /v1/retention/accept */}
+      <section className="mt-8">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+            POST
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/retention/accept
+          </h3>
+        </div>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Accept a retention offer. Authenticated by the JWT token (no API key required).
+          Called from the public cancellation page.
+        </p>
+
+        <div className="mt-4 space-y-4">
+          <div>
+            <h4 className="text-sm font-medium text-white mb-2">Request body</h4>
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+              <pre className="text-sm font-mono">
+                <code>
+{`{
+  "token": "eyJhbGciOi...",       // required — JWT from /retention/token
+  "reason": "Too expensive",      // optional — selected survey reason
+  "offerType": "discount",        // "discount" | "pause" | "downgrade"
+  "discountPercent": 20,          // for discount offers
+  "pauseDays": 30,                // for pause offers
+  "downgradeProductId": "cl..."   // for downgrade offers
+}`}
+                </code>
+              </pre>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium text-white mb-2">Response</h4>
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+              <pre className="text-sm font-mono">
+                <code>
+{`{
+  "success": true,
+  "message": "20% discount applied for 3 months."
+}`}
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* POST /v1/retention/cancel */}
+      <section className="mt-8">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+            POST
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/retention/cancel
+          </h3>
+        </div>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Cancel the subscription at the end of the current billing period. Authenticated by
+          JWT token. The subscription remains active until the period ends.
+        </p>
+
+        <div className="mt-4 space-y-4">
+          <div>
+            <h4 className="text-sm font-medium text-white mb-2">Request body</h4>
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+              <pre className="text-sm font-mono">
+                <code>
+{`{
+  "token": "eyJhbGciOi...",       // required — JWT from /retention/token
+  "reason": "Not using it"        // optional — selected survey reason
+}`}
+                </code>
+              </pre>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium text-white mb-2">Response</h4>
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+              <pre className="text-sm font-mono">
+                <code>
+{`{
+  "success": true,
+  "message": "Your subscription will end at the current billing period."
+}`}
+                </code>
+              </pre>
+            </div>
           </div>
         </div>
       </section>

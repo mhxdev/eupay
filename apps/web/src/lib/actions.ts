@@ -773,6 +773,37 @@ export async function deleteCampaign(campaignId: string) {
   return { success: true }
 }
 
+// ─── Retention Actions ───────────────────────────────────────
+
+export async function saveRetentionConfig(formData: FormData) {
+  const userId = await requireUser()
+  const appId = formData.get("appId") as string
+  const enabled = formData.get("enabled") === "true"
+  const surveyQuestions = formData.get("surveyQuestions") as string
+  const retentionOffers = formData.get("retentionOffers") as string
+
+  const app = await prisma.app.findUnique({ where: { id: appId } })
+  if (!app || app.clerkUserId !== userId) throw new Error("Not found")
+
+  await prisma.retentionConfig.upsert({
+    where: { appId },
+    create: {
+      appId,
+      enabled,
+      surveyQuestions: JSON.parse(surveyQuestions || "[]"),
+      retentionOffers: JSON.parse(retentionOffers || "[]"),
+    },
+    update: {
+      enabled,
+      surveyQuestions: JSON.parse(surveyQuestions || "[]"),
+      retentionOffers: JSON.parse(retentionOffers || "[]"),
+    },
+  })
+
+  revalidatePath(`/dashboard/apps/${appId}/retention`)
+  return { success: true }
+}
+
 // ─── GDPR Actions (continued) ────────────────────────────────
 
 export async function deleteCustomerData(customerId: string) {

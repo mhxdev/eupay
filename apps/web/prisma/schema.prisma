@@ -71,6 +71,8 @@ model App {
   gdprAuditLogs      GdprAuditLog[]
   promotions         Promotion[]
   migrationCampaigns MigrationCampaign[]
+  retentionConfig    RetentionConfig?
+  cancelEvents       CancelEvent[]
 
   @@index([clerkUserId])
 }
@@ -162,6 +164,7 @@ model Customer {
   entitlements    Entitlement[]
   transactions    Transaction[]
   promotionRedemptions PromotionRedemption[]
+  cancelEvents    CancelEvent[]
 
   @@unique([appId, externalUserId])
   @@index([appId])
@@ -191,6 +194,8 @@ model Entitlement {
 
   // One-time purchase
   expiresAt       DateTime?         // null = lifetime
+
+  cancelEvents    CancelEvent[]
 
   @@index([customerId])
   @@index([productId])
@@ -530,6 +535,65 @@ enum MigrationStatus {
   APPLE_CANCELLED
   COMPLETED
   DISMISSED
+}
+
+// Save the Sale — retention configuration per app
+model RetentionConfig {
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  appId            String   @unique
+  app              App      @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  enabled          Boolean  @default(false)
+
+  // Survey questions shown before the offer (JSON array of strings)
+  surveyQuestions   Json    @default("[]")
+
+  // Retention offers (JSON array of { type, label, discountPercent?, pauseDays?, downgradeProductId? })
+  retentionOffers   Json    @default("[]")
+}
+
+// Save the Sale — cancellation event tracking
+model CancelEvent {
+  id               String        @id @default(cuid())
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  appId            String
+  app              App           @relation(fields: [appId], references: [id])
+
+  customerId       String
+  customer         Customer      @relation(fields: [customerId], references: [id])
+
+  entitlementId    String
+  entitlement      Entitlement   @relation(fields: [entitlementId], references: [id])
+
+  // Survey
+  reason           String?       // Selected cancel reason
+
+  // Offer
+  offerPresented   String?       // Which offer was shown (e.g. "discount_20", "pause_30")
+  offerAccepted    Boolean       @default(false)
+
+  // Outcome
+  outcome          CancelOutcome @default(PENDING)
+
+  // Stripe references
+  stripeSubscriptionId String?
+
+  @@index([appId])
+  @@index([customerId])
+  @@index([outcome])
+}
+
+enum CancelOutcome {
+  PENDING
+  SAVED_DISCOUNT
+  SAVED_PAUSE
+  SAVED_DOWNGRADE
+  CANCELLED
 }
 
 // Waitlist for coming-soon page

@@ -13,7 +13,7 @@ import { AppleCredentialsForm } from "@/components/dashboard/AppleCredentialsFor
 import { CustomerEmailToggle } from "@/components/dashboard/CustomerEmailToggle"
 import { StripeConnect } from "@/components/dashboard/StripeConnect"
 import { AppRevenueChart } from "@/components/dashboard/AppRevenueChart"
-import { Package, Users, Webhook, ExternalLink, FileText, BarChart3, Shield, Tag, TrendingUp } from "lucide-react"
+import { Package, Users, Webhook, ExternalLink, FileText, BarChart3, Shield, Tag, TrendingUp, HeartHandshake } from "lucide-react"
 
 export default async function AppDetailPage({
   params,
@@ -38,7 +38,7 @@ export default async function AppDetailPage({
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-  const [activeProductCount, recentTxCount, migrationStats] = await Promise.all([
+  const [activeProductCount, recentTxCount, migrationStats, retentionStats] = await Promise.all([
     prisma.product.count({ where: { appId, isActive: true } }),
     prisma.transaction.count({
       where: { appId, status: "SUCCEEDED", createdAt: { gte: thirtyDaysAgo } },
@@ -51,6 +51,11 @@ export default async function AppDetailPage({
           select: { status: true, savingsCentsPerMonth: true },
         },
       },
+    }),
+    prisma.cancelEvent.groupBy({
+      by: ["outcome"],
+      where: { appId, createdAt: { gte: thirtyDaysAgo } },
+      _count: true,
     }),
   ])
 
@@ -77,6 +82,7 @@ export default async function AppDetailPage({
     { href: `/dashboard/apps/${appId}/apple-reporting`, label: "Apple Reporting", icon: FileText, count: null },
     { href: `/dashboard/apps/${appId}/promotions`, label: "Promotions", icon: Tag, count: null },
     { href: `/dashboard/apps/${appId}/campaigns`, label: "Campaigns", icon: TrendingUp, count: null },
+    { href: `/dashboard/apps/${appId}/retention`, label: "Retention", icon: HeartHandshake, count: null },
     { href: `/dashboard/apps/${appId}/reports`, label: "Reports", icon: BarChart3, count: null },
     { href: `/dashboard/apps/${appId}/dma`, label: "DMA", icon: Shield, count: null },
   ]
@@ -161,6 +167,36 @@ export default async function AppDetailPage({
                   className="text-xs text-teal-600 dark:text-teal-400 underline"
                 >
                   View campaigns
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })()}
+
+      {retentionStats.length > 0 && (() => {
+        const totalEvents = retentionStats.reduce((s, r) => s + r._count, 0)
+        const savedEvents = retentionStats
+          .filter((r) => r.outcome !== "CANCELLED" && r.outcome !== "PENDING")
+          .reduce((s, r) => s + r._count, 0)
+        const saveRate = totalEvents > 0 ? Math.round((savedEvents / totalEvents) * 100) : 0
+        return (
+          <Card className="border-purple-200 bg-purple-50 dark:border-purple-500/20 dark:bg-purple-500/5">
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-purple-900 dark:text-purple-300">
+                    Save the Sale (30 days)
+                  </p>
+                  <p className="text-xs text-purple-700 dark:text-purple-400/80 mt-1">
+                    {savedEvents} saved · {retentionStats.find((r) => r.outcome === "CANCELLED")?._count ?? 0} cancelled · {saveRate}% save rate
+                  </p>
+                </div>
+                <Link
+                  href={`/dashboard/apps/${appId}/retention/analytics`}
+                  className="text-xs text-purple-600 dark:text-purple-400 underline"
+                >
+                  View analytics
                 </Link>
               </div>
             </CardContent>
