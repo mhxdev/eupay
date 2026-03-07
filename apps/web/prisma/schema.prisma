@@ -69,6 +69,7 @@ model App {
   customers        Customer[]
   transactions     Transaction[]
   gdprAuditLogs    GdprAuditLog[]
+  promotions       Promotion[]
 
   @@index([clerkUserId])
 }
@@ -123,6 +124,7 @@ model Product {
 
   entitlements     Entitlement[]
   transactions     Transaction[]
+  promotions       Promotion[]
 
   @@index([appId])
   @@index([stripePriceId])
@@ -157,6 +159,7 @@ model Customer {
 
   entitlements    Entitlement[]
   transactions    Transaction[]
+  promotionRedemptions PromotionRedemption[]
 
   @@unique([appId, externalUserId])
   @@index([appId])
@@ -229,6 +232,8 @@ model Transaction {
   appleReportStatus          AppleReportStatus?
   appleReportedAt            DateTime?
   appleReportError           String?
+
+  promotionRedemptions PromotionRedemption[]
 
   @@index([appId])
   @@index([customerId])
@@ -327,6 +332,85 @@ model RegulatoryUpdateRead {
 
   @@unique([updateId, clerkUserId])
   @@index([clerkUserId])
+}
+
+// Promotions / coupons
+model Promotion {
+  id               String          @id @default(cuid())
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  appId            String
+  app              App             @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  name             String          // Internal name (e.g. "Launch 20% off")
+  code             String?         // Public promo code (null = auto-applied / no code)
+  type             PromotionType   // PERCENT_OFF | AMOUNT_OFF | TRIAL_EXTENSION
+  duration         PromotionDuration // ONCE | REPEATING | FOREVER
+
+  // Discount details
+  percentOff       Float?          // e.g. 20.0 for 20%
+  amountOffCents   Int?            // Fixed amount in cents
+  currency         String          @default("eur")
+  durationInMonths Int?            // For REPEATING duration
+
+  // Trial extension
+  trialDays        Int?            // Extra trial days (for TRIAL_EXTENSION type)
+
+  // Scope: null = applies to all products in this app
+  productId        String?
+  product          Product?        @relation(fields: [productId], references: [id])
+
+  // Limits
+  maxRedemptions   Int?            // null = unlimited
+  expiresAt        DateTime?       // null = never expires
+
+  // Stripe references (created on connected account)
+  stripeCouponId   String?
+  stripePromoCodeId String?
+
+  status           PromotionStatus @default(ACTIVE)
+
+  redemptions      PromotionRedemption[]
+
+  @@unique([appId, code])
+  @@index([appId])
+  @@index([status])
+}
+
+model PromotionRedemption {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+
+  promotionId String
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+
+  customerId  String
+  customer    Customer  @relation(fields: [customerId], references: [id])
+
+  transactionId String?
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+
+  @@index([promotionId])
+  @@index([customerId])
+}
+
+enum PromotionType {
+  PERCENT_OFF
+  AMOUNT_OFF
+  TRIAL_EXTENSION
+}
+
+enum PromotionDuration {
+  ONCE
+  REPEATING
+  FOREVER
+}
+
+enum PromotionStatus {
+  ACTIVE
+  PAUSED
+  EXPIRED
 }
 
 // Waitlist for coming-soon page

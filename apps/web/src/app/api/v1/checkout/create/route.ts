@@ -17,6 +17,10 @@ const checkoutCreateSchema = z.object({
   // iOS SDK should send: Locale.current.language.languageCode?.identifier ?? "en"
   locale: z.string().length(2).default('en'),
   appleExternalPurchaseToken: z.string().optional(),
+  // Promotion support
+  promotionId: z.string().optional(),
+  promoCode: z.string().optional(),
+  trialDays: z.number().int().min(1).optional(),
 })
 
 // Localized withdrawal-right (Widerrufsrecht) waiver text for EU Checkout.
@@ -144,7 +148,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const { productId, userId, userEmail, successUrl, cancelUrl, locale, appleExternalPurchaseToken } = parsed.data
+  const { productId, userId, userEmail, successUrl, cancelUrl, locale, appleExternalPurchaseToken, promotionId, promoCode, trialDays: requestTrialDays } = parsed.data
 
   // Validate product belongs to this app
   const product = await prisma.product.findFirst({
@@ -184,6 +188,63 @@ export async function POST(req: NextRequest) {
     })
   }
 
+  // ── Resolve promotion ─────────────────────────────────────────
+  let resolvedPromotion: {
+    id: string
+    stripeCouponId: string | null
+    stripePromoCodeId: string | null
+    type: string
+    trialDays: number | null
+    code: string | null
+  } | null = null
+
+  if (promotionId) {
+    const promo = await prisma.promotion.findFirst({
+      where: {
+        id: promotionId,
+        appId: auth.appId,
+        status: 'ACTIVE',
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } },
+        ],
+      },
+    })
+    if (promo) {
+      // Check max redemptions
+      if (promo.maxRedemptions) {
+        const count = await prisma.promotionRedemption.count({
+          where: { promotionId: promo.id },
+        })
+        if (count < promo.maxRedemptions) resolvedPromotion = promo
+      } else {
+        resolvedPromotion = promo
+      }
+    }
+  } else if (promoCode) {
+    const promo = await prisma.promotion.findFirst({
+      where: {
+        appId: auth.appId,
+        code: promoCode.toUpperCase(),
+        status: 'ACTIVE',
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } },
+        ],
+      },
+    })
+    if (promo) {
+      if (promo.maxRedemptions) {
+        const count = await prisma.promotionRedemption.count({
+          where: { promotionId: promo.id },
+        })
+        if (count < promo.maxRedemptions) resolvedPromotion = promo
+      } else {
+        resolvedPromotion = promo
+      }
+    }
+  }
+
   // Look up localized withdrawal waiver text (falls back to English)
   const waiver = withdrawalWaiverTranslations[locale] ?? withdrawalWaiverTranslations.en
 
@@ -213,6 +274,7 @@ export async function POST(req: NextRequest) {
       productId: product.id,
       externalUserId: userId,
       ...(appleExternalPurchaseToken ? { appleExternalPurchaseToken } : {}),
+      ...(resolvedPromotion ? { promotionId: resolvedPromotion.id } : {}),
     },
     // Per-app platform fee (one-time payments)
     ...(product.productType !== 'SUBSCRIPTION' ? {
@@ -237,15 +299,29 @@ export async function POST(req: NextRequest) {
         optional: false,
       },
     ],
+    // Promotion discount — Stripe does not allow `discounts` + `allow_promotion_codes` together
+    ...(resolvedPromotion?.stripeCouponId && !resolvedPromotion.code
+      ? { discounts: [{ coupon: resolvedPromotion.stripeCouponId }] }
+      : {}),
+    ...(resolvedPromotion?.code
+      ? { allow_promotion_codes: true }
+      : {}),
   }
 
   // Subscription: apply per-app platform fee, add trial if applicable
   if (product.productType === 'SUBSCRIPTION') {
+    // Determine trial days: SDK override > promotion extension > product default
+    const effectiveTrialDays =
+      requestTrialDays ??
+      (resolvedPromotion?.type === 'TRIAL_EXTENSION' && resolvedPromotion.trialDays
+        ? (product.trialDays ?? 0) + resolvedPromotion.trialDays
+        : product.trialDays) ?? 0
+
     sessionParams.subscription_data = {
       application_fee_percent: auth.app.platformFeePercent ?? 1.5,
       metadata: { appId: auth.appId, productId: product.id },
-      ...(product.trialDays && product.trialDays > 0
-        ? { trial_period_days: product.trialDays }
+      ...(effectiveTrialDays > 0
+        ? { trial_period_days: effectiveTrialDays }
         : {}),
     }
   }

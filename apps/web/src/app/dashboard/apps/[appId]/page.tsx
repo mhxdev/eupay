@@ -13,7 +13,7 @@ import { AppleCredentialsForm } from "@/components/dashboard/AppleCredentialsFor
 import { CustomerEmailToggle } from "@/components/dashboard/CustomerEmailToggle"
 import { StripeConnect } from "@/components/dashboard/StripeConnect"
 import { AppRevenueChart } from "@/components/dashboard/AppRevenueChart"
-import { Package, Users, Webhook, ExternalLink, FileText, BarChart3, Shield } from "lucide-react"
+import { Package, Users, Webhook, ExternalLink, FileText, BarChart3, Shield, Tag } from "lucide-react"
 
 export default async function AppDetailPage({
   params,
@@ -66,6 +66,7 @@ export default async function AppDetailPage({
     { href: `/dashboard/apps/${appId}/subscribers`, label: "Subscribers", icon: Users, count: app._count.customers },
     { href: `/dashboard/apps/${appId}/webhooks`, label: "Webhook Logs", icon: Webhook, count: null },
     { href: `/dashboard/apps/${appId}/apple-reporting`, label: "Apple Reporting", icon: FileText, count: null },
+    { href: `/dashboard/apps/${appId}/promotions`, label: "Promotions", icon: Tag, count: null },
     { href: `/dashboard/apps/${appId}/reports`, label: "Reports", icon: BarChart3, count: null },
     { href: `/dashboard/apps/${appId}/dma`, label: "DMA", icon: Shield, count: null },
   ]

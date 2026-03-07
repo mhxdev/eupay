@@ -217,6 +217,40 @@ async function handleCheckoutSessionCompleted(
     })
   }
 
+  // ── Track promotion redemption ──────────────────────────
+  if (metadata.promotionId) {
+    try {
+      const promotion = await prisma.promotion.findUnique({
+        where: { id: metadata.promotionId },
+      })
+      if (promotion && promotion.status === 'ACTIVE') {
+        await prisma.promotionRedemption.create({
+          data: {
+            promotionId: promotion.id,
+            customerId: customer.id,
+            transactionId: transaction.id,
+          },
+        })
+
+        // Auto-expire if max redemptions reached
+        if (promotion.maxRedemptions) {
+          const count = await prisma.promotionRedemption.count({
+            where: { promotionId: promotion.id },
+          })
+          if (count >= promotion.maxRedemptions) {
+            await prisma.promotion.update({
+              where: { id: promotion.id },
+              data: { status: 'EXPIRED' },
+            })
+          }
+        }
+      }
+    } catch (redeemErr) {
+      // Redemption tracking failure must never break the webhook handler
+      console.error('[Webhook] Promotion redemption tracking failed:', redeemErr)
+    }
+  }
+
   // ── Send transactional emails (fire-and-forget) ──────────
   if (customer.email && product.app.sendCustomerEmails) {
     try {

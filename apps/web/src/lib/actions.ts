@@ -2,6 +2,7 @@
 
 import { auth, clerkClient } from "@clerk/nextjs/server"
 import { revalidatePath } from "next/cache"
+import Stripe from "stripe"
 import { prisma } from "./prisma"
 import { stripe } from "./stripe"
 import { generateApiKey } from "./auth"
@@ -505,6 +506,148 @@ export async function retryAppleReportAction(reportId: string) {
 export async function updateSetupChecklist(appId: string, stepKey: string, completed: boolean) {
   await requireUser()
   void appId; void stepKey; void completed
+}
+
+// ─── Promotion Actions ───────────────────────────────────────
+
+export async function createPromotion(formData: FormData) {
+  const userId = await requireUser()
+  const appId = formData.get("appId") as string
+  const name = formData.get("name") as string
+  const code = (formData.get("code") as string) || null
+  const type = formData.get("type") as "PERCENT_OFF" | "AMOUNT_OFF" | "TRIAL_EXTENSION"
+  const duration = formData.get("duration") as "ONCE" | "REPEATING" | "FOREVER"
+  const percentOff = formData.get("percentOff") ? parseFloat(formData.get("percentOff") as string) : null
+  const amountOffCents = formData.get("amountOffCents") ? parseInt(formData.get("amountOffCents") as string, 10) : null
+  const currency = (formData.get("currency") as string) || "eur"
+  const durationInMonths = formData.get("durationInMonths") ? parseInt(formData.get("durationInMonths") as string, 10) : null
+  const trialDays = formData.get("trialDays") ? parseInt(formData.get("trialDays") as string, 10) : null
+  const productId = (formData.get("productId") as string) || null
+  const maxRedemptions = formData.get("maxRedemptions") ? parseInt(formData.get("maxRedemptions") as string, 10) : null
+  const expiresAt = formData.get("expiresAt") ? new Date(formData.get("expiresAt") as string) : null
+
+  const app = await prisma.app.findUnique({ where: { id: appId } })
+  if (!app || app.clerkUserId !== userId) throw new Error("Not found")
+  if (!app.stripeConnectId) throw new Error("No Stripe account connected")
+
+  const connectOpts = { stripeAccount: app.stripeConnectId }
+
+  // Create Stripe Coupon on the connected account (skip for TRIAL_EXTENSION)
+  let stripeCouponId: string | undefined
+  let stripePromoCodeId: string | undefined
+
+  if (type !== "TRIAL_EXTENSION") {
+    const couponParams: Stripe.CouponCreateParams = {
+      name,
+      duration: duration.toLowerCase() as Stripe.CouponCreateParams["duration"],
+      metadata: { appId, europay: "true" },
+    }
+    if (type === "PERCENT_OFF" && percentOff) {
+      couponParams.percent_off = percentOff
+    } else if (type === "AMOUNT_OFF" && amountOffCents) {
+      couponParams.amount_off = amountOffCents
+      couponParams.currency = currency
+    }
+    if (duration === "REPEATING" && durationInMonths) {
+      couponParams.duration_in_months = durationInMonths
+    }
+    if (maxRedemptions) {
+      couponParams.max_redemptions = maxRedemptions
+    }
+    if (expiresAt) {
+      couponParams.redeem_by = Math.floor(expiresAt.getTime() / 1000)
+    }
+    // Apply to specific product if set
+    if (productId) {
+      const product = await prisma.product.findUnique({ where: { id: productId } })
+      if (product?.stripeProductId) {
+        couponParams.applies_to = { products: [product.stripeProductId] }
+      }
+    }
+
+    const stripeCoupon = await stripe.coupons.create(
+      couponParams,
+      connectOpts
+    )
+    stripeCouponId = stripeCoupon.id
+
+    // If there's a public code, create a Stripe Promotion Code
+    if (code) {
+      const promoCode = await stripe.promotionCodes.create({
+        promotion: { type: "coupon", coupon: stripeCoupon.id },
+        code: code.toUpperCase(),
+        max_redemptions: maxRedemptions ?? undefined,
+        expires_at: expiresAt ? Math.floor(expiresAt.getTime() / 1000) : undefined,
+        metadata: { appId },
+      }, connectOpts)
+      stripePromoCodeId = promoCode.id
+    }
+  }
+
+  await prisma.promotion.create({
+    data: {
+      appId,
+      name,
+      code: code?.toUpperCase() ?? null,
+      type,
+      duration,
+      percentOff,
+      amountOffCents,
+      currency,
+      durationInMonths,
+      trialDays,
+      productId,
+      maxRedemptions,
+      expiresAt,
+      stripeCouponId,
+      stripePromoCodeId,
+      status: "ACTIVE",
+    },
+  })
+
+  revalidatePath(`/dashboard/apps/${appId}/promotions`)
+}
+
+export async function togglePromotionStatus(promotionId: string, active: boolean) {
+  const userId = await requireUser()
+  const promotion = await prisma.promotion.findUnique({
+    where: { id: promotionId },
+    include: { app: true },
+  })
+  if (!promotion || promotion.app.clerkUserId !== userId) throw new Error("Not found")
+
+  await prisma.promotion.update({
+    where: { id: promotionId },
+    data: { status: active ? "ACTIVE" : "PAUSED" },
+  })
+
+  revalidatePath(`/dashboard/apps/${promotion.appId}/promotions`)
+  return { success: true }
+}
+
+export async function deletePromotion(promotionId: string) {
+  const userId = await requireUser()
+  const promotion = await prisma.promotion.findUnique({
+    where: { id: promotionId },
+    include: { app: true },
+  })
+  if (!promotion || promotion.app.clerkUserId !== userId) throw new Error("Not found")
+
+  // Delete from Stripe (best effort)
+  if (promotion.stripeCouponId && promotion.app.stripeConnectId) {
+    try {
+      await stripe.coupons.del(promotion.stripeCouponId, {
+        stripeAccount: promotion.app.stripeConnectId,
+      })
+    } catch {
+      // Coupon may already be deleted
+    }
+  }
+
+  await prisma.promotion.delete({ where: { id: promotionId } })
+
+  revalidatePath(`/dashboard/apps/${promotion.appId}/promotions`)
+  return { success: true }
 }
 
 // ─── GDPR Actions (continued) ────────────────────────────────
