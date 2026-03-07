@@ -251,6 +251,27 @@ async function handleCheckoutSessionCompleted(
     }
   }
 
+  // ── Auto-tag experiment purchase events ────────────────
+  try {
+    const assignments = await prisma.experimentAssignment.findMany({
+      where: { userId: externalUserId, experiment: { appId, status: "RUNNING" } },
+      select: { experimentId: true, variantId: true },
+    })
+    for (const a of assignments) {
+      await prisma.experimentEvent.create({
+        data: {
+          experimentId: a.experimentId,
+          variantId: a.variantId,
+          userId: externalUserId,
+          eventType: "purchase",
+          revenueCents: transaction.amountTotal,
+        },
+      })
+    }
+  } catch (expErr) {
+    console.error("[Webhook] Experiment purchase tagging failed:", expErr)
+  }
+
   // ── Send transactional emails (fire-and-forget) ──────────
   if (customer.email && product.app.sendCustomerEmails) {
     try {
@@ -508,6 +529,35 @@ async function handleInvoicePaymentSucceeded(
     } catch (emailError) {
       console.error('[Webhook] Renewal receipt email failed:', emailError)
     }
+  }
+
+  // ── Auto-tag experiment events (trial_convert or purchase) ──
+  try {
+    const assignments = await prisma.experimentAssignment.findMany({
+      where: {
+        userId: entitlement.customer.externalUserId,
+        experiment: { appId: entitlement.customer.appId, status: "RUNNING" },
+      },
+      select: { experimentId: true, variantId: true },
+    })
+
+    // Detect trial conversion: if subscription had a trial and this is the first paid invoice
+    const isTrialConvert = subscription.trial_end && subscription.trial_end * 1000 <= Date.now()
+      && invoice.billing_reason === "subscription_cycle"
+
+    for (const a of assignments) {
+      await prisma.experimentEvent.create({
+        data: {
+          experimentId: a.experimentId,
+          variantId: a.variantId,
+          userId: entitlement.customer.externalUserId,
+          eventType: isTrialConvert ? "trial_convert" : "purchase",
+          revenueCents: invoice.amount_paid,
+        },
+      })
+    }
+  } catch (expErr) {
+    console.error("[Webhook] Experiment renewal tagging failed:", expErr)
   }
 
   // Report renewal to Apple

@@ -804,6 +804,110 @@ export async function saveRetentionConfig(formData: FormData) {
   return { success: true }
 }
 
+// ─── Experiment Actions ──────────────────────────────────────
+
+export async function createExperiment(formData: FormData) {
+  const userId = await requireUser()
+  const appId = formData.get("appId") as string
+  const name = formData.get("name") as string
+  const placement = formData.get("placement") as string
+  const targetNewUsersOnly = formData.get("targetNewUsersOnly") === "true"
+  const startDate = formData.get("startDate")
+    ? new Date(formData.get("startDate") as string)
+    : null
+  const endDate = formData.get("endDate")
+    ? new Date(formData.get("endDate") as string)
+    : null
+  const variantsJson = formData.get("variants") as string
+
+  const app = await prisma.app.findUnique({ where: { id: appId } })
+  if (!app || app.clerkUserId !== userId) throw new Error("Not found")
+  if (!name) throw new Error("Experiment name is required")
+  if (!placement) throw new Error("Placement is required")
+
+  const variants: Array<{
+    name: string
+    allocationPercent: number
+    config: Record<string, unknown>
+  }> = variantsJson ? JSON.parse(variantsJson) : []
+
+  if (variants.length < 2) throw new Error("At least 2 variants required")
+
+  const totalAllocation = variants.reduce((s, v) => s + v.allocationPercent, 0)
+  if (totalAllocation !== 100) throw new Error("Allocation percentages must sum to 100%")
+
+  await prisma.experiment.create({
+    data: {
+      appId,
+      name,
+      placement,
+      targetNewUsersOnly,
+      startDate,
+      endDate,
+      variants: {
+        create: variants.map((v) => ({
+          name: v.name,
+          allocationPercent: v.allocationPercent,
+          config: v.config as object,
+        })),
+      },
+    },
+  })
+
+  revalidatePath(`/dashboard/apps/${appId}/experiments`)
+}
+
+export async function updateExperimentStatus(
+  experimentId: string,
+  status: "RUNNING" | "PAUSED" | "COMPLETED"
+) {
+  const userId = await requireUser()
+  const experiment = await prisma.experiment.findUnique({
+    where: { id: experimentId },
+    include: { app: true, _count: { select: { variants: true } } },
+  })
+  if (!experiment || experiment.app.clerkUserId !== userId) throw new Error("Not found")
+
+  // Validate transitions
+  const current = experiment.status
+  const valid =
+    (current === "DRAFT" && status === "RUNNING") ||
+    (current === "RUNNING" && (status === "PAUSED" || status === "COMPLETED")) ||
+    (current === "PAUSED" && (status === "RUNNING" || status === "COMPLETED"))
+
+  if (!valid) throw new Error(`Cannot transition from ${current} to ${status}`)
+
+  if (status === "RUNNING" && experiment._count.variants < 2) {
+    throw new Error("Experiment requires at least 2 variants to run")
+  }
+
+  await prisma.experiment.update({
+    where: { id: experimentId },
+    data: { status },
+  })
+
+  revalidatePath(`/dashboard/apps/${experiment.appId}/experiments`)
+  return { success: true }
+}
+
+export async function deleteExperiment(experimentId: string) {
+  const userId = await requireUser()
+  const experiment = await prisma.experiment.findUnique({
+    where: { id: experimentId },
+    include: { app: true },
+  })
+  if (!experiment || experiment.app.clerkUserId !== userId) throw new Error("Not found")
+
+  if (experiment.status !== "DRAFT") {
+    throw new Error("Can only delete DRAFT experiments")
+  }
+
+  await prisma.experiment.delete({ where: { id: experimentId } })
+
+  revalidatePath(`/dashboard/apps/${experiment.appId}/experiments`)
+  return { success: true }
+}
+
 // ─── GDPR Actions (continued) ────────────────────────────────
 
 export async function deleteCustomerData(customerId: string) {

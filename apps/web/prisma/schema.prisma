@@ -73,6 +73,7 @@ model App {
   migrationCampaigns MigrationCampaign[]
   retentionConfig    RetentionConfig?
   cancelEvents       CancelEvent[]
+  experiments        Experiment[]
 
   @@index([clerkUserId])
 }
@@ -594,6 +595,96 @@ enum CancelOutcome {
   SAVED_PAUSE
   SAVED_DOWNGRADE
   CANCELLED
+}
+
+// A/B Testing — remote experiments
+model Experiment {
+  id                  String           @id @default(cuid())
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  appId               String
+  app                 App              @relation(fields: [appId], references: [id])
+
+  name                String           // "Pricing Test Q2"
+  placement           String           // "paywall", "upgrade_prompt", "cancel_flow", "migration"
+  status              ExperimentStatus @default(DRAFT)
+
+  // Targeting
+  targetNewUsersOnly  Boolean          @default(false)
+  targetCountries     String[]
+
+  // Schedule
+  startDate           DateTime?
+  endDate             DateTime?
+
+  variants            ExperimentVariant[]
+  assignments         ExperimentAssignment[]
+  events              ExperimentEvent[]
+
+  @@index([appId])
+  @@index([status])
+}
+
+model ExperimentVariant {
+  id                String             @id @default(cuid())
+  createdAt         DateTime           @default(now())
+
+  experimentId      String
+  experiment        Experiment         @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  name              String             // "Control", "Variant A"
+  allocationPercent Int                // 50 = 50%
+
+  // Config payload — flexible JSON the developer reads in their app
+  config            Json               @default("{}")
+
+  assignments       ExperimentAssignment[]
+  events            ExperimentEvent[]
+
+  @@index([experimentId])
+}
+
+model ExperimentAssignment {
+  id              String             @id @default(cuid())
+  assignedAt      DateTime           @default(now())
+
+  experimentId    String
+  experiment      Experiment         @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  variantId       String
+  variant         ExperimentVariant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  userId          String
+
+  @@unique([experimentId, userId])
+  @@index([experimentId])
+}
+
+model ExperimentEvent {
+  id              String             @id @default(cuid())
+  createdAt       DateTime           @default(now())
+
+  experimentId    String
+  experiment      Experiment         @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  variantId       String
+  variant         ExperimentVariant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  userId          String
+  eventType       String             // "view", "purchase", "trial_start", "trial_convert", "cancel"
+  revenueCents    Int?
+  metadata        Json?
+
+  @@index([experimentId, variantId])
+  @@index([experimentId, eventType])
+}
+
+enum ExperimentStatus {
+  DRAFT
+  RUNNING
+  PAUSED
+  COMPLETED
 }
 
 // Waitlist for coming-soon page

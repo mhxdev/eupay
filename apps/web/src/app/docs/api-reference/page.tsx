@@ -264,6 +264,31 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 text-gray-400">Cancel subscription at period end (public, JWT auth)</td>
                 <td className="py-3"><span className="rounded-full bg-gray-500/10 px-2 py-0.5 text-xs font-medium text-gray-400 border border-gray-500/20">Internal</span></td>
               </tr>
+              {/* Experiments */}
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-medium text-blue-400">
+                    GET
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/experiments/config
+                </td>
+                <td className="py-3 pr-4 text-gray-400">Get experiment variant assignments for a user</td>
+                <td className="py-3"><span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-400 border border-purple-500/20">SDK-managed</span></td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+                    POST
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/experiments/event
+                </td>
+                <td className="py-3 pr-4 text-gray-400">Record an experiment event</td>
+                <td className="py-3"><span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-400 border border-purple-500/20">SDK-managed</span></td>
+              </tr>
               {/* Webhooks */}
               <tr>
                 <td className="py-3 pr-4">
@@ -1618,6 +1643,114 @@ export default function ApiReferencePage() {
   "success": true,
   "message": "Your subscription will end at the current billing period."
 }`}
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════ Experiments ════════ */}
+      <section className="mt-16">
+        <h2 className="text-2xl font-semibold text-white">Experiments (A/B Testing)</h2>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Server-side experiment assignment and event tracking. The SDK fetches variant assignments on launch. Purchase events are auto-tagged via webhooks.
+        </p>
+      </section>
+
+      {/* GET /v1/experiments/config */}
+      <section className="mt-8">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-medium text-blue-400">
+            GET
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/experiments/config
+          </h3>
+        </div>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Returns the user&apos;s variant assignments for all running experiments. Assigns deterministically if the user hasn&apos;t been assigned yet.
+        </p>
+
+        <div className="mt-4 space-y-4">
+          <div>
+            <h4 className="text-sm font-medium text-white mb-2">Query parameters</h4>
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+              <pre className="text-sm font-mono">
+                <code>
+{`GET /api/v1/experiments/config?userId=user_abc123
+Authorization: Bearer ep_live_xxx`}
+                </code>
+              </pre>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium text-white mb-2">Response</h4>
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+              <pre className="text-sm font-mono">
+                <code>
+{`{
+  "experiments": [
+    {
+      "id": "exp_123",
+      "name": "Pricing Test",
+      "placement": "paywall",
+      "variant": {
+        "id": "var_456",
+        "name": "Variant A",
+        "config": {
+          "productId": "prod_annual",
+          "price": 3999,
+          "ctaText": "Save 20%"
+        }
+      }
+    }
+  ]
+}`}
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* POST /v1/experiments/event */}
+      <section className="mt-8">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+            POST
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/experiments/event
+          </h3>
+        </div>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Record an experiment event. The user must already be assigned to the experiment (via the config endpoint). Purchase events are auto-tagged — use this for view, custom, and other event types.
+        </p>
+
+        <div className="mt-4 space-y-4">
+          <div>
+            <h4 className="text-sm font-medium text-white mb-2">Request body</h4>
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+              <pre className="text-sm font-mono">
+                <code>
+{`{
+  "experimentId": "exp_123",      // required
+  "userId": "user_abc123",        // required
+  "eventType": "view",            // "view", "purchase", "trial_start", etc.
+  "revenueCents": 3999,           // optional — for purchase events
+  "metadata": { "page": "main" }  // optional — arbitrary data
+}`}
+                </code>
+              </pre>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium text-white mb-2">Response</h4>
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+              <pre className="text-sm font-mono">
+                <code>
+{`{ "success": true }`}
                 </code>
               </pre>
             </div>

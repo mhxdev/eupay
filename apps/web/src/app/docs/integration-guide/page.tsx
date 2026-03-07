@@ -895,6 +895,94 @@ Content-Type: application/json
         </div>
       </section>
 
+      {/* A/B Testing — Remote Experiments */}
+      <section className="mt-16">
+        <h2 className="text-2xl font-semibold text-white">
+          A/B Testing — Optimize Without App Updates
+        </h2>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Run server-side experiments to optimize pricing, trial length, CTA copy,
+          and more — without shipping an app update. The SDK fetches each user&apos;s
+          variant assignment on launch. Purchase events are automatically tagged with
+          experiment context.
+        </p>
+
+        <h3 className="mt-8 text-lg font-medium text-white">How it works</h3>
+        <ol className="mt-4 space-y-3 text-base text-gray-300 leading-relaxed list-decimal list-inside">
+          <li>
+            <strong className="text-white">Create an experiment</strong> — In the
+            Dashboard &rarr; Experiments, define variants with different config payloads
+            (pricing, trial length, CTA text, promotion ID).
+          </li>
+          <li>
+            <strong className="text-white">Fetch assignments</strong> — Call{" "}
+            <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
+              GET /api/v1/experiments/config?userId=X
+            </code>{" "}
+            on launch. The SDK returns your user&apos;s variant for each running experiment.
+          </li>
+          <li>
+            <strong className="text-white">Use the config</strong> — Read the variant&apos;s
+            config payload in your UI code. The config is flexible JSON — use it to drive
+            pricing, trial days, CTA text, or anything else.
+          </li>
+          <li>
+            <strong className="text-white">Track events</strong> — Send view events via{" "}
+            <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
+              POST /api/v1/experiments/event
+            </code>
+            . Purchase events are automatically tagged — no extra code needed.
+          </li>
+          <li>
+            <strong className="text-white">View results</strong> — The Experiments dashboard
+            shows per-variant conversion rates, revenue per user, and statistical confidence.
+          </li>
+        </ol>
+
+        <h3 className="mt-8 text-lg font-medium text-white">Example: using experiment config in Swift</h3>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm font-mono">
+            <code>
+{`// The SDK fetches experiment config on launch
+if let variant = EuroPayKit.shared?.experiment(placement: "paywall") {
+    let productId = variant.config["productId"] as? String ?? defaultProductId
+    let ctaText = variant.config["ctaText"] as? String ?? "Subscribe"
+    // Use these values in your paywall UI
+}`}
+            </code>
+          </pre>
+        </div>
+
+        <div className="mt-6 rounded-lg border border-teal-500/20 bg-teal-500/5 px-6 py-5">
+          <p className="text-sm text-gray-300">
+            <strong className="text-white">Start with pricing experiments</strong> — they
+            consistently deliver the highest revenue impact. Test 2-3 price points for
+            your main product before testing visual or copy changes.
+          </p>
+        </div>
+
+        <h3 className="mt-8 text-lg font-medium text-white">Key details</h3>
+        <ul className="mt-3 space-y-2 text-base text-gray-300 leading-relaxed list-disc list-inside">
+          <li>
+            <strong className="text-white">Deterministic assignment</strong> — Same user always
+            gets the same variant (SHA-256 hash). Safe to call the config endpoint multiple times.
+          </li>
+          <li>
+            <strong className="text-white">Auto-tagged purchases</strong> — Every Stripe purchase
+            is automatically recorded as an experiment event with revenue. No SDK call needed.
+          </li>
+          <li>
+            <strong className="text-white">Statistical confidence</strong> — The dashboard shows
+            z-test results when variants reach 30+ participants. Look for &ldquo;Winner&rdquo; or
+            &ldquo;Likely winner&rdquo; labels.
+          </li>
+          <li>
+            <strong className="text-white">No app update needed</strong> — Create, start, pause,
+            and complete experiments entirely from the dashboard.
+          </li>
+        </ul>
+      </section>
+
       <DocsNavigation
         prev={{ href: "/docs/getting-started", label: "Getting Started" }}
         next={{ href: "/docs/dma-compliance", label: "DMA Compliance" }}
