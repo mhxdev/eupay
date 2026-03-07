@@ -89,6 +89,30 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 text-gray-400">Verify checkout session status</td>
                 <td className="py-3"><span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-400 border border-purple-500/20">SDK-managed</span></td>
               </tr>
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+                    POST
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/checkout/preload
+                </td>
+                <td className="py-3 pr-4 text-gray-400">Pre-create a checkout session for faster presentation</td>
+                <td className="py-3"><span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-400 border border-purple-500/20">SDK-managed</span></td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+                    POST
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/checkout/validate
+                </td>
+                <td className="py-3 pr-4 text-gray-400">Check if a preloaded session is still valid</td>
+                <td className="py-3"><span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-400 border border-purple-500/20">SDK-managed</span></td>
+              </tr>
               {/* Products */}
               <tr>
                 <td className="py-3 pr-4">
@@ -394,6 +418,196 @@ export default function ApiReferencePage() {
                 <span className="text-teal-300">&quot;transactionStatus&quot;</span>
                 <span className="text-gray-400">:</span>{" "}
                 <span className="text-orange-300">&quot;PENDING | SUCCEEDED | UNKNOWN&quot;</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+      </section>
+
+      {/* POST /v1/checkout/preload */}
+      <section className="mt-12">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+            POST
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/checkout/preload
+          </h3>
+        </div>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Pre-creates a Stripe Checkout Session for faster presentation. Sessions
+          expire after 30 minutes. The SDK calls this in the background so
+          checkout appears instantly when the user taps &quot;Buy&quot;.
+        </p>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Request body
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;productId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;string&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"       "}
+                <span className="text-gray-500">// required</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;userId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;string&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"          "}
+                <span className="text-gray-500">// required</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;locale&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;string&quot;</span>
+                {"           "}
+                <span className="text-gray-500">// optional, default &quot;en&quot;</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;promotionId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;string?&quot;</span>
+                {"       "}
+                <span className="text-gray-500">// optional</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Response
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;sessionId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;cs_live_...&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;sessionUrl&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;https://checkout.stripe.com/...&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;expiresAt&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;2026-03-07T18:30:00Z&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;productId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;prod_123&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;amountCents&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">4999</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;currency&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;eur&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;promotionalAmountCents&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">3999</span>
+                {"  "}
+                <span className="text-gray-500">// present if promotion applies</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+      </section>
+
+      {/* POST /v1/checkout/validate */}
+      <section className="mt-12">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+            POST
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/checkout/validate
+          </h3>
+        </div>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Checks if a preloaded checkout session is still valid before presenting
+          it. Returns the session status and expiry time.
+        </p>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Request body
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;sessionId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;cs_live_...&quot;</span>
+                {"  "}
+                <span className="text-gray-500">// required</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Response
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;valid&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">true</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;status&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;open&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;expiresAt&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;2026-03-07T18:30:00Z&quot;</span>
                 {"\n"}
                 <span className="text-gray-400">{"}"}</span>
               </code>

@@ -1,5 +1,6 @@
-// POST /api/v1/checkout/create
-// Creates a Stripe Checkout Session. Called by the iOS SDK when user taps purchase.
+// POST /api/v1/checkout/preload
+// Pre-creates a Stripe Checkout Session for faster presentation.
+// Called by the iOS SDK before the user taps "Buy".
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import Stripe from 'stripe'
@@ -9,21 +10,11 @@ import { prisma } from '@/lib/prisma'
 import { authenticateRequest, isAuthError, authErrorResponse } from '@/lib/auth'
 import { createCheckoutSession, resolvePromotion } from '@/lib/checkout'
 
-const checkoutCreateSchema = z.object({
-  productId: z.string().min(1),
-  userId: z.string().min(1),
-  userEmail: z.string().email().optional(),
-  successUrl: z.string().url(),
-  cancelUrl: z.string().url(),
-  // iOS SDK should send: Locale.current.language.languageCode?.identifier ?? "en"
-  locale: z.string().length(2).default('en'),
-  appleExternalPurchaseToken: z.string().optional(),
-  // Promotion support
+const preloadSchema = z.object({
+  productId: z.string(),
+  userId: z.string(),
+  locale: z.string().optional().default('en'),
   promotionId: z.string().optional(),
-  promoCode: z.string().optional(),
-  trialDays: z.number().int().min(1).optional(),
-  // Preload support — reuse an existing session if still valid
-  preloadedSessionId: z.string().optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -37,7 +28,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const parsed = checkoutCreateSchema.safeParse(body)
+  const parsed = preloadSchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json(
       { error: 'Validation failed', details: parsed.error.flatten() },
@@ -45,49 +36,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const {
-    productId,
-    userId,
-    userEmail,
-    successUrl,
-    cancelUrl,
-    locale,
-    appleExternalPurchaseToken,
-    promotionId,
-    promoCode,
-    trialDays: requestTrialDays,
-    preloadedSessionId,
-  } = parsed.data
-
-  // Require connected Stripe account
-  if (!auth.app.stripeConnectId) {
-    return NextResponse.json(
-      { error: 'No Stripe account connected. Connect your Stripe account in the dashboard.' },
-      { status: 422 }
-    )
-  }
-
-  const connectOpts: Stripe.RequestOptions = { stripeAccount: auth.app.stripeConnectId }
-
-  // ── Try to reuse a preloaded session ──────────────────────────
-  if (preloadedSessionId) {
-    try {
-      const existing = await stripe.checkout.sessions.retrieve(
-        preloadedSessionId,
-        {},
-        connectOpts
-      )
-      if (existing.status === 'open' && existing.expires_at > Math.floor(Date.now() / 1000)) {
-        return NextResponse.json({
-          sessionId: existing.id,
-          checkoutUrl: existing.url,
-          expiresAt: new Date(existing.expires_at * 1000).toISOString(),
-        })
-      }
-    } catch {
-      // Session not found or retrieval failed — fall through to create a fresh one
-    }
-  }
+  const { productId, userId, locale, promotionId } = parsed.data
 
   // Validate product belongs to this app
   const product = await prisma.product.findFirst({
@@ -97,6 +46,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Product not found' }, { status: 404 })
   }
 
+  if (!auth.app.stripeConnectId) {
+    return NextResponse.json(
+      { error: 'No Stripe account connected.' },
+      { status: 422 }
+    )
+  }
+
+  const connectOpts: Stripe.RequestOptions = { stripeAccount: auth.app.stripeConnectId }
+
   // Get or create Stripe customer
   let customer = await prisma.customer.findUnique({
     where: { appId_externalUserId: { appId: auth.appId, externalUserId: userId } },
@@ -104,7 +62,6 @@ export async function POST(req: NextRequest) {
 
   if (!customer) {
     const stripeCustomer = await stripe.customers.create({
-      email: userEmail,
       metadata: { appId: auth.appId, externalUserId: userId },
     }, connectOpts)
     customer = await prisma.customer.create({
@@ -112,13 +69,19 @@ export async function POST(req: NextRequest) {
         appId: auth.appId,
         externalUserId: userId,
         stripeCustomerId: stripeCustomer.id,
-        email: userEmail,
       },
     })
   }
 
   // Resolve promotion
-  const resolvedPromotion = await resolvePromotion(auth.appId, promotionId, promoCode)
+  const resolvedPromotion = await resolvePromotion(auth.appId, promotionId)
+
+  // The SDK provides success/cancel URLs at purchase time, but Stripe requires
+  // them at session creation. Use placeholder URLs — the SDK will open the
+  // session URL directly in SFSafariViewController.
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://europay.dev'
+  const successUrl = `${baseUrl}/api/v1/checkout/success?session_id={CHECKOUT_SESSION_ID}`
+  const cancelUrl = `${baseUrl}/checkout/cancelled`
 
   let session: Stripe.Checkout.Session
   try {
@@ -132,9 +95,7 @@ export async function POST(req: NextRequest) {
       cancelUrl,
       stripeConnectId: auth.app.stripeConnectId,
       platformFeePercent: auth.app.platformFeePercent ?? 1.5,
-      appleExternalPurchaseToken,
       resolvedPromotion,
-      requestTrialDays,
     })
   } catch (err) {
     if (err instanceof Stripe.errors.StripeError) {
@@ -162,9 +123,29 @@ export async function POST(req: NextRequest) {
     },
   })
 
+  // Compute promotional amount if a discount applies
+  let promotionalAmountCents: number | undefined
+  if (resolvedPromotion) {
+    if (resolvedPromotion.type === 'PERCENT_OFF') {
+      const promo = await prisma.promotion.findUnique({ where: { id: resolvedPromotion.id } })
+      if (promo?.percentOff) {
+        promotionalAmountCents = Math.round(product.amountCents * (1 - promo.percentOff / 100))
+      }
+    } else if (resolvedPromotion.type === 'AMOUNT_OFF') {
+      const promo = await prisma.promotion.findUnique({ where: { id: resolvedPromotion.id } })
+      if (promo?.amountOffCents) {
+        promotionalAmountCents = Math.max(0, product.amountCents - promo.amountOffCents)
+      }
+    }
+  }
+
   return NextResponse.json({
     sessionId: session.id,
-    checkoutUrl: session.url,
+    sessionUrl: session.url,
     expiresAt: new Date(session.expires_at * 1000).toISOString(),
+    productId: product.id,
+    amountCents: product.amountCents,
+    currency: product.currency,
+    ...(promotionalAmountCents !== undefined ? { promotionalAmountCents } : {}),
   })
 }

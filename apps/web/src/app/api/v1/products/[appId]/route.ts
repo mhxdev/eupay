@@ -73,6 +73,7 @@ export async function GET(
         interval: p.interval,
         intervalCount: p.intervalCount,
         trialDays: p.trialDays ?? 0,
+        preloadable: true,
         ...(promo ? {
           activePromotion: {
             id: promo.id,
