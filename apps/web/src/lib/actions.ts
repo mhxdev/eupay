@@ -650,6 +650,129 @@ export async function deletePromotion(promotionId: string) {
   return { success: true }
 }
 
+// ─── Campaign Actions ─────────────────────────────────────────
+
+export async function createCampaign(formData: FormData) {
+  const userId = await requireUser()
+  const appId = formData.get("appId") as string
+  const name = formData.get("name") as string
+  const title = (formData.get("title") as string) || "Switch & Save"
+  const subtitle = (formData.get("subtitle") as string) || "Same features, lower price"
+  const ctaText = (formData.get("ctaText") as string) || "Switch & Save"
+  const discountPercent = formData.get("discountPercent")
+    ? parseFloat(formData.get("discountPercent") as string)
+    : null
+  const promotionId = (formData.get("promotionId") as string) || null
+  const audienceType = (formData.get("audienceType") as string) || "ALL_SUBSCRIBERS"
+  const rolloutPercent = formData.get("rolloutPercent")
+    ? parseInt(formData.get("rolloutPercent") as string, 10)
+    : 100
+  const startDate = formData.get("startDate")
+    ? new Date(formData.get("startDate") as string)
+    : null
+  const endDate = formData.get("endDate")
+    ? new Date(formData.get("endDate") as string)
+    : null
+
+  // Parse product mappings from JSON
+  const mappingsJson = formData.get("mappings") as string
+  const mappings: Array<{
+    appleProductId: string
+    appleProductName: string
+    applePriceCents: number
+    appleCurrency: string
+    euroPayProductId: string
+  }> = mappingsJson ? JSON.parse(mappingsJson) : []
+
+  const app = await prisma.app.findUnique({ where: { id: appId } })
+  if (!app || app.clerkUserId !== userId) throw new Error("Not found")
+
+  if (!name) throw new Error("Campaign name is required")
+
+  // Validate all euroPayProductIds belong to this app
+  if (mappings.length > 0) {
+    const productIds = mappings.map((m) => m.euroPayProductId)
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds }, appId },
+    })
+    if (products.length !== productIds.length) {
+      throw new Error("One or more EuroPay products not found")
+    }
+  }
+
+  await prisma.migrationCampaign.create({
+    data: {
+      appId,
+      name,
+      title,
+      subtitle,
+      ctaText,
+      discountPercent,
+      promotionId,
+      audienceType: audienceType as "ALL_SUBSCRIBERS" | "NEW_SESSIONS_ONLY" | "AFTER_N_DAYS",
+      rolloutPercent,
+      startDate,
+      endDate,
+      productMappings: {
+        create: mappings.map((m) => ({
+          appleProductId: m.appleProductId,
+          appleProductName: m.appleProductName,
+          applePriceCents: m.applePriceCents,
+          appleCurrency: m.appleCurrency || "EUR",
+          euroPayProductId: m.euroPayProductId,
+        })),
+      },
+    },
+  })
+
+  revalidatePath(`/dashboard/apps/${appId}/campaigns`)
+}
+
+export async function updateCampaignStatus(
+  campaignId: string,
+  status: "ACTIVE" | "PAUSED" | "ENDED"
+) {
+  const userId = await requireUser()
+  const campaign = await prisma.migrationCampaign.findUnique({
+    where: { id: campaignId },
+    include: { app: true, _count: { select: { productMappings: true } } },
+  })
+  if (!campaign || campaign.app.clerkUserId !== userId) throw new Error("Not found")
+
+  // Activation requires at least one product mapping
+  if (status === "ACTIVE" && campaign._count.productMappings === 0) {
+    throw new Error("Cannot activate a campaign with no product mappings")
+  }
+
+  await prisma.migrationCampaign.update({
+    where: { id: campaignId },
+    data: { status },
+  })
+
+  revalidatePath(`/dashboard/apps/${campaign.appId}/campaigns`)
+  return { success: true }
+}
+
+export async function deleteCampaign(campaignId: string) {
+  const userId = await requireUser()
+  const campaign = await prisma.migrationCampaign.findUnique({
+    where: { id: campaignId },
+    include: { app: true },
+  })
+  if (!campaign || campaign.app.clerkUserId !== userId) throw new Error("Not found")
+
+  if (campaign.status === "ACTIVE") {
+    throw new Error("Cannot delete an active campaign. End it first.")
+  }
+
+  // Delete migration events first (no onDelete: Cascade on MigrationEvent)
+  await prisma.migrationEvent.deleteMany({ where: { campaignId } })
+  await prisma.migrationCampaign.delete({ where: { id: campaignId } })
+
+  revalidatePath(`/dashboard/apps/${campaign.appId}/campaigns`)
+  return { success: true }
+}
+
 // ─── GDPR Actions (continued) ────────────────────────────────
 
 export async function deleteCustomerData(customerId: string) {

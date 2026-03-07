@@ -64,12 +64,13 @@ model App {
   // Alerting
   lastWebhookAlertAt             DateTime?
 
-  products         Product[]
-  apiKeys          ApiKey[]
-  customers        Customer[]
-  transactions     Transaction[]
-  gdprAuditLogs    GdprAuditLog[]
-  promotions       Promotion[]
+  products           Product[]
+  apiKeys            ApiKey[]
+  customers          Customer[]
+  transactions       Transaction[]
+  gdprAuditLogs      GdprAuditLog[]
+  promotions         Promotion[]
+  migrationCampaigns MigrationCampaign[]
 
   @@index([clerkUserId])
 }
@@ -125,6 +126,7 @@ model Product {
   entitlements     Entitlement[]
   transactions     Transaction[]
   promotions       Promotion[]
+  productMappings  ProductMapping[]
 
   @@index([appId])
   @@index([stripePriceId])
@@ -371,7 +373,8 @@ model Promotion {
 
   status           PromotionStatus @default(ACTIVE)
 
-  redemptions      PromotionRedemption[]
+  redemptions        PromotionRedemption[]
+  migrationCampaigns MigrationCampaign[]
 
   @@unique([appId, code])
   @@index([appId])
@@ -411,6 +414,122 @@ enum PromotionStatus {
   ACTIVE
   PAUSED
   EXPIRED
+}
+
+// Switch & Save — migration campaigns
+model MigrationCampaign {
+  id                String          @id @default(cuid())
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  appId             String
+  app               App             @relation(fields: [appId], references: [id])
+
+  name              String          // "EU Migration Q2 2026"
+  status            CampaignStatus  @default(DRAFT)
+
+  // Incentive
+  discountPercent   Float?          // 20 = 20% lower than Apple price
+  promotionId       String?
+  promotion         Promotion?      @relation(fields: [promotionId], references: [id])
+
+  // Presentation config (sent to SDK via remote config)
+  title             String          @default("Switch & Save")
+  subtitle          String          @default("Same features, lower price")
+  ctaText           String          @default("Switch & Save")
+
+  // Audience
+  audienceType      CampaignAudience @default(ALL_SUBSCRIBERS)
+  rolloutPercent    Int             @default(100)
+
+  // Schedule
+  startDate         DateTime?
+  endDate           DateTime?
+
+  productMappings   ProductMapping[]
+  migrations        MigrationEvent[]
+
+  @@index([appId])
+  @@index([status])
+}
+
+model ProductMapping {
+  id                  String            @id @default(cuid())
+  createdAt           DateTime          @default(now())
+
+  campaignId          String
+  campaign            MigrationCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  // Source (Apple)
+  appleProductId      String            // e.g. "com.app.pro_monthly"
+  appleProductName    String            // "Pro Monthly"
+  applePriceCents     Int               // 999 = €9.99
+  appleCurrency       String            @default("EUR")
+
+  // Target (EuroPay)
+  euroPayProductId    String
+  euroPayProduct      Product           @relation(fields: [euroPayProductId], references: [id])
+
+  @@index([campaignId])
+}
+
+model MigrationEvent {
+  id                    String            @id @default(cuid())
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  campaignId            String
+  campaign              MigrationCampaign @relation(fields: [campaignId], references: [id])
+
+  appId                 String
+  userId                String
+
+  // Source
+  appleProductId        String
+  applePriceCents       Int
+
+  // Target
+  euroPayProductId      String
+  euroPayPriceCents     Int
+
+  // Savings
+  savingsCentsPerMonth  Int
+  savingsPercent        Float
+
+  // Status tracking
+  status                MigrationStatus   @default(PROMPTED)
+  promptedAt            DateTime          @default(now())
+  clickedAt             DateTime?
+  purchasedAt           DateTime?
+  appleCancelledAt      DateTime?
+  transactionId         String?
+
+  @@unique([campaignId, userId, appleProductId])
+  @@index([campaignId])
+  @@index([appId])
+  @@index([status])
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+enum CampaignAudience {
+  ALL_SUBSCRIBERS
+  NEW_SESSIONS_ONLY
+  AFTER_N_DAYS
+}
+
+enum MigrationStatus {
+  PROMPTED
+  CLICKED
+  PURCHASED
+  APPLE_CANCELLED
+  COMPLETED
+  DISMISSED
 }
 
 // Waitlist for coming-soon page

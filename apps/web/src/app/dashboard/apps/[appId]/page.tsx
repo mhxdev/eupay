@@ -13,7 +13,7 @@ import { AppleCredentialsForm } from "@/components/dashboard/AppleCredentialsFor
 import { CustomerEmailToggle } from "@/components/dashboard/CustomerEmailToggle"
 import { StripeConnect } from "@/components/dashboard/StripeConnect"
 import { AppRevenueChart } from "@/components/dashboard/AppRevenueChart"
-import { Package, Users, Webhook, ExternalLink, FileText, BarChart3, Shield, Tag } from "lucide-react"
+import { Package, Users, Webhook, ExternalLink, FileText, BarChart3, Shield, Tag, TrendingUp } from "lucide-react"
 
 export default async function AppDetailPage({
   params,
@@ -38,10 +38,19 @@ export default async function AppDetailPage({
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-  const [activeProductCount, recentTxCount] = await Promise.all([
+  const [activeProductCount, recentTxCount, migrationStats] = await Promise.all([
     prisma.product.count({ where: { appId, isActive: true } }),
     prisma.transaction.count({
       where: { appId, status: "SUCCEEDED", createdAt: { gte: thirtyDaysAgo } },
+    }),
+    prisma.migrationCampaign.findFirst({
+      where: { appId, status: "ACTIVE" },
+      select: {
+        name: true,
+        migrations: {
+          select: { status: true, savingsCentsPerMonth: true },
+        },
+      },
     }),
   ])
 
@@ -67,6 +76,7 @@ export default async function AppDetailPage({
     { href: `/dashboard/apps/${appId}/webhooks`, label: "Webhook Logs", icon: Webhook, count: null },
     { href: `/dashboard/apps/${appId}/apple-reporting`, label: "Apple Reporting", icon: FileText, count: null },
     { href: `/dashboard/apps/${appId}/promotions`, label: "Promotions", icon: Tag, count: null },
+    { href: `/dashboard/apps/${appId}/campaigns`, label: "Campaigns", icon: TrendingUp, count: null },
     { href: `/dashboard/apps/${appId}/reports`, label: "Reports", icon: BarChart3, count: null },
     { href: `/dashboard/apps/${appId}/dma`, label: "DMA", icon: Shield, count: null },
   ]
@@ -126,6 +136,37 @@ export default async function AppDetailPage({
       </div>
 
       <AppRevenueChart appId={appId} />
+
+      {migrationStats && (() => {
+        const migrated = migrationStats.migrations.filter(
+          (m) => m.status === "PURCHASED" || m.status === "COMPLETED"
+        )
+        const prompted = migrationStats.migrations.length
+        const rate = prompted > 0 ? Math.round((migrated.length / prompted) * 100) : 0
+        const monthlySavings = migrated.reduce((s, m) => s + m.savingsCentsPerMonth, 0)
+        return (
+          <Card className="border-teal-200 bg-teal-50 dark:border-teal-500/20 dark:bg-teal-500/5">
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-teal-900 dark:text-teal-300">
+                    Switch & Save: {migrationStats.name}
+                  </p>
+                  <p className="text-xs text-teal-700 dark:text-teal-400/80 mt-1">
+                    {migrated.length} migrated · {rate}% conversion · {new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(monthlySavings / 100)}/mo saved
+                  </p>
+                </div>
+                <Link
+                  href={`/dashboard/apps/${appId}/campaigns`}
+                  className="text-xs text-teal-600 dark:text-teal-400 underline"
+                >
+                  View campaigns
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })()}
 
       <Separator />
 

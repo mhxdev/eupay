@@ -739,6 +739,67 @@ export default function IntegrationGuidePage() {
         </div>
       </section>
 
+      {/* ════════ Switch & Save ════════ */}
+      <section className="mt-16">
+        <h2 className="text-2xl font-semibold text-white">
+          Switch &amp; Save — Migrating Apple Subscribers
+        </h2>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Switch &amp; Save lets you migrate existing EU Apple IAP subscribers to
+          direct billing through EuroPay. Users save money (no Apple 15-30% cut),
+          and you keep more revenue.
+        </p>
+
+        <div className="mt-6 space-y-4">
+          <h3 className="text-lg font-semibold text-white">How it works</h3>
+          <ol className="list-decimal list-inside space-y-3 text-gray-300">
+            <li>
+              <strong className="text-white">Create a migration campaign</strong> in the
+              EuroPay dashboard with your Apple product IDs mapped to EuroPay products.
+              Set the display copy, audience targeting, and rollout percentage.
+            </li>
+            <li>
+              <strong className="text-white">Check eligibility</strong> — in your app, call{" "}
+              <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
+                EuroPayKit.checkMigrationEligibility(userId:)
+              </code>{" "}
+              which returns a{" "}
+              <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
+                MigrationOffer
+              </code>{" "}
+              if the user has an active Apple subscription matching a campaign.
+            </li>
+            <li>
+              <strong className="text-white">Present the offer</strong> using the pre-built{" "}
+              <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
+                SwitchAndSaveView
+              </code>{" "}
+              or build your own UI using the offer data (savings amount, comparison
+              pricing, CTA text).
+            </li>
+            <li>
+              <strong className="text-white">After purchase</strong> — once the user
+              purchases via EuroPay, the SDK guides them to cancel their Apple
+              subscription via the App Store settings deep link.
+            </li>
+            <li>
+              <strong className="text-white">Track results</strong> — the SDK reports
+              funnel events (prompted → clicked → purchased → Apple cancelled →
+              completed) to the Campaigns dashboard automatically.
+            </li>
+          </ol>
+        </div>
+
+        <div className="mt-6 rounded-lg border border-teal-500/20 bg-teal-500/5 px-6 py-5">
+          <p className="text-sm text-gray-300">
+            <strong className="text-white">Switch &amp; Save requires EuroPayKit 2.0+.</strong>{" "}
+            The SDK documentation covers the full client-side implementation
+            including StoreKit detection, the SwitchAndSaveView component, and
+            Apple subscription cancellation flow.
+          </p>
+        </div>
+      </section>
+
       <DocsNavigation
         prev={{ href: "/docs/getting-started", label: "Getting Started" }}
         next={{ href: "/docs/dma-compliance", label: "DMA Compliance" }}
