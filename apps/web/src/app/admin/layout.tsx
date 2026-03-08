@@ -17,7 +17,9 @@ export default async function AdminLayout({
       <nav className="bg-card border-b border-border px-4 py-4 md:px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4 md:gap-8">
-            <span className="text-xl font-bold">EuroPay Admin</span>
+            <Link href="/admin" className="text-xl font-bold hover:opacity-80 transition-opacity">
+              EuroPay Admin
+            </Link>
             <Link
               href="/dashboard"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"

@@ -175,6 +175,8 @@ async function handleCheckoutSessionCompleted(
       vatCountry,
       status: 'SUCCEEDED',
       withdrawalWaivedAt: withdrawalWaived ? new Date() : undefined,
+      appliedFeePercent: metadata.appliedFeePercent ? parseFloat(metadata.appliedFeePercent) : null,
+      appliedFeeCents: metadata.appliedFeeCents ? parseInt(metadata.appliedFeeCents) : null,
       ...(metadata.appleExternalPurchaseToken
         ? { appleExternalPurchaseToken: metadata.appleExternalPurchaseToken }
         : {}),

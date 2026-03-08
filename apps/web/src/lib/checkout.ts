@@ -221,6 +221,8 @@ export async function createCheckoutSession(
       appId,
       productId: product.id,
       externalUserId: userId,
+      appliedFeePercent: String(platformFeePercent),
+      appliedFeeCents: String(Math.round(product.amountCents * platformFeePercent / 100)),
       ...(appleExternalPurchaseToken ? { appleExternalPurchaseToken } : {}),
       ...(resolvedPromotion ? { promotionId: resolvedPromotion.id } : {}),
     },

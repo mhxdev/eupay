@@ -96,7 +96,7 @@ export async function updateSendCustomerEmails(appId: string, enabled: boolean) 
 
 // ─── Admin Actions ───────────────────────────────────────────
 
-export async function updatePlatformFee(appId: string, feePercent: number) {
+export async function updatePlatformFee(appId: string, feePercent: number, note?: string) {
   const userId = await requireUser()
   if (userId !== process.env.ADMIN_CLERK_USER_ID) {
     throw new Error("Unauthorized")
@@ -104,6 +104,23 @@ export async function updatePlatformFee(appId: string, feePercent: number) {
   if (typeof feePercent !== "number" || isNaN(feePercent) || feePercent < 0 || feePercent > 15) {
     throw new Error("Fee must be between 0% and 15%")
   }
+
+  // Read current fee for audit log
+  const app = await prisma.app.findUnique({ where: { id: appId }, select: { platformFeePercent: true } })
+  if (!app) throw new Error("App not found")
+
+  const previousPercent = app.platformFeePercent
+
+  // Create audit log entry
+  await prisma.feeChangeLog.create({
+    data: {
+      appId,
+      changedBy: userId,
+      previousPercent,
+      newPercent: feePercent,
+      note: note || null,
+    },
+  })
 
   await prisma.app.update({
     where: { id: appId },
@@ -114,6 +131,42 @@ export async function updatePlatformFee(appId: string, feePercent: number) {
   })
 
   revalidatePath("/admin")
+  return { success: true }
+}
+
+// ─── Admin Note Actions ──────────────────────────────────────
+
+export async function addAdminNote(developerUserId: string, content: string) {
+  const userId = await requireUser()
+  if (userId !== process.env.ADMIN_CLERK_USER_ID) {
+    throw new Error("Unauthorized")
+  }
+  if (!content.trim()) throw new Error("Note content required")
+
+  await prisma.adminNote.create({
+    data: {
+      developerUserId,
+      content: content.trim(),
+      createdBy: userId,
+    },
+  })
+
+  revalidatePath(`/admin/developers/${developerUserId}`)
+  return { success: true }
+}
+
+export async function deleteAdminNote(noteId: string) {
+  const userId = await requireUser()
+  if (userId !== process.env.ADMIN_CLERK_USER_ID) {
+    throw new Error("Unauthorized")
+  }
+
+  const note = await prisma.adminNote.findUnique({ where: { id: noteId } })
+  if (!note) throw new Error("Note not found")
+
+  await prisma.adminNote.delete({ where: { id: noteId } })
+
+  revalidatePath(`/admin/developers/${note.developerUserId}`)
   return { success: true }
 }
 

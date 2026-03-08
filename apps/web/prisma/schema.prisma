@@ -74,6 +74,7 @@ model App {
   retentionConfig    RetentionConfig?
   cancelEvents       CancelEvent[]
   experiments        Experiment[]
+  feeChangeLogs      FeeChangeLog[]
 
   @@index([clerkUserId])
 }
@@ -240,6 +241,10 @@ model Transaction {
   appleReportStatus          AppleReportStatus?
   appleReportedAt            DateTime?
   appleReportError           String?
+
+  // Platform fee snapshot at checkout time
+  appliedFeePercent   Float?    // the fee percentage at time of checkout
+  appliedFeeCents     Int?      // the actual fee amount in cents
 
   promotionRedemptions PromotionRedemption[]
 
@@ -692,4 +697,30 @@ model WaitlistEntry {
   id        String   @id @default(cuid())
   email     String   @unique
   createdAt DateTime @default(now())
+}
+
+// Admin audit trail for fee changes
+model FeeChangeLog {
+  id                String    @id @default(cuid())
+  appId             String
+  app               App       @relation(fields: [appId], references: [id])
+  changedBy         String    // admin Clerk user ID
+  previousPercent   Float
+  newPercent        Float
+  note              String?   // "Agreed custom rate per email 2026-03-15"
+  createdAt         DateTime  @default(now())
+
+  @@index([appId])
+}
+
+// Admin internal notes about developers
+model AdminNote {
+  id                String    @id @default(cuid())
+  developerUserId   String    // Clerk user ID of the developer
+  content           String
+  createdBy         String    // admin Clerk user ID
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([developerUserId])
 }
