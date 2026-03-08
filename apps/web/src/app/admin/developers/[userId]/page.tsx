@@ -190,6 +190,7 @@ export default async function DeveloperDetailPage({
   // ── Developer Journey (milestone timeline) ──────────────────
   const completedMilestones = new Set(milestones.map((m) => m.milestone))
   const journeySteps = [
+    { key: "signup_completed", label: "Signed Up" },
     { key: "app_created", label: "App Created" },
     { key: "api_key_generated", label: "API Key Generated" },
     { key: "stripe_connected", label: "Stripe Connected" },

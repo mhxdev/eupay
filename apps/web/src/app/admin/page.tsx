@@ -218,7 +218,8 @@ export default async function AdminPage() {
   // Onboarding funnel (milestoneMap only — devMap computed later)
   const milestoneMap = new Map(milestoneFunnel.map((m) => [m.milestone, m._count]))
   const funnelSteps = [
-    { label: "Signed Up", milestone: "app_created", count: milestoneMap.get("app_created") ?? 0 },
+    { label: "Signed Up", milestone: "signup_completed", count: milestoneMap.get("signup_completed") ?? 0 },
+    { label: "Created App", milestone: "app_created", count: milestoneMap.get("app_created") ?? 0 },
     { label: "Stripe Connected", milestone: "stripe_connected", count: milestoneMap.get("stripe_connected") ?? 0 },
     { label: "Product Created", milestone: "product_created", count: milestoneMap.get("product_created") ?? 0 },
     { label: "API Key Generated", milestone: "api_key_generated", count: milestoneMap.get("api_key_generated") ?? 0 },
@@ -334,7 +335,8 @@ export default async function AdminPage() {
 
   // ── Stuck developers ─────────────────────────────────────
   const milestoneLabels: Record<string, string> = {
-    app_created: "Signed Up",
+    signup_completed: "Signed Up",
+    app_created: "Created App",
     stripe_oauth_started: "Started Stripe OAuth",
     stripe_connected: "Connected Stripe",
     product_created: "Created Product",
