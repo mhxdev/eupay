@@ -3,6 +3,7 @@
 import { useAuth } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { ApiKeyReveal } from "@/components/onboarding/ApiKeyReveal"
 
 const REVENUE_TIERS = [
   { value: "<1k", label: "Less than €1,000/mo" },
@@ -26,7 +27,6 @@ export default function OnboardingPage() {
 
   // Step 2 state
   const [apiKey, setApiKey] = useState("")
-  const [copied, setCopied] = useState(false)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -96,12 +96,6 @@ export default function OnboardingPage() {
     } finally {
       setSubmitting(false)
     }
-  }
-
-  function handleCopy() {
-    navigator.clipboard.writeText(apiKey)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }
 
   if (!isLoaded || loading) {
@@ -219,63 +213,7 @@ export default function OnboardingPage() {
         {/* Step 2: API key */}
         {step === 2 && (
           <div className="mt-8 space-y-6">
-            <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 px-4 py-3">
-              <p className="text-sm font-medium text-yellow-400">
-                Save this key — it won&apos;t be shown again
-              </p>
-              <p className="mt-1 text-xs text-yellow-400/70">
-                Store it securely. You&apos;ll need it to configure EuroPayKit in your iOS app.
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300">
-                Your API key
-              </label>
-              <div className="mt-1.5 flex items-center gap-2">
-                <div className="flex-1 overflow-x-auto rounded-md border border-white/10 bg-white/5 px-4 py-3">
-                  <code className="text-sm font-mono text-teal-300 break-all">
-                    {apiKey}
-                  </code>
-                </div>
-                <button
-                  onClick={handleCopy}
-                  className="shrink-0 rounded-md border border-white/10 px-3 py-3 text-sm text-gray-400 hover:border-white/20 hover:text-white transition-colors"
-                >
-                  {copied ? "Copied!" : "Copy"}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300">
-                Quick start
-              </label>
-              <div className="mt-1.5 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
-                <pre className="text-sm leading-relaxed font-mono">
-                  <code>
-                    <span className="text-purple-400">import</span>{" "}
-                    <span className="text-white">EuroPayKit</span>
-                    {"\n\n"}
-                    <span className="text-teal-300">EuroPayKit</span>
-                    <span className="text-gray-400">.</span>
-                    <span className="text-white">configure</span>
-                    <span className="text-gray-400">(</span>
-                    <span className="text-teal-300">EuroPayConfig</span>
-                    <span className="text-gray-400">(</span>
-                    {"\n"}
-                    {"  "}
-                    <span className="text-white">apiKey</span>
-                    <span className="text-gray-400">:</span>{" "}
-                    <span className="text-orange-300">
-                      &quot;{apiKey.slice(0, 20)}...&quot;
-                    </span>
-                    {"\n"}
-                    <span className="text-gray-400">))</span>
-                  </code>
-                </pre>
-              </div>
-            </div>
+            <ApiKeyReveal apiKey={apiKey} />
 
             <button
               onClick={() => router.push("/dashboard")}
