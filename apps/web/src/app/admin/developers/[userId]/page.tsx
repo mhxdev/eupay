@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Download, ChevronLeft } from "lucide-react"
+import { Download, ChevronLeft, Check, X } from "lucide-react"
 import { PlatformFeeEditor } from "@/components/admin/PlatformFeeEditor"
 import { AdminNotes } from "@/components/admin/AdminNotes"
 import { AuditLogSection, type AuditEventRow } from "@/components/admin/AuditLogSection"
@@ -84,6 +84,8 @@ export default async function DeveloperDetailPage({
   const emailToggleStatus = apps.some((a) => a.sendCustomerEmails)
   const hasLiveApp = apps.some((a) => a.mode === "live")
 
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+
   // Fetch transactions + webhooks + audit events in parallel
   const [transactions, webhookEvents, promotions, campaigns, experiments, retentionConfigs, auditEvents] =
     await Promise.all([
@@ -122,6 +124,63 @@ export default async function DeveloperDetailPage({
         take: 50,
       }),
     ])
+
+  // ── Health + Checkout funnel (separate batch to stay within pool limit) ──
+  const [
+    failedWebhooks,
+    failedAppleReports,
+    checkoutStats30d,
+    lastTransaction,
+  ] = await Promise.all([
+    prisma.webhookEvent.count({
+      where: { appId: { in: appIds }, status: "FAILED" },
+    }),
+    prisma.transaction.count({
+      where: { appId: { in: appIds }, appleReportStatus: "FAILED" },
+    }),
+    prisma.checkoutSession.groupBy({
+      by: ["status"],
+      where: { appId: { in: appIds }, createdAt: { gte: thirtyDaysAgo } },
+      _count: true,
+    }),
+    prisma.transaction.findFirst({
+      where: { appId: { in: appIds }, status: "SUCCEEDED" },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    }),
+  ])
+
+  // ── Developer Health Score ──────────────────────────────────
+  const productCount = apps.reduce((s, a) => s + a._count.products, 0)
+  const transactionCount = apps.reduce((s, a) => s + a._count.transactions, 0)
+  const recentActivity = lastTransaction
+    ? lastTransaction.createdAt > thirtyDaysAgo
+    : false
+
+  const healthSignals = {
+    "Stripe Connected": stripeConnected,
+    "Apple Credentials": appleConfigured,
+    "Has Products": productCount > 0,
+    "Has Transactions": transactionCount > 0,
+    "Recent Activity (30d)": recentActivity,
+    "Webhooks Healthy": failedWebhooks === 0,
+    "Apple Reports Healthy": failedAppleReports === 0,
+  }
+  const healthScore = Object.values(healthSignals).filter(Boolean).length
+  const healthMax = Object.values(healthSignals).length
+  const healthPercentage = Math.round((healthScore / healthMax) * 100)
+  const healthStatus = healthScore === healthMax
+    ? "healthy"
+    : healthScore >= healthMax * 0.7
+    ? "warning"
+    : "critical"
+
+  // ── Checkout funnel (30d) ───────────────────────────────────
+  const devCheckoutsCreated = checkoutStats30d.reduce((s, r) => s + r._count, 0)
+  const devCheckoutsCompleted = checkoutStats30d.find((r) => r.status === "COMPLETED")?._count ?? 0
+  const devConversionRate = devCheckoutsCreated > 0
+    ? Math.round((devCheckoutsCompleted / devCheckoutsCreated) * 100)
+    : null
 
   // Serialize audit events for client component
   const serializedAuditEvents: AuditEventRow[] = auditEvents.map((e) => ({
@@ -190,6 +249,95 @@ export default async function DeveloperDetailPage({
             <Badge variant="outline">Emails Enabled</Badge>
           )}
         </div>
+      </div>
+
+      {/* ── Developer Health Score + Checkout Funnel ──────────── */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Developer Health</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-3 flex-1 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    healthStatus === "healthy"
+                      ? "bg-green-500"
+                      : healthStatus === "warning"
+                      ? "bg-yellow-500"
+                      : "bg-red-500"
+                  }`}
+                  style={{ width: `${healthPercentage}%` }}
+                />
+              </div>
+              <span className="text-sm font-bold">{healthPercentage}%</span>
+            </div>
+            <div className="space-y-1.5">
+              {Object.entries(healthSignals).map(([label, ok]) => (
+                <div key={label} className="flex items-center gap-2 text-sm">
+                  {ok ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <X className="h-4 w-4 text-red-500" />
+                  )}
+                  <span className={ok ? "" : "text-muted-foreground"}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Checkout Funnel (30 days)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {devCheckoutsCreated > 0 ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Created</p>
+                    <p className="text-2xl font-bold">{devCheckoutsCreated}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Completed</p>
+                    <p className="text-2xl font-bold">{devCheckoutsCompleted}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Conversion</p>
+                    <p className="text-2xl font-bold">{devConversionRate}%</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Funnel</p>
+                  <div className="flex gap-1 items-end h-8">
+                    <div
+                      className="bg-muted-foreground/30 rounded-t"
+                      style={{ width: "50%", height: "100%" }}
+                    />
+                    <div
+                      className="bg-green-500 rounded-t"
+                      style={{
+                        width: "50%",
+                        height: `${devConversionRate ?? 0}%`,
+                        minHeight: "4px",
+                      }}
+                    />
+                  </div>
+                  <div className="flex text-xs text-muted-foreground mt-1">
+                    <span className="w-1/2">Created</span>
+                    <span className="w-1/2">Completed</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No checkout sessions in the last 30 days
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* ── Apps ─────────────────────────────────────────────── */}

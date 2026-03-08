@@ -76,6 +76,8 @@ model App {
   experiments        Experiment[]
   feeChangeLogs      FeeChangeLog[]
   auditEvents        AuditEvent[]
+  checkoutSessions   CheckoutSession[]
+  sdkEvents          SdkEvent[]
 
   @@index([clerkUserId])
 }
@@ -749,4 +751,114 @@ model AuditEvent {
   @@index([userId, category])
   @@index([resourceType, resourceId])
   @@index([createdAt])
+}
+
+// Checkout session tracking for funnel analytics
+model CheckoutSession {
+  id                  String                @id @default(cuid())
+  appId               String
+  app                 App                   @relation(fields: [appId], references: [id])
+  productId           String
+  userId              String                // end customer
+
+  stripeSessionId     String                @unique
+  stripeSessionUrl    String?
+
+  status              CheckoutSessionStatus @default(CREATED)
+
+  // Timing
+  createdAt           DateTime              @default(now())
+  completedAt         DateTime?
+  expiredAt           DateTime?
+
+  // Outcome
+  transactionId       String?               // linked if completed
+  abandonedAfterMs    Int?                  // time between creation and expiry/abandon
+
+  // Context
+  locale              String?
+  promotionId         String?
+  preloaded           Boolean               @default(false) // was this a preloaded session?
+
+  @@index([appId, status])
+  @@index([createdAt])
+}
+
+// SDK telemetry events for analytics (no PII)
+model SdkEvent {
+  id              String    @id @default(cuid())
+  appId           String
+  app             App       @relation(fields: [appId], references: [id])
+
+  eventType       String    // "region_check", "purchase_started", "checkout_opened", etc.
+
+  // Context (no PII — aggregate analytics only)
+  sdkVersion      String?
+  iosVersion      String?
+  deviceModel     String?
+  locale          String?
+  region          String?   // "EU" or "NON_EU"
+
+  // Event-specific data
+  productId       String?
+  userId          String?   // hashed or anonymized
+  errorCode       String?
+  errorMessage    String?
+  durationMs      Int?      // for timed events
+  metadata        Json?
+
+  createdAt       DateTime  @default(now())
+
+  @@index([appId, eventType])
+  @@index([createdAt])
+  @@index([appId, createdAt])
+}
+
+// Pre-aggregated daily platform statistics
+model PlatformDailyStats {
+  id                        String    @id @default(cuid())
+  date                      DateTime  @unique // one row per day
+
+  // Checkout funnel
+  checkoutSessionsCreated   Int       @default(0)
+  checkoutSessionsCompleted Int       @default(0)
+  checkoutSessionsExpired   Int       @default(0)
+  checkoutConversionRate    Float?
+  avgCheckoutDurationMs     Int?
+
+  // SDK
+  sdkRegionChecks           Int       @default(0)
+  sdkRegionEU               Int       @default(0)
+  sdkRegionNonEU            Int       @default(0)
+  sdkPurchaseStarts         Int       @default(0)
+  sdkErrors                 Int       @default(0)
+  uniqueEndUsers            Int       @default(0)
+
+  // Transactions
+  transactionCount          Int       @default(0)
+  transactionVolumeCents    Int       @default(0)
+  platformFeeCents          Int       @default(0)
+  refundCount               Int       @default(0)
+  refundVolumeCents         Int       @default(0)
+
+  // Subscriptions
+  subscriptionsCreated      Int       @default(0)
+  subscriptionsCancelled    Int       @default(0)
+  netSubscriptionGrowth     Int       @default(0)
+
+  // Geography (top 5 countries as JSON)
+  topCountries              Json?
+
+  // Payment methods (JSON)
+  paymentMethods            Json?
+
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+}
+
+enum CheckoutSessionStatus {
+  CREATED
+  COMPLETED
+  EXPIRED
+  ABANDONED
 }

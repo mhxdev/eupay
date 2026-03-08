@@ -289,6 +289,19 @@ export default function ApiReferencePage() {
                 <td className="py-3 pr-4 text-gray-400">Record an experiment event</td>
                 <td className="py-3"><span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-400 border border-purple-500/20">SDK-managed</span></td>
               </tr>
+              {/* Telemetry */}
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+                    POST
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">
+                  /v1/telemetry
+                </td>
+                <td className="py-3 pr-4 text-gray-400">Report SDK events for analytics (no API key)</td>
+                <td className="py-3"><span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-400 border border-purple-500/20">SDK-managed</span></td>
+              </tr>
               {/* Webhooks */}
               <tr>
                 <td className="py-3 pr-4">
@@ -1897,6 +1910,165 @@ Authorization: Bearer ep_live_xxx`}
               <span className="text-gray-400">];</span>
             </code>
           </pre>
+        </div>
+      </section>
+
+      {/* ════════ Telemetry ════════ */}
+      <section className="mt-16">
+        <h2 className="text-2xl font-semibold text-white">Telemetry</h2>
+      </section>
+
+      {/* POST /v1/telemetry */}
+      <section className="mt-8">
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">
+            POST
+          </span>
+          <h3 className="text-lg font-semibold text-white font-mono">
+            /v1/telemetry
+          </h3>
+        </div>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Report SDK events for platform analytics. Batches up to 50 events per call.
+          No authentication required, but{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
+            appId
+          </code>{" "}
+          must be valid. Collects no PII — user IDs are for unique user counting only.
+        </p>
+        <div className="mt-4 rounded-lg border border-teal-500/20 bg-teal-500/5 px-6 py-5">
+          <p className="text-sm text-gray-300">
+            <strong className="text-white">Rate limit:</strong>{" "}
+            100 requests per minute per appId. Events are processed asynchronously.
+          </p>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Request body
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;appId&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;clx...&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"  "}
+                <span className="text-teal-300">&quot;events&quot;</span>
+                <span className="text-gray-400">: [</span>
+                {"\n"}
+                {"    "}
+                <span className="text-gray-400">{"{"}</span>
+                {"\n"}
+                {"      "}
+                <span className="text-teal-300">&quot;eventType&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;region_check&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"      "}
+                <span className="text-teal-300">&quot;sdkVersion&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;1.0.0&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"      "}
+                <span className="text-teal-300">&quot;region&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;EU&quot;</span>
+                <span className="text-gray-400">,</span>
+                {"\n"}
+                {"      "}
+                <span className="text-teal-300">&quot;locale&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">&quot;de&quot;</span>
+                {"\n"}
+                {"    "}
+                <span className="text-gray-400">{"}"}</span>
+                {"\n"}
+                {"  "}
+                <span className="text-gray-400">]</span>
+                {"\n"}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Event types
+          </p>
+          <div className="mt-2 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 text-left">
+                  <th className="pb-3 pr-4 font-medium text-gray-400">Type</th>
+                  <th className="pb-3 font-medium text-gray-400">Description</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                <tr>
+                  <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">region_check</td>
+                  <td className="py-2.5 text-gray-400">SDK checked user&apos;s region (EU/non-EU)</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">purchase_started</td>
+                  <td className="py-2.5 text-gray-400">User tapped a purchase button</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">checkout_opened</td>
+                  <td className="py-2.5 text-gray-400">Checkout UI presented to user</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">checkout_completed</td>
+                  <td className="py-2.5 text-gray-400">User completed checkout</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">checkout_cancelled</td>
+                  <td className="py-2.5 text-gray-400">User dismissed checkout</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">disclosure_shown</td>
+                  <td className="py-2.5 text-gray-400">DMA disclosure presented</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">disclosure_accepted</td>
+                  <td className="py-2.5 text-gray-400">User accepted DMA disclosure</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">error</td>
+                  <td className="py-2.5 text-gray-400">SDK encountered an error (include errorCode and errorMessage)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            Response
+          </p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <pre className="text-sm leading-relaxed font-mono">
+              <code>
+                <span className="text-gray-400">{"{"}</span>{" "}
+                <span className="text-teal-300">&quot;success&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">true</span>
+                <span className="text-gray-400">,</span>{" "}
+                <span className="text-teal-300">&quot;received&quot;</span>
+                <span className="text-gray-400">:</span>{" "}
+                <span className="text-orange-300">3</span>{" "}
+                <span className="text-gray-400">{"}"}</span>
+              </code>
+            </pre>
+          </div>
         </div>
       </section>
 

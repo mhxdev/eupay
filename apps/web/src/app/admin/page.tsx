@@ -17,10 +17,12 @@ import {
 import {
   Activity,
   AlertTriangle,
+  ArrowRight,
   CreditCard,
   DollarSign,
   Download,
   Pencil,
+  ShoppingCart,
   UserPlus,
   Users,
   Zap,
@@ -148,12 +150,13 @@ export default async function AdminPage() {
     }),
   ])
 
-  // ── Batch 3: Recent Activity + Chart data (4 queries) ─────
+  // ── Batch 3: Recent Activity + Chart data + Checkout funnel (5 queries) ─
   const [
     recentFeeChanges,
     recentApps,
     recentFailedWebhooks,
     dailyTxs,
+    todayCheckoutSessions,
   ] = await Promise.all([
     prisma.feeChangeLog.findMany({
       orderBy: { createdAt: "desc" },
@@ -176,7 +179,19 @@ export default async function AdminPage() {
       select: { createdAt: true, appliedFeeCents: true, amountTotal: true },
       orderBy: { createdAt: "asc" },
     }),
+    prisma.checkoutSession.groupBy({
+      by: ["status"],
+      where: { createdAt: { gte: todayStart } },
+      _count: true,
+    }),
   ])
+
+  // Checkout funnel summary for today
+  const todayCheckoutsCreated = todayCheckoutSessions.reduce((s, r) => s + r._count, 0)
+  const todayCheckoutsCompleted = todayCheckoutSessions.find((r) => r.status === "COMPLETED")?._count ?? 0
+  const todayConversionRate = todayCheckoutsCreated > 0
+    ? Math.round((todayCheckoutsCompleted / todayCheckoutsCreated) * 100)
+    : null
 
   const dailyRevenueMap = new Map<string, number>()
   for (const tx of dailyTxs) {
@@ -362,7 +377,7 @@ export default async function AdminPage() {
       </div>
 
       {/* ── Section 1: Platform Health ────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -418,13 +433,42 @@ export default async function AdminPage() {
             </p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Checkout Funnel (today)</p>
+              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            </div>
+            {todayCheckoutsCreated > 0 ? (
+              <>
+                <p className="text-2xl font-bold mt-1">
+                  {todayCheckoutsCompleted}/{todayCheckoutsCreated}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {todayConversionRate}% conversion
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground mt-2">No data</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* ── Section 2: Revenue ────────────────────────────────── */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Revenue</CardTitle>
+            <div className="flex items-center gap-3">
+              <CardTitle className="text-base">Revenue</CardTitle>
+              <Link
+                href="/admin/analytics"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              >
+                View Platform Analytics <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
             <a href="/api/admin/export/revenue" download>
               <Button variant="outline" size="sm" className="h-7 text-xs">
                 <Download className="h-3 w-3 mr-1" />
@@ -459,6 +503,40 @@ export default async function AdminPage() {
           </div>
 
           <AdminRevenueChart data={chartData} />
+
+          {/* ── Financial Reconciliation ─────────────────────────── */}
+          <div className="rounded-lg border border-border p-4 space-y-3">
+            <p className="text-sm font-medium">Reconciliation</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p className="text-xs text-muted-foreground">This Month Fee Revenue</p>
+                <p className="text-lg font-bold">{formatCurrency(computeFeeRevenue(monthRevenue))}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">This Month Volume</p>
+                <p className="text-lg font-bold">{formatCurrency(monthRevenue._sum.amountTotal ?? 0)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Effective Fee Rate</p>
+                <p className="text-lg font-bold">
+                  {(monthRevenue._sum.amountTotal ?? 0) > 0
+                    ? `${((computeFeeRevenue(monthRevenue) / (monthRevenue._sum.amountTotal ?? 1)) * 100).toFixed(2)}%`
+                    : "N/A"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Projected Monthly Revenue</p>
+                <p className="text-lg font-bold">
+                  {(() => {
+                    const dayOfMonth = now.getDate()
+                    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+                    const dailyRate = dayOfMonth > 0 ? computeFeeRevenue(monthRevenue) / dayOfMonth : 0
+                    return formatCurrency(Math.round(dailyRate * daysInMonth))
+                  })()}
+                </p>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

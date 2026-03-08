@@ -142,6 +142,7 @@ export type CreateCheckoutSessionParams = {
   appleExternalPurchaseToken?: string
   resolvedPromotion?: ResolvedPromotion | null
   requestTrialDays?: number
+  isPreload?: boolean
 }
 
 /**
@@ -193,6 +194,7 @@ export async function createCheckoutSession(
     appleExternalPurchaseToken,
     resolvedPromotion,
     requestTrialDays,
+    isPreload,
   } = params
 
   const connectOpts: Stripe.RequestOptions = { stripeAccount: stripeConnectId }
@@ -274,5 +276,22 @@ export async function createCheckoutSession(
     }
   }
 
-  return stripe.checkout.sessions.create(sessionParams, connectOpts)
+  const session = await stripe.checkout.sessions.create(sessionParams, connectOpts)
+
+  // Track checkout session for funnel analytics (fire-and-forget)
+  await prisma.checkoutSession.create({
+    data: {
+      appId,
+      productId: product.id,
+      userId,
+      stripeSessionId: session.id,
+      stripeSessionUrl: session.url ?? undefined,
+      status: "CREATED",
+      locale,
+      promotionId: resolvedPromotion?.id ?? null,
+      preloaded: isPreload ?? false,
+    },
+  }).catch((err) => console.error("Failed to log checkout session:", err))
+
+  return session
 }

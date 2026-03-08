@@ -96,6 +96,7 @@ export async function POST(req: NextRequest) {
       stripeConnectId: auth.app.stripeConnectId,
       platformFeePercent: auth.app.platformFeePercent ?? 1.5,
       resolvedPromotion,
+      isPreload: true,
     })
   } catch (err) {
     if (err instanceof Stripe.errors.StripeError) {

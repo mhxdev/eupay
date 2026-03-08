@@ -21,6 +21,18 @@ export default async function AdminLayout({
               EuroPay Admin
             </Link>
             <Link
+              href="/admin"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Overview
+            </Link>
+            <Link
+              href="/admin/analytics"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Analytics
+            </Link>
+            <Link
               href="/dashboard"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >

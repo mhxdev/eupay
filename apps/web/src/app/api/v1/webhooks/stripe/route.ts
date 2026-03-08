@@ -104,6 +104,8 @@ async function handleStripeEvent(
   switch (event.type) {
     case 'checkout.session.completed':
       return await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session, connectOpts)
+    case 'checkout.session.expired':
+      return await handleCheckoutSessionExpired(event.data.object as Stripe.Checkout.Session)
     case 'customer.subscription.updated':
       return await handleSubscriptionUpdated(event.data.object as Stripe.Subscription)
     case 'customer.subscription.deleted':
@@ -183,6 +185,16 @@ async function handleCheckoutSessionCompleted(
         : {}),
     },
   })
+
+  // ── Mark checkout session as completed (fire-and-forget) ──
+  await prisma.checkoutSession.updateMany({
+    where: { stripeSessionId: session.id },
+    data: {
+      status: "COMPLETED",
+      completedAt: new Date(),
+      transactionId: transaction.id,
+    },
+  }).catch((err) => console.error("Failed to update checkout session:", err))
 
   // Grant entitlement
   let entitlementId: string | undefined
@@ -390,6 +402,34 @@ async function handleCheckoutSessionCompleted(
   await reportToApple(appId, transaction.id)
 
   return appId
+}
+
+async function handleCheckoutSessionExpired(
+  session: Stripe.Checkout.Session
+): Promise<string | null> {
+  const now = new Date()
+  await prisma.checkoutSession.updateMany({
+    where: { stripeSessionId: session.id },
+    data: {
+      status: "EXPIRED",
+      expiredAt: now,
+    },
+  }).catch((err) => console.error("Failed to update expired checkout session:", err))
+
+  // Also compute abandonedAfterMs
+  const tracked = await prisma.checkoutSession.findUnique({
+    where: { stripeSessionId: session.id },
+    select: { createdAt: true },
+  })
+  if (tracked) {
+    const durationMs = now.getTime() - tracked.createdAt.getTime()
+    await prisma.checkoutSession.updateMany({
+      where: { stripeSessionId: session.id },
+      data: { abandonedAfterMs: durationMs },
+    }).catch(() => {})
+  }
+
+  return session.metadata?.appId ?? null
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<string | null> {

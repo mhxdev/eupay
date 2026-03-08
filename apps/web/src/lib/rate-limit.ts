@@ -48,3 +48,13 @@ export const publicRateLimit = redis
       prefix: "ratelimit:public",
     })
   : null
+
+// SDK telemetry (per appId) — generous for batch inserts
+// 100 requests per 60 seconds
+export const telemetryRateLimit = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(100, "60 s"),
+      prefix: "ratelimit:telemetry",
+    })
+  : null
