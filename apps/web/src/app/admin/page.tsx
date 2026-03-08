@@ -160,6 +160,7 @@ export default async function AdminPage() {
     todayCheckoutSessions,
     openAlerts,
     milestoneFunnel,
+    allMilestones,
   ] = await Promise.all([
     prisma.feeChangeLog.findMany({
       orderBy: { createdAt: "desc" },
@@ -196,6 +197,10 @@ export default async function AdminPage() {
     prisma.developerMilestone.groupBy({
       by: ["milestone"],
       _count: true,
+    }),
+    prisma.developerMilestone.findMany({
+      select: { clerkUserId: true, milestone: true, createdAt: true },
+      orderBy: { createdAt: "asc" },
     }),
   ])
 
@@ -326,6 +331,49 @@ export default async function AdminPage() {
         joinedDate: d.joinedDate.toLocaleDateString("en-GB"),
       }
     })
+
+  // ── Stuck developers ─────────────────────────────────────
+  const milestoneLabels: Record<string, string> = {
+    app_created: "Signed Up",
+    stripe_oauth_started: "Started Stripe OAuth",
+    stripe_connected: "Connected Stripe",
+    product_created: "Created Product",
+    api_key_generated: "Generated API Key",
+    apple_credentials_uploaded: "Uploaded Apple Credentials",
+    webhook_configured: "Configured Webhook",
+    sandbox_test_transaction: "Sandbox Test",
+    mode_switched_live: "Switched to Live",
+    first_live_transaction: "First Live Transaction",
+  }
+
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+
+  // Group milestones by developer, find their latest one
+  const devLatestMilestone = new Map<string, { milestone: string; createdAt: Date }>()
+  for (const m of allMilestones) {
+    const existing = devLatestMilestone.get(m.clerkUserId)
+    if (!existing || m.createdAt > existing.createdAt) {
+      devLatestMilestone.set(m.clerkUserId, { milestone: m.milestone, createdAt: m.createdAt })
+    }
+  }
+
+  const stuckDevelopers = [...devLatestMilestone.entries()]
+    .filter(([, latest]) =>
+      latest.milestone !== "first_live_transaction" && latest.createdAt < sevenDaysAgo
+    )
+    .map(([clerkUserId, latest]) => {
+      const clerk = emailMap.get(clerkUserId)
+      const daysSinceLastMilestone = Math.floor(
+        (Date.now() - latest.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+      )
+      return {
+        clerkUserId,
+        email: clerk?.email ?? clerkUserId.slice(0, 12) + "...",
+        currentStage: milestoneLabels[latest.milestone] ?? latest.milestone,
+        daysStuck: daysSinceLastMilestone,
+      }
+    })
+    .sort((a, b) => b.daysStuck - a.daysStuck)
 
   // ── Build activity feed ───────────────────────────────────
   type ActivityEvent = {
@@ -488,6 +536,51 @@ export default async function AdminPage() {
                 </div>
               )
             })}
+          </div>
+
+          {/* ── Stuck Developers ──────────────────────────────── */}
+          <div className="mt-6 pt-6 border-t border-border">
+            <p className="text-sm font-medium">Stuck Developers</p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Developers who haven&apos;t progressed in 7+ days &mdash; consider reaching out
+            </p>
+            {stuckDevelopers.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No developers are stuck &mdash; all are progressing through onboarding.
+              </p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Current Stage</TableHead>
+                    <TableHead className="text-right">Days Stuck</TableHead>
+                    <TableHead />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {stuckDevelopers.map((dev) => (
+                    <TableRow key={dev.clerkUserId}>
+                      <TableCell className="text-sm">{dev.email}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{dev.currentStage}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-sm">
+                        {dev.daysStuck}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Link
+                          href={`/admin/developers/${dev.clerkUserId}`}
+                          className="text-sm text-blue-500 hover:underline"
+                        >
+                          View &rarr;
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </CardContent>
       </Card>
