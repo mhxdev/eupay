@@ -25,9 +25,6 @@ export default function OnboardingPage() {
   const [revenueTier, setRevenueTier] = useState("")
 
   // Step 2 state
-  const [plan, setPlan] = useState("")
-
-  // Step 3 state
   const [apiKey, setApiKey] = useState("")
   const [copied, setCopied] = useState(false)
 
@@ -53,7 +50,7 @@ export default function OnboardingPage() {
       .catch(() => setLoading(false))
   }, [isLoaded, isSignedIn, router])
 
-  async function handleStep1Next() {
+  async function handleSubmit() {
     if (!appName.trim() || !bundleId.trim() || !revenueTier) {
       setError("All fields are required")
       return
@@ -63,23 +60,14 @@ export default function OnboardingPage() {
       return
     }
     setError("")
-    setStep(2)
-  }
-
-  async function handleStep2Next() {
-    if (!plan) {
-      setError("Select a plan")
-      return
-    }
-    setError("")
     setSubmitting(true)
 
     try {
-      // Create the app
+      // Create the app with BYOS plan hardcoded
       const res = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ appName, bundleId, revenueTier, plan }),
+        body: JSON.stringify({ appName, bundleId, revenueTier, plan: "byos" }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -102,7 +90,7 @@ export default function OnboardingPage() {
       }
 
       setApiKey(keyData.apiKey)
-      setStep(3)
+      setStep(2)
     } catch {
       setError("Network error. Please try again.")
     } finally {
@@ -133,13 +121,12 @@ export default function OnboardingPage() {
         </h1>
         <p className="mt-2 text-center text-sm text-gray-400">
           {step === 1 && "Tell us about your iOS app"}
-          {step === 2 && "Choose your payment plan"}
-          {step === 3 && "Your API key is ready"}
+          {step === 2 && "Your API key is ready"}
         </p>
 
         {/* Progress bar */}
         <div className="mt-8 flex items-center gap-2">
-          {[1, 2, 3].map((s) => (
+          {[1, 2].map((s) => (
             <div
               key={s}
               className={`h-1 flex-1 rounded-full transition-colors ${
@@ -150,7 +137,6 @@ export default function OnboardingPage() {
         </div>
         <div className="mt-2 flex justify-between text-[11px] text-gray-500">
           <span>App details</span>
-          <span>Plan</span>
           <span>API key</span>
         </div>
 
@@ -213,92 +199,25 @@ export default function OnboardingPage() {
                 ))}
               </select>
             </div>
+
+            <p className="text-sm text-gray-400 mt-4">
+              EuroPay connects to your Stripe account so payments go directly to you.
+              Total cost: ~8% per transaction (EuroPay 1.5% + Apple CTF ~5% + Stripe ~1.5%).
+              You&apos;ll connect Stripe after setup.
+            </p>
+
             <button
-              onClick={handleStep1Next}
-              className="mt-2 w-full rounded-md bg-teal-500 py-2.5 text-sm font-medium text-white hover:bg-teal-400 transition-colors"
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="mt-2 w-full rounded-md bg-teal-500 py-2.5 text-sm font-medium text-white hover:bg-teal-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Continue
+              {submitting ? "Creating..." : "Continue"}
             </button>
           </div>
         )}
 
-        {/* Step 2: Plan selection */}
+        {/* Step 2: API key */}
         {step === 2 && (
-          <div className="mt-8 space-y-4">
-            {/* Managed */}
-            <button
-              onClick={() => setPlan("managed")}
-              className={`w-full rounded-xl border p-5 text-left transition-colors ${
-                plan === "managed"
-                  ? "border-teal-500/50 bg-teal-500/5 ring-1 ring-teal-500/30"
-                  : "border-white/10 bg-white/[0.02] hover:border-white/20"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-base font-semibold text-white">
-                  Managed
-                </span>
-                <span className="rounded-full bg-teal-500/10 px-3 py-0.5 text-xs font-medium text-teal-400 border border-teal-500/20">
-                  Recommended
-                </span>
-              </div>
-              <p className="mt-3">
-                <span className="text-3xl font-bold text-white">11.5%</span>
-                <span className="ml-1 text-sm text-gray-400">total per transaction</span>
-              </p>
-              <ul className="mt-3 space-y-1 text-sm text-gray-400">
-                <li>EuroPay 5% + Apple CTC 5% + Stripe ~1.5%</li>
-                <li>We handle VAT, refunds, disputes, emails</li>
-                <li>Fully managed Merchant of Record</li>
-              </ul>
-            </button>
-
-            {/* Connect your Stripe account */}
-            <button
-              onClick={() => setPlan("byos")}
-              className={`w-full rounded-xl border p-5 text-left transition-colors ${
-                plan === "byos"
-                  ? "border-teal-500/50 bg-teal-500/5 ring-1 ring-teal-500/30"
-                  : "border-white/10 bg-white/[0.02] hover:border-white/20"
-              }`}
-            >
-              <span className="text-base font-semibold text-white">
-                Connect your own Stripe account
-              </span>
-              <p className="mt-3">
-                <span className="text-3xl font-bold text-white">~8%</span>
-                <span className="ml-1 text-sm text-gray-400">total per transaction</span>
-              </p>
-              <ul className="mt-3 space-y-1 text-sm text-gray-400">
-                <li>EuroPay 1.5% + Apple CTC 5% + Stripe ~1.5%</li>
-                <li>Connect your own Stripe account</li>
-                <li>You manage VAT and disputes</li>
-              </ul>
-            </button>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => {
-                  setError("")
-                  setStep(1)
-                }}
-                className="flex-1 rounded-md border border-white/10 py-2.5 text-sm font-medium text-gray-300 hover:border-white/20 hover:text-white transition-colors"
-              >
-                Back
-              </button>
-              <button
-                onClick={handleStep2Next}
-                disabled={submitting || !plan}
-                className="flex-1 rounded-md bg-teal-500 py-2.5 text-sm font-medium text-white hover:bg-teal-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? "Creating..." : "Continue"}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: API key */}
-        {step === 3 && (
           <div className="mt-8 space-y-6">
             <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 px-4 py-3">
               <p className="text-sm font-medium text-yellow-400">
