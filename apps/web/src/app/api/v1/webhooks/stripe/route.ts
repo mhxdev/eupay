@@ -23,6 +23,7 @@ import {
 } from '@/lib/email'
 import { clerkClient } from '@clerk/nextjs/server'
 import { reportTransaction } from '@/lib/apple-reporting'
+import { logAuditEvent } from '@/lib/audit'
 
 export async function POST(req: Request) {
   const body = await req.text() // MUST be raw text, not parsed JSON
@@ -184,6 +185,7 @@ async function handleCheckoutSessionCompleted(
   })
 
   // Grant entitlement
+  let entitlementId: string | undefined
   if (product.productType === 'SUBSCRIPTION' && session.subscription) {
     const subscriptionId = typeof session.subscription === 'string'
       ? session.subscription
@@ -191,7 +193,7 @@ async function handleCheckoutSessionCompleted(
     const subscription = await stripe.subscriptions.retrieve(subscriptionId, {}, connectOpts)
     // Get billing period from the first subscription item
     const firstItem = subscription.items.data[0]
-    await prisma.entitlement.create({
+    const ent = await prisma.entitlement.create({
       data: {
         customerId: customer.id,
         productId: product.id,
@@ -207,9 +209,10 @@ async function handleCheckoutSessionCompleted(
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
       },
     })
+    entitlementId = ent.id
   } else {
     // One-time purchase — lifetime access
-    await prisma.entitlement.create({
+    const ent = await prisma.entitlement.create({
       data: {
         customerId: customer.id,
         productId: product.id,
@@ -217,7 +220,25 @@ async function handleCheckoutSessionCompleted(
         source: 'WEB_CHECKOUT',
       },
     })
+    entitlementId = ent.id
   }
+
+  // ── Audit: entitlement granted ────────────────────────────
+  await logAuditEvent({
+    appId,
+    userId: externalUserId,
+    category: "entitlement",
+    action: "granted",
+    resourceType: "entitlement",
+    resourceId: entitlementId,
+    details: {
+      previousStatus: null,
+      newStatus: "ACTIVE",
+      reason: "checkout_completed",
+      productId,
+      transactionId: transaction.id,
+    },
+  })
 
   // ── Track promotion redemption ──────────────────────────
   if (metadata.promotionId) {
@@ -301,6 +322,8 @@ async function handleCheckoutSessionCompleted(
         appName: product.app.name,
         companyName: product.app.companyName ?? undefined,
         supportEmail: product.app.supportEmail ?? undefined,
+        appId,
+        userId: externalUserId,
       })
 
       // Send Widerrufsrecht waiver confirmation if applicable
@@ -316,6 +339,8 @@ async function handleCheckoutSessionCompleted(
           appName: product.app.name,
           companyName: product.app.companyName ?? undefined,
           supportEmail: product.app.supportEmail ?? undefined,
+          appId,
+          userId: externalUserId,
         })
       }
     } catch (emailError) {
@@ -370,9 +395,11 @@ async function handleCheckoutSessionCompleted(
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<string | null> {
   const entitlement = await prisma.entitlement.findUnique({
     where: { stripeSubscriptionId: subscription.id },
-    include: { customer: { select: { appId: true } } },
+    include: { customer: { select: { appId: true, externalUserId: true } } },
   })
   if (!entitlement) return null
+
+  const previousStatus = entitlement.status
 
   let status: 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'PAUSED' = 'ACTIVE'
   if (subscription.status === 'canceled') status = 'CANCELLED'
@@ -397,6 +424,30 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
     },
   })
 
+  // ── Audit: entitlement status change ────────────────────
+  if (previousStatus !== status) {
+    const actionMap: Record<string, string> = {
+      ACTIVE: "activated",
+      EXPIRED: "expired",
+      CANCELLED: "revoked",
+      PAUSED: "paused",
+    }
+    await logAuditEvent({
+      appId: entitlement.customer.appId,
+      userId: entitlement.customer.externalUserId,
+      category: "entitlement",
+      action: actionMap[status] ?? "updated",
+      resourceType: "entitlement",
+      resourceId: entitlement.id,
+      details: {
+        previousStatus,
+        newStatus: status,
+        reason: "subscription_updated",
+        stripeSubscriptionId: subscription.id,
+      },
+    })
+  }
+
   return entitlement.customer.appId
 }
 
@@ -407,9 +458,28 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
   })
   if (!entitlement) return null
 
+  const previousStatus = entitlement.status
+
   await prisma.entitlement.update({
     where: { id: entitlement.id },
     data: { status: 'CANCELLED' },
+  })
+
+  // ── Audit: entitlement revoked ──────────────────────────
+  await logAuditEvent({
+    appId: entitlement.customer.appId,
+    userId: entitlement.customer.externalUserId,
+    category: "entitlement",
+    action: "revoked",
+    resourceType: "entitlement",
+    resourceId: entitlement.id,
+    details: {
+      previousStatus,
+      newStatus: "CANCELLED",
+      reason: "subscription_cancelled",
+      productId: entitlement.productId,
+      stripeSubscriptionId: subscription.id,
+    },
   })
 
   // Send cancellation confirmation email
@@ -428,6 +498,9 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
         appName: entitlement.customer.app.name,
         companyName: entitlement.customer.app.companyName ?? undefined,
         supportEmail: entitlement.customer.app.supportEmail ?? undefined,
+        appId: entitlement.customer.appId,
+        userId: entitlement.customer.externalUserId,
+        entitlementId: entitlement.id,
       })
     } catch (emailError) {
       console.error('[Webhook] Cancellation email failed:', emailError)
@@ -527,6 +600,8 @@ async function handleInvoicePaymentSucceeded(
         appName: entitlement.customer.app.name,
         companyName: entitlement.customer.app.companyName ?? undefined,
         supportEmail: entitlement.customer.app.supportEmail ?? undefined,
+        appId: entitlement.customer.appId,
+        userId: entitlement.customer.externalUserId,
       })
     } catch (emailError) {
       console.error('[Webhook] Renewal receipt email failed:', emailError)
@@ -582,11 +657,30 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<stri
   })
   if (!entitlement) return null
 
+  const previousStatus = entitlement.status
+
   // Mark entitlement as expired (Stripe will retry — if it succeeds, the
   // subscription.updated webhook will flip it back to ACTIVE)
   await prisma.entitlement.update({
     where: { id: entitlement.id },
     data: { status: 'EXPIRED' },
+  })
+
+  // ── Audit: entitlement expired ──────────────────────────
+  await logAuditEvent({
+    appId: entitlement.customer.appId,
+    userId: entitlement.customer.externalUserId,
+    category: "entitlement",
+    action: "expired",
+    resourceType: "entitlement",
+    resourceId: entitlement.id,
+    details: {
+      previousStatus,
+      newStatus: "EXPIRED",
+      reason: "payment_failed",
+      productId: entitlement.productId,
+      stripeSubscriptionId: subscriptionId,
+    },
   })
 
   // Send payment failed email
@@ -601,6 +695,9 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<stri
         appName: entitlement.customer.app.name,
         companyName: entitlement.customer.app.companyName ?? undefined,
         supportEmail: entitlement.customer.app.supportEmail ?? undefined,
+        appId: entitlement.customer.appId,
+        userId: entitlement.customer.externalUserId,
+        entitlementId: entitlement.id,
       })
     } catch (emailError) {
       console.error('[Webhook] Payment failed email failed:', emailError)
@@ -662,6 +759,8 @@ async function handleChargeRefunded(
         appName: transaction.customer.app.name,
         companyName: transaction.customer.app.companyName ?? undefined,
         supportEmail: transaction.customer.app.supportEmail ?? undefined,
+        appId: transaction.appId,
+        userId: transaction.customer.externalUserId,
       })
     } catch (emailError) {
       console.error('[Webhook] Refund confirmation email failed:', emailError)
@@ -716,6 +815,23 @@ async function handleChargeRefunded(
       await prisma.entitlement.update({
         where: { id: entitlement.id },
         data: { status: 'CANCELLED' },
+      })
+
+      // ── Audit: entitlement revoked due to refund ──────────
+      await logAuditEvent({
+        appId: transaction.appId,
+        userId: transaction.customer.externalUserId,
+        category: "entitlement",
+        action: "revoked",
+        resourceType: "entitlement",
+        resourceId: entitlement.id,
+        details: {
+          previousStatus: "ACTIVE",
+          newStatus: "CANCELLED",
+          reason: "refund",
+          productId: transaction.productId,
+          transactionId: transaction.id,
+        },
       })
     }
   }
@@ -776,6 +892,7 @@ async function handleDisputeCreated(
         reason: dispute.reason,
         disputeId: dispute.id,
         transactionId: transaction.id,
+        appId: transaction.appId,
       })
     }
   } catch (alertErr) {
@@ -820,9 +937,32 @@ async function reportToApple(appId: string, transactionId: string) {
         appleReportError: result.error ?? null,
       },
     })
+
+    // ── Audit: Apple report result ────────────────────────
+    await logAuditEvent({
+      appId,
+      category: "apple_report",
+      action: result.success ? "reported" : "failed",
+      resourceType: "transaction",
+      resourceId: transactionId,
+      details: {
+        reportId,
+        error: result.error ?? null,
+      },
+    })
   } catch (appleErr) {
     // Apple reporting failure must never break the webhook handler
     console.error('[Webhook] Apple reporting failed:', appleErr)
+    await logAuditEvent({
+      appId,
+      category: "apple_report",
+      action: "failed",
+      resourceType: "transaction",
+      resourceId: transactionId,
+      details: {
+        error: appleErr instanceof Error ? appleErr.message : "Unknown error",
+      },
+    })
   }
 }
 
@@ -843,6 +983,9 @@ async function notifyDeveloper(
 
   let deliveryFailed = false
   let deliveryError = ''
+  let statusCode: number | undefined
+  let responseBody = ''
+  const startTime = Date.now()
 
   try {
     const bodyStr = JSON.stringify({ type: eventType, data: payload })
@@ -865,6 +1008,8 @@ async function notifyDeveloper(
       },
       body: bodyStr,
     })
+    statusCode = res.status
+    responseBody = await res.text().catch(() => '')
     if (!res.ok) {
       deliveryFailed = true
       deliveryError = `HTTP ${res.status}`
@@ -873,6 +1018,24 @@ async function notifyDeveloper(
     deliveryFailed = true
     deliveryError = err instanceof Error ? err.message : 'Request failed'
   }
+
+  const durationMs = Date.now() - startTime
+
+  // ── Audit: webhook delivery ─────────────────────────────
+  await logAuditEvent({
+    appId: app.id,
+    category: "webhook_delivery",
+    action: deliveryFailed ? "failed" : "delivered",
+    resourceType: "webhook_event",
+    details: {
+      url: app.webhookUrl,
+      eventType,
+      statusCode: statusCode ?? null,
+      responseBody: responseBody.substring(0, 500),
+      durationMs,
+      error: deliveryError || null,
+    },
+  })
 
   // Check for consecutive failures and alert developer
   if (deliveryFailed && app.id && app.clerkUserId) {
@@ -905,6 +1068,7 @@ async function notifyDeveloper(
               failureCount: recentFailures,
               lastError: deliveryError,
               lastAttemptAt: new Date(),
+              appId: app.id,
             })
             await prisma.app.update({
               where: { id: app.id },

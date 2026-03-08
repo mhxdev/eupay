@@ -75,6 +75,7 @@ model App {
   cancelEvents       CancelEvent[]
   experiments        Experiment[]
   feeChangeLogs      FeeChangeLog[]
+  auditEvents        AuditEvent[]
 
   @@index([clerkUserId])
 }
@@ -723,4 +724,29 @@ model AdminNote {
   updatedAt         DateTime  @updatedAt
 
   @@index([developerUserId])
+}
+
+// Comprehensive audit log for support and compliance
+model AuditEvent {
+  id            String    @id @default(cuid())
+  appId         String?
+  app           App?      @relation(fields: [appId], references: [id])
+  userId        String?   // Clerk user ID (developer) or end customer userId
+
+  category      String    // "email", "webhook_delivery", "entitlement", "stripe_connect", "apple_report"
+  action        String    // "sent", "failed", "granted", "revoked", "connected", "disconnected", etc.
+
+  // Context
+  resourceType  String?   // "transaction", "subscription", "entitlement", "checkout_session"
+  resourceId    String?   // the ID of the related resource
+
+  // Details (flexible JSON for category-specific data)
+  details       Json?
+
+  createdAt     DateTime  @default(now())
+
+  @@index([appId, category])
+  @@index([userId, category])
+  @@index([resourceType, resourceId])
+  @@index([createdAt])
 }

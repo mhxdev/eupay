@@ -17,6 +17,7 @@ import {
 import { Download, ChevronLeft } from "lucide-react"
 import { PlatformFeeEditor } from "@/components/admin/PlatformFeeEditor"
 import { AdminNotes } from "@/components/admin/AdminNotes"
+import { AuditLogSection, type AuditEventRow } from "@/components/admin/AuditLogSection"
 
 function formatCurrency(cents: number) {
   return new Intl.NumberFormat("de-DE", {
@@ -83,8 +84,8 @@ export default async function DeveloperDetailPage({
   const emailToggleStatus = apps.some((a) => a.sendCustomerEmails)
   const hasLiveApp = apps.some((a) => a.mode === "live")
 
-  // Fetch transactions + webhooks in parallel
-  const [transactions, webhookEvents, promotions, campaigns, experiments, retentionConfigs] =
+  // Fetch transactions + webhooks + audit events in parallel
+  const [transactions, webhookEvents, promotions, campaigns, experiments, retentionConfigs, auditEvents] =
     await Promise.all([
       prisma.transaction.findMany({
         where: { appId: { in: appIds } },
@@ -115,7 +116,23 @@ export default async function DeveloperDetailPage({
       prisma.retentionConfig.findMany({
         where: { appId: { in: appIds } },
       }),
+      prisma.auditEvent.findMany({
+        where: { appId: { in: appIds } },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      }),
     ])
+
+  // Serialize audit events for client component
+  const serializedAuditEvents: AuditEventRow[] = auditEvents.map((e) => ({
+    id: e.id,
+    category: e.category,
+    action: e.action,
+    resourceType: e.resourceType,
+    resourceId: e.resourceId,
+    details: e.details as Record<string, unknown> | null,
+    createdAt: e.createdAt.toISOString(),
+  }))
 
   // Aggregate fee change logs across all apps
   const allFeeChanges = apps
@@ -488,6 +505,26 @@ export default async function DeveloperDetailPage({
               )}
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* ── Audit Log ──────────────────────────────────────────── */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">
+              Audit Log ({serializedAuditEvents.length}{serializedAuditEvents.length === 50 ? "+" : ""})
+            </CardTitle>
+            <a href={`/api/admin/export/audit/${userId}`} download>
+              <Button variant="outline" size="sm" className="h-7 text-xs">
+                <Download className="h-3 w-3 mr-1" />
+                Export Audit Log CSV
+              </Button>
+            </a>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <AuditLogSection events={serializedAuditEvents} />
         </CardContent>
       </Card>
 

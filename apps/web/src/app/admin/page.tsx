@@ -63,34 +63,17 @@ export default async function AdminPage() {
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
-  // ── Parallel data fetching ────────────────────────────────
+  // ── Batch 1: Health + Revenue (8 queries) ───────────────────
   const [
-    // Section 1: Platform Health
     failedWebhooks24h,
     failedWebhooksLastHour,
     stuckOnboarding,
     appleReportFailures24h,
-    // Section 2: Revenue
     todayRevenue,
     weekRevenue,
     monthRevenue,
     allTimeRevenue,
-    // Section 3: Developers
-    allApps,
-    // Section 4: Feature Adoption
-    activePromotions,
-    activeCampaigns,
-    completedMigrations,
-    runningExperiments,
-    totalParticipants,
-    enabledRetention,
-    cancelEventStats,
-    // Section 5: Recent Activity
-    recentFeeChanges,
-    recentApps,
-    recentFailedWebhooks,
   ] = await Promise.all([
-    // Health
     prisma.webhookEvent.count({
       where: { status: "FAILED", createdAt: { gte: oneDayAgo } },
     }),
@@ -103,31 +86,39 @@ export default async function AdminPage() {
     prisma.transaction.count({
       where: { appleReportStatus: "FAILED", createdAt: { gte: oneDayAgo } },
     }),
-    // Revenue: today
     prisma.transaction.aggregate({
       where: { status: "SUCCEEDED", createdAt: { gte: todayStart } },
       _count: true,
       _sum: { amountTotal: true, appliedFeeCents: true },
     }),
-    // Revenue: week
     prisma.transaction.aggregate({
       where: { status: "SUCCEEDED", createdAt: { gte: weekStart } },
       _count: true,
       _sum: { amountTotal: true, appliedFeeCents: true },
     }),
-    // Revenue: month
     prisma.transaction.aggregate({
       where: { status: "SUCCEEDED", createdAt: { gte: monthStart } },
       _count: true,
       _sum: { amountTotal: true, appliedFeeCents: true },
     }),
-    // Revenue: all time
     prisma.transaction.aggregate({
       where: { status: "SUCCEEDED" },
       _count: true,
       _sum: { amountTotal: true, appliedFeeCents: true },
     }),
-    // Developers: all apps with aggregated data
+  ])
+
+  // ── Batch 2: Developers + Feature Adoption (8 queries) ────
+  const [
+    allApps,
+    activePromotions,
+    activeCampaigns,
+    completedMigrations,
+    runningExperiments,
+    totalParticipants,
+    enabledRetention,
+    cancelEventStats,
+  ] = await Promise.all([
     prisma.app.findMany({
       select: {
         id: true,
@@ -145,7 +136,6 @@ export default async function AdminPage() {
         },
       },
     }),
-    // Feature Adoption
     prisma.promotion.count({ where: { status: "ACTIVE" } }),
     prisma.migrationCampaign.count({ where: { status: "ACTIVE" } }),
     prisma.migrationEvent.count({ where: { status: "COMPLETED" } }),
@@ -156,7 +146,15 @@ export default async function AdminPage() {
       by: ["outcome"],
       _count: true,
     }),
-    // Recent Activity
+  ])
+
+  // ── Batch 3: Recent Activity + Chart data (4 queries) ─────
+  const [
+    recentFeeChanges,
+    recentApps,
+    recentFailedWebhooks,
+    dailyTxs,
+  ] = await Promise.all([
     prisma.feeChangeLog.findMany({
       orderBy: { createdAt: "desc" },
       take: 10,
@@ -173,14 +171,12 @@ export default async function AdminPage() {
       take: 10,
       select: { id: true, type: true, appId: true, createdAt: true, error: true },
     }),
+    prisma.transaction.findMany({
+      where: { status: "SUCCEEDED", createdAt: { gte: thirtyDaysAgo } },
+      select: { createdAt: true, appliedFeeCents: true, amountTotal: true },
+      orderBy: { createdAt: "asc" },
+    }),
   ])
-
-  // ── Daily revenue chart data (last 30 days) ───────────────
-  const dailyTxs = await prisma.transaction.findMany({
-    where: { status: "SUCCEEDED", createdAt: { gte: thirtyDaysAgo } },
-    select: { createdAt: true, appliedFeeCents: true, amountTotal: true },
-    orderBy: { createdAt: "asc" },
-  })
 
   const dailyRevenueMap = new Map<string, number>()
   for (const tx of dailyTxs) {

@@ -39,7 +39,8 @@ export function AdminRevenueChart({ data }: { data: DailyRevenue[] }) {
         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
         <XAxis
           dataKey="date"
-          tick={{ fontSize: 11 }}
+          interval={6}
+          tick={{ fontSize: 12 }}
           className="fill-muted-foreground"
         />
         <YAxis

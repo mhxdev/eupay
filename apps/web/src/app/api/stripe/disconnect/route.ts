@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
+import { logAuditEvent } from "@/lib/audit"
 
 export async function GET(req: NextRequest) {
   const { userId } = await auth()
@@ -21,6 +22,8 @@ export async function GET(req: NextRequest) {
     )
   }
 
+  const previousStripeId = app.stripeConnectId
+
   const clientId = process.env.STRIPE_CONNECT_CLIENT_ID
   if (clientId) {
     try {
@@ -36,6 +39,14 @@ export async function GET(req: NextRequest) {
   await prisma.app.update({
     where: { id: appId },
     data: { stripeConnectId: null },
+  })
+
+  await logAuditEvent({
+    appId,
+    userId,
+    category: "stripe_connect",
+    action: "disconnected",
+    details: { stripeAccountId: previousStripeId },
   })
 
   return NextResponse.redirect(
