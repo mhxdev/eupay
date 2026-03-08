@@ -125,12 +125,13 @@ export default async function DeveloperDetailPage({
       }),
     ])
 
-  // ── Health + Checkout funnel (separate batch to stay within pool limit) ──
+  // ── Health + Checkout funnel + Milestones (separate batch to stay within pool limit) ──
   const [
     failedWebhooks,
     failedAppleReports,
     checkoutStats30d,
     lastTransaction,
+    milestones,
   ] = await Promise.all([
     prisma.webhookEvent.count({
       where: { appId: { in: appIds }, status: "FAILED" },
@@ -147,6 +148,10 @@ export default async function DeveloperDetailPage({
       where: { appId: { in: appIds }, status: "SUCCEEDED" },
       orderBy: { createdAt: "desc" },
       select: { createdAt: true },
+    }),
+    prisma.developerMilestone.findMany({
+      where: { clerkUserId: userId },
+      orderBy: { createdAt: "asc" },
     }),
   ])
 
@@ -181,6 +186,20 @@ export default async function DeveloperDetailPage({
   const devConversionRate = devCheckoutsCreated > 0
     ? Math.round((devCheckoutsCompleted / devCheckoutsCreated) * 100)
     : null
+
+  // ── Developer Journey (milestone timeline) ──────────────────
+  const completedMilestones = new Set(milestones.map((m) => m.milestone))
+  const journeySteps = [
+    { key: "app_created", label: "App Created" },
+    { key: "api_key_generated", label: "API Key Generated" },
+    { key: "stripe_connected", label: "Stripe Connected" },
+    { key: "product_created", label: "Product Created" },
+    { key: "apple_credentials_uploaded", label: "Apple Credentials" },
+    { key: "webhook_configured", label: "Webhook Configured" },
+    { key: "sandbox_test_transaction", label: "Sandbox Test" },
+    { key: "mode_switched_live", label: "Switched to Live" },
+    { key: "first_live_transaction", label: "First Live Transaction" },
+  ]
 
   // Serialize audit events for client component
   const serializedAuditEvents: AuditEventRow[] = auditEvents.map((e) => ({
@@ -339,6 +358,57 @@ export default async function DeveloperDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Developer Journey ──────────────────────────────────── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Developer Journey</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-xs text-muted-foreground mb-4">
+            Onboarding milestones this developer has completed. A full journey goes from sign-up to first live transaction.
+          </p>
+          <div className="relative">
+            {journeySteps.map((step, i) => {
+              const completed = completedMilestones.has(step.key)
+              const milestone = milestones.find((m) => m.milestone === step.key)
+              return (
+                <div key={step.key} className="flex items-start gap-3 pb-4 last:pb-0">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                        completed
+                          ? "bg-green-500 text-white"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {completed ? <Check className="h-3.5 w-3.5" /> : i + 1}
+                    </div>
+                    {i < journeySteps.length - 1 && (
+                      <div
+                        className={`w-0.5 flex-1 min-h-4 ${
+                          completed ? "bg-green-500" : "bg-muted"
+                        }`}
+                      />
+                    )}
+                  </div>
+                  <div className="pt-0.5">
+                    <p className={`text-sm font-medium ${completed ? "" : "text-muted-foreground"}`}>
+                      {step.label}
+                    </p>
+                    {milestone && (
+                      <p className="text-xs text-muted-foreground">
+                        {milestone.createdAt.toLocaleDateString("en-GB")}{" "}
+                        {milestone.createdAt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ── Apps ─────────────────────────────────────────────── */}
       <Card>

@@ -24,6 +24,8 @@ import {
 import { clerkClient } from '@clerk/nextjs/server'
 import { reportTransaction } from '@/lib/apple-reporting'
 import { logAuditEvent } from '@/lib/audit'
+import { trackMilestone } from '@/lib/milestones'
+import { createAlert } from '@/lib/alerts'
 
 export async function POST(req: Request) {
   const body = await req.text() // MUST be raw text, not parsed JSON
@@ -251,6 +253,17 @@ async function handleCheckoutSessionCompleted(
       transactionId: transaction.id,
     },
   })
+
+  // ── Track developer milestones (sandbox/live first tx) ──
+  try {
+    if (product.app.mode === "sandbox") {
+      await trackMilestone({ clerkUserId: product.app.clerkUserId, appId, milestone: "sandbox_test_transaction" })
+    } else if (product.app.mode === "live") {
+      await trackMilestone({ clerkUserId: product.app.clerkUserId, appId, milestone: "first_live_transaction" })
+    }
+  } catch {
+    // Milestone tracking must never break the webhook handler
+  }
 
   // ── Track promotion redemption ──────────────────────────
   if (metadata.promotionId) {
@@ -990,6 +1003,18 @@ async function reportToApple(appId: string, transactionId: string) {
         error: result.error ?? null,
       },
     })
+
+    if (!result.success) {
+      await createAlert({
+        severity: "CRITICAL",
+        category: "compliance",
+        title: "Apple transaction report failed",
+        description: `Transaction ${transactionId} for app ${appId} — Apple requires reporting within 24 hours. Error: ${result.error ?? "Unknown"}. Developer may need to check Apple credentials.`,
+        appId,
+        resourceType: "transaction",
+        resourceId: transactionId,
+      })
+    }
   } catch (appleErr) {
     // Apple reporting failure must never break the webhook handler
     console.error('[Webhook] Apple reporting failed:', appleErr)
@@ -1115,6 +1140,16 @@ async function notifyDeveloper(
               data: { lastWebhookAlertAt: new Date() },
             })
           }
+          await createAlert({
+            severity: "WARNING",
+            category: "developer_health",
+            title: "Webhook delivery failures",
+            description: `App "${app.name ?? app.id}" has ${recentFailures} webhook delivery failures in the last hour. Developer may have a misconfigured endpoint.`,
+            appId: app.id,
+            developerUserId: app.clerkUserId,
+            resourceType: "app",
+            resourceId: app.id,
+          })
         }
       }
     } catch (alertErr) {

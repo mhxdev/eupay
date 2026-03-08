@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
+import { trackMilestone } from "@/lib/milestones"
 
 const schema = z.object({
   webhookUrl: z.string().url().optional(),
@@ -49,6 +50,14 @@ export async function PATCH(
       dmaEntitlementConfirmed: true,
     },
   })
+
+  // Track milestones for key configuration steps
+  if (parsed.data.webhookUrl) {
+    await trackMilestone({ clerkUserId: userId, appId, milestone: "webhook_configured" })
+  }
+  if (parsed.data.appleKeyId && parsed.data.appleIssuerId && parsed.data.applePrivateKey) {
+    await trackMilestone({ clerkUserId: userId, appId, milestone: "apple_credentials_uploaded" })
+  }
 
   return NextResponse.json(updated)
 }

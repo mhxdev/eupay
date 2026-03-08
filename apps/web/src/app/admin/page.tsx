@@ -18,6 +18,7 @@ import {
   Activity,
   AlertTriangle,
   ArrowRight,
+  Bell,
   CreditCard,
   DollarSign,
   Download,
@@ -150,13 +151,15 @@ export default async function AdminPage() {
     }),
   ])
 
-  // ── Batch 3: Recent Activity + Chart data + Checkout funnel (5 queries) ─
+  // ── Batch 3: Recent Activity + Chart data + Checkout funnel + Alerts (5+2 queries) ─
   const [
     recentFeeChanges,
     recentApps,
     recentFailedWebhooks,
     dailyTxs,
     todayCheckoutSessions,
+    openAlerts,
+    milestoneFunnel,
   ] = await Promise.all([
     prisma.feeChangeLog.findMany({
       orderBy: { createdAt: "desc" },
@@ -184,6 +187,16 @@ export default async function AdminPage() {
       where: { createdAt: { gte: todayStart } },
       _count: true,
     }),
+    prisma.platformAlert.findMany({
+      where: { status: { in: ["OPEN", "ACKNOWLEDGED"] }, severity: { in: ["CRITICAL", "WARNING"] } },
+      orderBy: [{ severity: "asc" }, { createdAt: "desc" }],
+      take: 5,
+      include: { app: { select: { name: true } } },
+    }),
+    prisma.developerMilestone.groupBy({
+      by: ["milestone"],
+      _count: true,
+    }),
   ])
 
   // Checkout funnel summary for today
@@ -192,6 +205,23 @@ export default async function AdminPage() {
   const todayConversionRate = todayCheckoutsCreated > 0
     ? Math.round((todayCheckoutsCompleted / todayCheckoutsCreated) * 100)
     : null
+
+  // Action items: open critical/warning alerts
+  const openCriticalAlerts = openAlerts.filter((a) => a.severity === "CRITICAL")
+  const openWarningAlerts = openAlerts.filter((a) => a.severity === "WARNING")
+
+  // Onboarding funnel (milestoneMap only — devMap computed later)
+  const milestoneMap = new Map(milestoneFunnel.map((m) => [m.milestone, m._count]))
+  const funnelSteps = [
+    { label: "Signed Up", milestone: "app_created", count: milestoneMap.get("app_created") ?? 0 },
+    { label: "Stripe Connected", milestone: "stripe_connected", count: milestoneMap.get("stripe_connected") ?? 0 },
+    { label: "Product Created", milestone: "product_created", count: milestoneMap.get("product_created") ?? 0 },
+    { label: "API Key Generated", milestone: "api_key_generated", count: milestoneMap.get("api_key_generated") ?? 0 },
+    { label: "Sandbox Test", milestone: "sandbox_test_transaction", count: milestoneMap.get("sandbox_test_transaction") ?? 0 },
+    { label: "Gone Live", milestone: "mode_switched_live", count: milestoneMap.get("mode_switched_live") ?? 0 },
+    { label: "First Live Txn", milestone: "first_live_transaction", count: milestoneMap.get("first_live_transaction") ?? 0 },
+  ]
+  const funnelMax = Math.max(1, funnelSteps[0].count)
 
   const dailyRevenueMap = new Map<string, number>()
   for (const tx of dailyTxs) {
@@ -373,8 +403,94 @@ export default async function AdminPage() {
         <h1 className="text-2xl font-bold">Platform Overview</h1>
         <p className="text-muted-foreground">
           Operational dashboard — health, revenue, developers, and activity.
+          Monitor platform status, track revenue, and manage developers from a single view.
         </p>
       </div>
+
+      {/* ── Action Items ────────────────────────────────────────── */}
+      {(openCriticalAlerts.length > 0 || openWarningAlerts.length > 0) && (
+        <Card className="border-red-200 dark:border-red-900/50">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                Action Items
+              </CardTitle>
+              <Link href="/admin/alerts">
+                <Button variant="outline" size="sm" className="h-7 text-xs">
+                  View All Alerts <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {openCriticalAlerts.map((alert) => (
+              <div key={alert.id} className="flex items-start gap-3 p-2 rounded-lg bg-red-50 dark:bg-red-900/10">
+                <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">{alert.title}</p>
+                  <p className="text-xs text-muted-foreground truncate">{alert.description}</p>
+                </div>
+                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 shrink-0">
+                  Critical
+                </Badge>
+              </div>
+            ))}
+            {openWarningAlerts.map((alert) => (
+              <div key={alert.id} className="flex items-start gap-3 p-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/10">
+                <Bell className="h-4 w-4 text-yellow-500 mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">{alert.title}</p>
+                  <p className="text-xs text-muted-foreground truncate">{alert.description}</p>
+                </div>
+                <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 shrink-0">
+                  Warning
+                </Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── Developer Onboarding Funnel ─────────────────────────── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Developer Onboarding Funnel</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-xs text-muted-foreground mb-4">
+            How many developers have completed each onboarding step. Drop-offs indicate where developers get stuck.
+          </p>
+          <div className="space-y-2">
+            {funnelSteps.map((step, i) => {
+              const pct = Math.round((step.count / funnelMax) * 100)
+              const prevCount = i > 0 ? funnelSteps[i - 1].count : step.count
+              const dropOff = prevCount > 0 ? Math.round(((prevCount - step.count) / prevCount) * 100) : 0
+              return (
+                <div key={step.milestone} className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground w-32 shrink-0">{step.label}</span>
+                  <div className="flex-1 h-6 bg-muted rounded overflow-hidden">
+                    <div
+                      className="h-full bg-primary/80 rounded transition-all flex items-center justify-end pr-2"
+                      style={{ width: `${Math.max(pct, 2)}%` }}
+                    >
+                      {pct > 15 && <span className="text-xs text-primary-foreground font-medium">{step.count}</span>}
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono w-8 text-right">{step.count}</span>
+                  {i > 0 && dropOff > 0 && (
+                    <span className="text-xs text-red-500 w-16 text-right">-{dropOff}%</span>
+                  )}
+                  {i > 0 && dropOff === 0 && (
+                    <span className="text-xs text-muted-foreground w-16 text-right">&mdash;</span>
+                  )}
+                  {i === 0 && <span className="w-16" />}
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ── Section 1: Platform Health ────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

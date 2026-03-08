@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { trackMilestone } from "@/lib/milestones"
 
 export async function GET(req: NextRequest) {
   const { userId } = await auth()
@@ -35,6 +36,8 @@ export async function GET(req: NextRequest) {
     state: appId,
     redirect_uri: redirectUri,
   })
+
+  await trackMilestone({ clerkUserId: userId, appId, milestone: "stripe_oauth_started" })
 
   return NextResponse.redirect(
     `https://connect.stripe.com/oauth/authorize?${params.toString()}`

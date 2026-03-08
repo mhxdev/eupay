@@ -7,6 +7,8 @@ import { prisma } from "./prisma"
 import { stripe } from "./stripe"
 import { generateApiKey } from "./auth"
 import { sendDeveloperWelcome } from "./email"
+import { trackMilestone } from "./milestones"
+import { createAlert } from "./alerts"
 
 async function requireUser() {
   const { userId } = await auth()
@@ -47,6 +49,10 @@ export async function createApp(formData: FormData) {
     },
   })
 
+  // Track milestones
+  await trackMilestone({ clerkUserId: userId, appId: app.id, milestone: "app_created", details: { appName: name, bundleId } })
+  await trackMilestone({ clerkUserId: userId, appId: app.id, milestone: "api_key_generated" })
+
   // Send welcome email on first app creation
   if (existingAppCount === 0) {
     try {
@@ -57,6 +63,14 @@ export async function createApp(formData: FormData) {
         await sendDeveloperWelcome({
           to: email,
           name: user.firstName ?? "",
+        })
+        await createAlert({
+          severity: "INFO",
+          category: "developer_health",
+          title: "New developer signed up",
+          description: `${email} created their first app "${name}".`,
+          appId: app.id,
+          developerUserId: userId,
         })
       }
     } catch (emailErr) {
@@ -73,6 +87,8 @@ export async function deleteApp(appId: string) {
   const userId = await requireUser()
   const app = await prisma.app.findUnique({ where: { id: appId } })
   if (!app || app.clerkUserId !== userId) throw new Error("Not found")
+
+  await trackMilestone({ clerkUserId: userId, appId, milestone: "account_deleted", details: { appName: app.name } })
 
   await prisma.app.delete({ where: { id: appId } })
   revalidatePath("/dashboard/apps")
@@ -240,6 +256,8 @@ export async function createProduct(formData: FormData) {
     },
   })
 
+  await trackMilestone({ clerkUserId: userId, appId, milestone: "product_created", details: { productName: name, productType } })
+
   revalidatePath(`/dashboard/apps/${appId}/products`)
 }
 
@@ -276,6 +294,8 @@ export async function createApiKeyForApp(appId: string, keyName: string) {
       name: keyName || "API Key",
     },
   })
+
+  await trackMilestone({ clerkUserId: userId, appId, milestone: "api_key_generated" })
 
   revalidatePath("/dashboard/apps")
   return { apiKey: raw }
@@ -999,4 +1019,41 @@ export async function deleteCustomerData(customerId: string) {
 
   revalidatePath("/dashboard/gdpr")
   return { success: true, deletedAt: new Date().toISOString() }
+}
+
+// ── Admin: Acknowledge alert ──────────────────────────────────
+export async function acknowledgeAlert(alertId: string) {
+  "use server"
+  const { userId } = await auth()
+  if (userId !== process.env.ADMIN_CLERK_USER_ID) throw new Error("Forbidden")
+
+  await prisma.platformAlert.update({
+    where: { id: alertId },
+    data: { status: "ACKNOWLEDGED" },
+  })
+
+  revalidatePath("/admin/alerts")
+  revalidatePath("/admin")
+  return { success: true }
+}
+
+// ── Admin: Resolve alert ──────────────────────────────────────
+export async function resolveAlert(alertId: string, note?: string) {
+  "use server"
+  const { userId } = await auth()
+  if (userId !== process.env.ADMIN_CLERK_USER_ID) throw new Error("Forbidden")
+
+  await prisma.platformAlert.update({
+    where: { id: alertId },
+    data: {
+      status: "RESOLVED",
+      resolvedAt: new Date(),
+      resolvedBy: userId,
+      resolvedNote: note ?? null,
+    },
+  })
+
+  revalidatePath("/admin/alerts")
+  revalidatePath("/admin")
+  return { success: true }
 }

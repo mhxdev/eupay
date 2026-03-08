@@ -78,6 +78,8 @@ model App {
   auditEvents        AuditEvent[]
   checkoutSessions   CheckoutSession[]
   sdkEvents          SdkEvent[]
+  milestones         DeveloperMilestone[]
+  alerts             PlatformAlert[]
 
   @@index([clerkUserId])
 }
@@ -861,4 +863,61 @@ enum CheckoutSessionStatus {
   COMPLETED
   EXPIRED
   ABANDONED
+}
+
+// Developer lifecycle milestone tracking
+model DeveloperMilestone {
+  id              String    @id @default(cuid())
+  clerkUserId     String
+  appId           String?
+  app             App?      @relation(fields: [appId], references: [id])
+
+  milestone       String    // "app_created", "stripe_connected", "product_created", etc.
+  details         Json?
+
+  createdAt       DateTime  @default(now())
+
+  @@index([clerkUserId])
+  @@index([milestone])
+  @@index([createdAt])
+}
+
+// Platform operational alerts
+model PlatformAlert {
+  id              String        @id @default(cuid())
+
+  severity        AlertSeverity
+  category        String        // "compliance", "developer_health", "system", "revenue"
+
+  title           String
+  description     String
+
+  appId           String?
+  app             App?          @relation(fields: [appId], references: [id])
+  developerUserId String?
+  resourceType    String?
+  resourceId      String?
+
+  status          AlertStatus   @default(OPEN)
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  resolvedNote    String?
+
+  createdAt       DateTime      @default(now())
+
+  @@index([status, severity])
+  @@index([createdAt])
+  @@index([appId])
+}
+
+enum AlertSeverity {
+  CRITICAL
+  WARNING
+  INFO
+}
+
+enum AlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
 }

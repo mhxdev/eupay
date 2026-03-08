@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 import { logAuditEvent } from "@/lib/audit"
+import { createAlert } from "@/lib/alerts"
 
 export async function GET(req: NextRequest) {
   const { userId } = await auth()
@@ -47,6 +48,17 @@ export async function GET(req: NextRequest) {
     category: "stripe_connect",
     action: "disconnected",
     details: { stripeAccountId: previousStripeId },
+  })
+
+  await createAlert({
+    severity: "WARNING",
+    category: "developer_health",
+    title: "Stripe account disconnected",
+    description: `Developer ${userId} disconnected their Stripe account for app "${app.name}". Payments will fail until reconnected.`,
+    appId,
+    developerUserId: userId,
+    resourceType: "app",
+    resourceId: appId,
   })
 
   return NextResponse.redirect(

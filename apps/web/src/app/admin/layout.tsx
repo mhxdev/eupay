@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { UserButton } from "@clerk/nextjs"
 import { ThemeToggle } from "@/components/dashboard/ThemeToggle"
+import { prisma } from "@/lib/prisma"
 
 export default async function AdminLayout({
   children,
@@ -11,6 +12,10 @@ export default async function AdminLayout({
 }) {
   const { userId } = await auth()
   if (userId !== process.env.ADMIN_CLERK_USER_ID) return notFound()
+
+  const openAlertCount = await prisma.platformAlert.count({
+    where: { status: "OPEN", severity: { in: ["CRITICAL", "WARNING"] } },
+  })
 
   return (
     <div className="min-h-screen bg-background">
@@ -31,6 +36,17 @@ export default async function AdminLayout({
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Analytics
+            </Link>
+            <Link
+              href="/admin/alerts"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+            >
+              Alerts
+              {openAlertCount > 0 && (
+                <span className="inline-flex items-center justify-center h-5 min-w-5 px-1 text-xs font-bold text-white bg-red-500 rounded-full">
+                  {openAlertCount}
+                </span>
+              )}
             </Link>
             <Link
               href="/dashboard"

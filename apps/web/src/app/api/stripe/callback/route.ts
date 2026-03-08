@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 import { logAuditEvent } from "@/lib/audit"
+import { trackMilestone } from "@/lib/milestones"
 
 export async function GET(req: NextRequest) {
   const { userId } = await auth()
@@ -50,6 +51,8 @@ export async function GET(req: NextRequest) {
       action: "connected",
       details: { stripeAccountId: stripeUserId },
     })
+
+    await trackMilestone({ clerkUserId: userId, appId, milestone: "stripe_connected", details: { stripeAccountId: stripeUserId } })
 
     return NextResponse.redirect(
       new URL(`/dashboard/apps/${appId}?connected=true`, req.url)

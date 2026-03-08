@@ -36,6 +36,18 @@ export async function GET(req: NextRequest) {
     where: { stripeCheckoutSessionId: session.id },
   })
 
+  // If webhook hasn't fired yet but Stripe confirms payment, return processing status
+  if (!transaction || transaction.status === 'PENDING') {
+    if (session.payment_status === 'paid') {
+      return NextResponse.json({
+        sessionId: session.id,
+        paymentStatus: session.payment_status,
+        transactionStatus: transaction?.status ?? 'processing',
+        message: 'Payment confirmed, access will be granted shortly',
+      })
+    }
+  }
+
   return NextResponse.json({
     sessionId: session.id,
     paymentStatus: session.payment_status,

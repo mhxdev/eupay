@@ -11,6 +11,7 @@ import WebhookFailureAlert from "@/emails/WebhookFailureAlert"
 import DisputeAlert from "@/emails/DisputeAlert"
 import DeveloperWelcome from "@/emails/DeveloperWelcome"
 import { logAuditEvent } from "./audit"
+import { createAlert } from "./alerts"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "noreply@europay.dev"
@@ -129,6 +130,16 @@ export async function sendPurchaseConfirmation(
         error: error instanceof Error ? error.message : "Unknown error",
       },
     })
+    await createAlert({
+      severity: "CRITICAL",
+      category: "compliance",
+      title: "Purchase confirmation email failed",
+      description: `Transaction ${params.transactionId} for app "${params.appName}" — customer ${params.to} didn't receive legally required receipt. Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      appId: params.appId,
+      developerUserId: params.userId,
+      resourceType: "transaction",
+      resourceId: params.transactionId,
+    })
   }
 }
 
@@ -192,6 +203,57 @@ export async function sendWiderrufsrechtWaiver(
         error: error instanceof Error ? error.message : "Unknown error",
       },
     })
+    await createAlert({
+      severity: "CRITICAL",
+      category: "compliance",
+      title: "Widerrufsrecht email failed to send",
+      description: `Transaction ${params.transactionId} for app "${params.appName}" — customer ${params.to} didn't receive legally required withdrawal waiver email. Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      appId: params.appId,
+      developerUserId: params.userId,
+      resourceType: "transaction",
+      resourceId: params.transactionId,
+    })
+
+    // ONE retry after 30 seconds for legally required email
+    setTimeout(async () => {
+      try {
+        await resend.emails.send({
+          from: `${params.appName} <${FROM_EMAIL}>`,
+          to: params.to,
+          subject,
+          react: WiderrufsrechtWaiver({
+            customerName: params.customerName,
+            productName: params.productName,
+            transactionId: params.transactionId,
+            transactionDate: params.transactionDate,
+            amountTotal: params.amountTotal,
+            currency: params.currency,
+            appName: params.appName,
+            companyName: params.companyName,
+            supportEmail: params.supportEmail,
+          }),
+        })
+        await logAuditEvent({
+          appId: params.appId,
+          userId: params.userId,
+          category: "email",
+          action: "sent_retry",
+          resourceType: "transaction",
+          resourceId: params.transactionId,
+          details: { to: params.to, subject, template: "WiderrufsrechtWaiver" },
+        })
+      } catch (retryError) {
+        await logAuditEvent({
+          appId: params.appId,
+          userId: params.userId,
+          category: "email",
+          action: "retry_failed",
+          resourceType: "transaction",
+          resourceId: params.transactionId,
+          details: { to: params.to, subject, template: "WiderrufsrechtWaiver", error: retryError instanceof Error ? retryError.message : "Unknown" },
+        })
+      }
+    }, 30000)
   }
 }
 

@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
+import { trackMilestone } from "@/lib/milestones"
 
 const schema = z.object({
   mode: z.enum(["sandbox", "live"]),
@@ -37,6 +38,10 @@ export async function PATCH(
     data: { mode: parsed.data.mode },
     select: { id: true, name: true, mode: true },
   })
+
+  if (parsed.data.mode === "live") {
+    await trackMilestone({ clerkUserId: userId, appId, milestone: "mode_switched_live" })
+  }
 
   return NextResponse.json(updated)
 }

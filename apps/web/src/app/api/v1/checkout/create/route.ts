@@ -97,6 +97,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Product not found' }, { status: 404 })
   }
 
+  // Idempotency: check if user already has an active entitlement for this product
+  const existingCustomer = await prisma.customer.findUnique({
+    where: { appId_externalUserId: { appId: auth.appId, externalUserId: userId } },
+  })
+  if (existingCustomer) {
+    const existingEntitlement = await prisma.entitlement.findFirst({
+      where: { customerId: existingCustomer.id, productId, status: 'ACTIVE' },
+    })
+    if (existingEntitlement) {
+      return NextResponse.json(
+        { error: 'already_entitled', message: 'User already has an active entitlement for this product' },
+        { status: 409 }
+      )
+    }
+  }
+
   // Get or create Stripe customer
   let customer = await prisma.customer.findUnique({
     where: { appId_externalUserId: { appId: auth.appId, externalUserId: userId } },
