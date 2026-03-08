@@ -177,14 +177,20 @@ export default function OnboardingPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300">
-                Bundle ID
+              <label className="text-sm font-medium text-gray-300 inline-flex items-center gap-1.5">
+                Apple Bundle ID
+                <span className="relative group">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 hover:text-gray-200 cursor-help"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                  <span className="invisible group-hover:visible absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 rounded-md bg-[#1a2035] border border-white/10 p-2 text-xs text-gray-300 font-normal shadow-md z-50">
+                    Your app&apos;s Bundle Identifier from Xcode. You can find it in Xcode &rarr; your project &rarr; General &rarr; Bundle Identifier (e.g., com.yourcompany.yourapp). It must match exactly &mdash; this is how EuroPay links to your iOS app.
+                  </span>
+                </span>
               </label>
               <input
                 type="text"
                 value={bundleId}
                 onChange={(e) => setBundleId(e.target.value)}
-                placeholder="com.company.app"
+                placeholder="com.example.myapp"
                 className="mt-1.5 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 font-mono"
               />
             </div>

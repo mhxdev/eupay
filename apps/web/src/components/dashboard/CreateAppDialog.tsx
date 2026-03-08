@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Plus, Copy, Check } from "lucide-react"
+import { Plus, Copy, Check, Info } from "lucide-react"
 import { createApp } from "@/lib/actions"
 
 export function CreateAppDialog() {
@@ -106,7 +106,15 @@ export function CreateAppDialog() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="bundleId">Bundle ID</Label>
+                <Label htmlFor="bundleId" className="inline-flex items-center gap-1.5">
+                  Apple Bundle ID
+                  <span className="relative group">
+                    <Info className="h-3.5 w-3.5 text-gray-400 hover:text-gray-200 cursor-help" />
+                    <span className="invisible group-hover:visible absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 rounded-md bg-popover border border-border p-2 text-xs text-popover-foreground font-normal shadow-md z-50">
+                      Your app&apos;s Bundle Identifier from Xcode. You can find it in Xcode &rarr; your project &rarr; General &rarr; Bundle Identifier (e.g., com.yourcompany.yourapp). It must match exactly &mdash; this is how EuroPay links to your iOS app.
+                    </span>
+                  </span>
+                </Label>
                 <Input
                   id="bundleId"
                   name="bundleId"
