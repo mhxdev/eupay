@@ -36,6 +36,16 @@ export async function POST(req: Request) {
     ? { stripeAccount: event.account }
     : undefined
 
+  // Resolve appId early from connected account
+  let earlyAppId: string | null = null
+  if (event.account) {
+    const app = await prisma.app.findFirst({
+      where: { stripeConnectId: event.account },
+      select: { id: true },
+    })
+    earlyAppId = app?.id ?? null
+  }
+  // Resolve appId early from connected account
   // Idempotency: check if already processed
   const existing = await prisma.webhookEvent.findUnique({
     where: { id: event.id },
@@ -50,6 +60,7 @@ export async function POST(req: Request) {
     create: {
       id: event.id,
       type: event.type,
+      appId: earlyAppId,
       payload: JSON.parse(body),
       status: "PENDING",
     },
@@ -71,7 +82,7 @@ export async function POST(req: Request) {
     const message = error instanceof Error ? error.message : "Unknown error"
     await prisma.webhookEvent.update({
       where: { id: event.id },
-      data: { status: "FAILED", error: message },
+      data: { status: "FAILED", error: message, ...(earlyAppId ? { appId: earlyAppId } : {}) },
     })
     return new NextResponse(`Webhook handler failed: ${message}`, { status: 500 })
   }

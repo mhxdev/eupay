@@ -170,11 +170,13 @@ export default async function DashboardPage() {
     ? (cancelledThisMonth / totalActiveLastMonth) * 100
     : 0
 
-  // LTV calculation
+  // LTV calculation — ARPU / churn rate
   const totalRevenueAmount = totalRevenue._sum.amountSubtotal ?? 0
   const payingCustomerCount = distinctPayingCustomers.length
+  const arpu = payingCustomerCount > 0 ? totalRevenueAmount / payingCustomerCount : 0
+  const monthlyChurnRate = churnRate > 0 ? churnRate / 100 : 0.05
   const ltv = payingCustomerCount > 0
-    ? Math.round(totalRevenueAmount / payingCustomerCount)
+    ? Math.round(arpu > 0 ? arpu / Math.max(monthlyChurnRate, 0.01) : 0)
     : 0
 
   // Revenue chart: last 12 months (batched in groups of 6)
