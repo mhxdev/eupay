@@ -5,6 +5,7 @@ import {
   checkoutRateLimit,
   webhookRateLimit,
   publicRateLimit,
+  telemetryRateLimit,
 } from '@/lib/rate-limit'
 
 // Dashboard and admin routes require authentication
@@ -52,11 +53,14 @@ async function handleApiRateLimit(req: NextRequest): Promise<NextResponse> {
   let limiter
   let identifier
 
-  if (pathname.startsWith('/api/v1/webhooks/stripe')) {
+  if (pathname.startsWith('/api/v1/webhooks/stripe') || pathname.startsWith('/api/v2/webhooks/stripe')) {
     limiter = webhookRateLimit
     identifier = `ip:${ip}`
-  } else if (pathname.startsWith('/api/v1/checkout/create')) {
+  } else if (pathname.startsWith('/api/v1/checkout/create') || pathname.startsWith('/api/v2/checkout')) {
     limiter = checkoutRateLimit
+    identifier = apiKey ? `key:${apiKey}` : `ip:${ip}`
+  } else if (pathname.startsWith('/api/v2/events')) {
+    limiter = telemetryRateLimit
     identifier = apiKey ? `key:${apiKey}` : `ip:${ip}`
   } else if (pathname.startsWith('/api/v1/compliance') || pathname.startsWith('/api/v1/regulatory')) {
     limiter = publicRateLimit
@@ -107,7 +111,7 @@ export default clerkMiddleware(async (auth, req) => {
   const { pathname } = req.nextUrl
 
   // Rate limit API v1 routes (these use their own API key auth, not Clerk)
-  if (pathname.startsWith('/api/v1/')) {
+  if (pathname.startsWith('/api/v1/') || pathname.startsWith('/api/v2/')) {
     return await handleApiRateLimit(req)
   }
 

@@ -22,6 +22,7 @@ import {
   ParticipantTrendChart,
 } from "@/components/dashboard/ExperimentCharts"
 import { ArrowLeft } from "lucide-react"
+import { getCurrencySymbol } from "@/lib/currencies"
 
 function formatCurrency(cents: number) {
   return new Intl.NumberFormat("de-DE", {
@@ -345,7 +346,7 @@ export default async function ExperimentDetailPage({
             <VariantBarChart
               data={revPerUserData}
               valueLabel="Rev/User"
-              formatValue={(v) => `€${(v / 100).toFixed(2)}`}
+              formatValue={(v) => `${getCurrencySymbol("eur")}${(v / 100).toFixed(2)}`}
             />
           </CardContent>
         </Card>

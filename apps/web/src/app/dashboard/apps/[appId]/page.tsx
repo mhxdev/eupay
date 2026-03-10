@@ -83,6 +83,22 @@ export default async function AppDetailPage({
     createdAt: k.createdAt.toISOString(),
   }))
 
+  // DMA checklist completion
+  const dmaChecklist = (app.setupChecklist as Record<string, boolean> | null) ?? {}
+  const hasAppleCreds = !!(app.appleKeyId && app.appleIssuerId && app.applePrivateKey)
+  const dmaState: Record<string, boolean> = {
+    ...dmaChecklist,
+    dma_credentials_uploaded: hasAppleCreds || (dmaChecklist.dma_credentials_uploaded ?? false),
+    dma_tested: (app._count.transactions > 0) || (dmaChecklist.dma_tested ?? false),
+    dma_live: (app.mode === "live") || (dmaChecklist.dma_live ?? false),
+  }
+  const dmaKeys = [
+    "dma_membership", "dma_addendum_agreed", "dma_tier_chosen", "dma_iap_removed",
+    "dma_xcode_entitlement", "dma_credentials_uploaded", "dma_sdk_integrated",
+    "dma_tested", "dma_submitted", "dma_live",
+  ]
+  const isDmaComplete = dmaKeys.every((k) => dmaState[k])
+
   const navItems = [
     { href: `/dashboard/apps/${appId}/products`, label: "Products", icon: Package, count: app._count.products },
     { href: `/dashboard/apps/${appId}/subscribers`, label: "Subscribers", icon: Users, count: app._count.customers },
@@ -93,7 +109,7 @@ export default async function AppDetailPage({
     { href: `/dashboard/apps/${appId}/retention`, label: "Retention", icon: HeartHandshake, count: null },
     { href: `/dashboard/apps/${appId}/experiments`, label: "Experiments", icon: FlaskConical, count: null },
     { href: `/dashboard/apps/${appId}/reports`, label: "Reports", icon: BarChart3, count: null },
-    { href: `/dashboard/apps/${appId}/dma`, label: "DMA", icon: Shield, count: null },
+    { href: `/dashboard/apps/${appId}/dma-checklist`, label: "DMA Compliance", icon: Shield, count: null, showDot: !isDmaComplete },
   ]
 
   return (
@@ -119,12 +135,12 @@ export default async function AppDetailPage({
               <p className="text-sm text-orange-700 dark:text-orange-400/80">
                 Before going live, ensure you have Apple&apos;s External Purchase Link entitlement.{" "}
                 <a
-                  href="https://developer.apple.com/contact/request/download/external_purchase.pdf"
+                  href="https://developer.apple.com/support/communication-and-promotion-of-offers-on-the-app-store-in-the-eu/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline font-medium"
                 >
-                  Request here
+                  Learn more
                 </a>
               </p>
             </div>
@@ -137,7 +153,12 @@ export default async function AppDetailPage({
           <Link key={item.href} href={item.href}>
             <Card className="hover:border-primary/50 transition-colors cursor-pointer">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">{item.label}</CardTitle>
+                <div className="flex items-center gap-1.5">
+                  <CardTitle className="text-sm font-medium">{item.label}</CardTitle>
+                  {"showDot" in item && item.showDot && (
+                    <span className="h-2 w-2 rounded-full bg-amber-500" />
+                  )}
+                </div>
                 <item.icon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>

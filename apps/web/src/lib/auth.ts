@@ -88,9 +88,10 @@ export function authErrorResponse(result: AuthError): NextResponse {
  * Generate a new API key.
  * Returns { raw, hash, prefix } — raw is shown ONCE to the developer and never stored.
  */
-export function generateApiKey(): { raw: string; hash: string; prefix: string } {
-  const raw = `europay_${randomBytes(32).toString('hex')}`
+export function generateApiKey(type?: "test" | "live"): { raw: string; hash: string; prefix: string } {
+  const typePrefix = type ? `${type}_` : ""
+  const raw = `europay_${typePrefix}${randomBytes(32).toString('hex')}`
   const hash = createHash('sha256').update(raw).digest('hex')
-  const prefix = raw.slice(0, 12)
+  const prefix = raw.slice(0, 16)
   return { raw, hash, prefix }
 }

@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { createApp } from "@/lib/actions"
 
 // GET — check if current user already has an app (onboarding complete)
 export async function GET() {
@@ -25,17 +26,15 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  const { appName, bundleId, revenueTier, plan } = body as {
+  const { appName, bundleId } = body as {
     appName: string
     bundleId: string
-    revenueTier: string
-    plan: string
   }
 
-  if (!appName || !bundleId || !revenueTier || !plan) {
+  if (!appName || !bundleId) {
     return NextResponse.json(
-      { error: "appName, bundleId, revenueTier, and plan are required" },
-      { status: 422 }
+      { error: "appName and bundleId are required" },
+      { status: 400 }
     )
   }
 
@@ -48,15 +47,20 @@ export async function POST(req: Request) {
     )
   }
 
-  const app = await prisma.app.create({
-    data: {
-      name: appName,
-      bundleId,
-      clerkUserId: userId,
-      revenueTier,
-      plan,
-    },
-  })
+  // Use the createApp server action which now generates test + live keys
+  const formData = new FormData()
+  formData.set("name", appName)
+  formData.set("bundleId", bundleId)
 
-  return NextResponse.json({ appId: app.id })
+  try {
+    const result = await createApp(formData)
+    return NextResponse.json({
+      appId: result.appId,
+      testApiKey: result.testApiKey,
+      liveApiKey: result.liveApiKey,
+    })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to create app"
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
 }

@@ -7,11 +7,15 @@ export default function ApiReferencePage() {
         API Reference
       </h1>
       <p className="mt-4 text-lg text-gray-400">
-        The EuroPay REST API. All endpoints are under{" "}
+        The EuroPay REST API. The recommended V2 API uses 7 endpoints under{" "}
+        <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
+          /api/v2
+        </code>
+        . The legacy V1 API (22 endpoints under{" "}
         <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">
           /api/v1
-        </code>{" "}
-        and require a Bearer token unless noted otherwise.
+        </code>
+        ) is still fully supported.
       </p>
 
       {/* SDK callout */}
@@ -23,6 +27,438 @@ export default function ApiReferencePage() {
           backend integration or non-iOS client.
         </p>
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/*  V2 API                                                    */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="mt-12">
+        <div className="flex items-center gap-3">
+          <h2 className="text-2xl font-semibold text-white">V2 API</h2>
+          <span className="rounded-full bg-teal-500/10 px-2.5 py-0.5 text-xs font-medium text-teal-400 border border-teal-500/20">Recommended</span>
+        </div>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          V2 reduces 22 endpoints to 7, requires fewer SDK calls, and sends clean EuroPay-native webhook payloads instead of raw Stripe events.
+        </p>
+      </section>
+
+      {/* V2 Response Format */}
+      <section className="mt-10">
+        <h3 className="text-xl font-semibold text-white">Response Format</h3>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          All V2 responses use a consistent envelope with a{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">requestId</code>{" "}
+          for tracing:
+        </p>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div>
+            <p className="text-sm font-medium text-green-400 mb-2">Success</p>
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+              <pre className="text-sm font-mono text-gray-300">{`{
+  "data": { ... },
+  "meta": {
+    "requestId": "req_abc123...",
+    "timestamp": "2026-03-08T12:00:00Z"
+  }
+}`}</pre>
+            </div>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-red-400 mb-2">Error</p>
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+              <pre className="text-sm font-mono text-gray-300">{`{
+  "error": {
+    "code": "invalid_api_key",
+    "message": "API key not found..."
+  },
+  "meta": {
+    "requestId": "req_abc123...",
+    "timestamp": "2026-03-08T12:00:00Z"
+  }
+}`}</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* V2 API Keys */}
+      <section className="mt-10">
+        <h3 className="text-xl font-semibold text-white">API Keys</h3>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          V2 uses typed API keys that enforce environment separation:
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/10 text-left">
+                <th className="pb-3 pr-4 font-medium text-gray-400">Key Prefix</th>
+                <th className="pb-3 pr-4 font-medium text-gray-400">Environment</th>
+                <th className="pb-3 font-medium text-gray-400">Usage</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              <tr>
+                <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">europay_test_...</td>
+                <td className="py-2.5 pr-4 text-gray-400">Sandbox only</td>
+                <td className="py-2.5 text-gray-400">Development and testing</td>
+              </tr>
+              <tr>
+                <td className="py-2.5 pr-4 font-mono text-xs text-teal-300">europay_live_...</td>
+                <td className="py-2.5 pr-4 text-gray-400">Live only</td>
+                <td className="py-2.5 text-gray-400">Production — real payments</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          Using a test key against a live app (or vice versa) returns a{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">mode_mismatch</code>{" "}
+          error with a clear message.
+        </p>
+      </section>
+
+      {/* V2 Endpoints Table */}
+      <section className="mt-10">
+        <h3 className="text-xl font-semibold text-white">V2 Endpoints</h3>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/10 text-left">
+                <th className="pb-3 pr-4 font-medium text-gray-400">Method</th>
+                <th className="pb-3 pr-4 font-medium text-gray-400">Endpoint</th>
+                <th className="pb-3 pr-4 font-medium text-gray-400">Purpose</th>
+                <th className="pb-3 font-medium text-gray-400">Auth</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              <tr>
+                <td className="py-3 pr-4"><span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-medium text-blue-400">GET</span></td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">/v2/init</td>
+                <td className="py-3 pr-4 text-gray-400">App initialization — products, entitlements, experiments, campaigns in one call</td>
+                <td className="py-3 text-gray-400">API Key</td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4"><span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">POST</span></td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">/v2/checkout</td>
+                <td className="py-3 pr-4 text-gray-400">Create checkout session (supports preload)</td>
+                <td className="py-3 text-gray-400">API Key</td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4"><span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-medium text-blue-400">GET</span></td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">/v2/entitlements</td>
+                <td className="py-3 pr-4 text-gray-400">Check user access (supports awaitPending)</td>
+                <td className="py-3 text-gray-400">API Key</td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4"><span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">POST</span></td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">/v2/subscriptions/manage</td>
+                <td className="py-3 pr-4 text-gray-400">Cancel, pause, resume, or open portal — handles retention automatically</td>
+                <td className="py-3 text-gray-400">API Key</td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4"><span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">POST</span></td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">/v2/events</td>
+                <td className="py-3 pr-4 text-gray-400">Unified event tracking for campaigns, experiments, telemetry</td>
+                <td className="py-3 text-gray-400">API Key</td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4"><span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">POST</span></td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">/v2/webhooks/stripe</td>
+                <td className="py-3 pr-4 text-gray-400">Stripe webhook handler</td>
+                <td className="py-3 text-gray-400">Stripe Signature</td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4"><span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400">POST</span></td>
+                <td className="py-3 pr-4 font-mono text-xs text-teal-300">/v2/server/gdpr</td>
+                <td className="py-3 pr-4 text-gray-400">Server-to-server GDPR export &amp; delete</td>
+                <td className="py-3 text-gray-400">API Key</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* V2: GET /v2/init */}
+      <section className="mt-10">
+        <h3 className="text-xl font-semibold text-white">
+          <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-medium text-blue-400 mr-2">GET</span>
+          /v2/init
+        </h3>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Single app-launch call. Returns products, entitlements, experiments, and campaigns in one request. Creates the customer record on first call.
+        </p>
+        <h4 className="mt-4 text-sm font-medium text-gray-400">Parameters</h4>
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-white/5">
+              <tr>
+                <td className="py-2 pr-4 font-mono text-xs text-teal-300">userId</td>
+                <td className="py-2 pr-4 text-gray-400">string, required</td>
+                <td className="py-2 text-gray-400">Your app&apos;s user identifier</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-4 font-mono text-xs text-teal-300">fields</td>
+                <td className="py-2 pr-4 text-gray-400">string, optional</td>
+                <td className="py-2 text-gray-400">Comma-separated: products,entitlements,experiments,campaigns. Default: all</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm font-mono text-gray-300">{`curl -H "Authorization: Bearer europay_test_..." \\
+  "https://europay.dev/api/v2/init?userId=user_123"`}</pre>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm font-mono text-gray-300">{`{
+  "data": {
+    "products": [{
+      "id": "prod_123", "name": "Pro Monthly", "type": "SUBSCRIPTION",
+      "amountCents": 999, "currency": "eur", "interval": "month", "trialDays": 7
+    }],
+    "entitlements": [{
+      "productId": "prod_123", "status": "active",
+      "currentPeriodEnd": "2026-04-08T12:00:00Z", "cancelAtPeriodEnd": false
+    }],
+    "experiments": [{
+      "id": "exp_1", "name": "Pricing Test", "placement": "paywall",
+      "variant": { "id": "var_1", "name": "Variant A", "config": { "price": 999 } }
+    }],
+    "campaigns": [{
+      "id": "camp_1", "title": "Switch & Save", "subtitle": "Same features, lower price",
+      "ctaText": "Switch & Save", "productMappings": [...]
+    }]
+  },
+  "meta": { "requestId": "req_abc123...", "timestamp": "..." }
+}`}</pre>
+        </div>
+      </section>
+
+      {/* V2: POST /v2/checkout */}
+      <section className="mt-10">
+        <h3 className="text-xl font-semibold text-white">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400 mr-2">POST</span>
+          /v2/checkout
+        </h3>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Create a Stripe Checkout session. Supports preloading, idempotency checks, and promotions.
+        </p>
+        <h4 className="mt-4 text-sm font-medium text-gray-400">Body</h4>
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-white/5">
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">productId</td><td className="py-2 pr-4 text-gray-400">string, required</td><td className="py-2 text-gray-400">Product to purchase</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">userId</td><td className="py-2 pr-4 text-gray-400">string, required</td><td className="py-2 text-gray-400">Your user identifier</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">locale</td><td className="py-2 pr-4 text-gray-400">string, optional</td><td className="py-2 text-gray-400">Checkout language (default: &quot;en&quot;)</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">promotionId</td><td className="py-2 pr-4 text-gray-400">string, optional</td><td className="py-2 text-gray-400">Apply a specific promotion</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">promoCode</td><td className="py-2 pr-4 text-gray-400">string, optional</td><td className="py-2 text-gray-400">Apply a promo code</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">preload</td><td className="py-2 pr-4 text-gray-400">boolean, optional</td><td className="py-2 text-gray-400">Cache session for faster display (default: false)</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">preloadedSessionId</td><td className="py-2 pr-4 text-gray-400">string, optional</td><td className="py-2 text-gray-400">Reuse a previously preloaded session</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">idempotencyCheck</td><td className="py-2 pr-4 text-gray-400">boolean, optional</td><td className="py-2 text-gray-400">Prevent duplicate sessions (default: true)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm font-mono text-gray-300">{`curl -X POST -H "Authorization: Bearer europay_test_..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"productId":"prod_123","userId":"user_123"}' \\
+  https://europay.dev/api/v2/checkout`}</pre>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm font-mono text-gray-300">{`{
+  "data": {
+    "sessionId": "cs_xxx",
+    "sessionUrl": "https://checkout.stripe.com/...",
+    "expiresAt": "2026-03-08T18:30:00Z",
+    "productId": "prod_123",
+    "amountCents": 999,
+    "currency": "eur"
+  },
+  "meta": { "requestId": "req_abc123...", "timestamp": "..." }
+}`}</pre>
+        </div>
+      </section>
+
+      {/* V2: GET /v2/entitlements */}
+      <section className="mt-10">
+        <h3 className="text-xl font-semibold text-white">
+          <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-medium text-blue-400 mr-2">GET</span>
+          /v2/entitlements
+        </h3>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Check what a user has access to. Use <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">awaitPending=true</code> after checkout to wait for webhook processing (polls up to 5 seconds).
+        </p>
+        <h4 className="mt-4 text-sm font-medium text-gray-400">Parameters</h4>
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-white/5">
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">userId</td><td className="py-2 pr-4 text-gray-400">string, required</td><td className="py-2 text-gray-400">Your user identifier</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">awaitPending</td><td className="py-2 pr-4 text-gray-400">boolean, optional</td><td className="py-2 text-gray-400">Wait for pending entitlements (default: false)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm font-mono text-gray-300">{`curl -H "Authorization: Bearer europay_test_..." \\
+  "https://europay.dev/api/v2/entitlements?userId=user_123&awaitPending=true"`}</pre>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm font-mono text-gray-300">{`{
+  "data": {
+    "entitlements": [{
+      "productId": "prod_123",
+      "status": "active",
+      "source": "web_checkout",
+      "currentPeriodEnd": "2026-04-08T12:00:00Z",
+      "cancelAtPeriodEnd": false
+    }]
+  },
+  "meta": { "requestId": "req_abc123...", "timestamp": "..." }
+}`}</pre>
+        </div>
+      </section>
+
+      {/* V2: POST /v2/subscriptions/manage */}
+      <section className="mt-10">
+        <h3 className="text-xl font-semibold text-white">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400 mr-2">POST</span>
+          /v2/subscriptions/manage
+        </h3>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Unified subscription management. Automatically handles retention flows when enabled.
+        </p>
+        <h4 className="mt-4 text-sm font-medium text-gray-400">Body</h4>
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-white/5">
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">userId</td><td className="py-2 pr-4 text-gray-400">string, required</td><td className="py-2 text-gray-400">Your user identifier</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">productId</td><td className="py-2 pr-4 text-gray-400">string, optional</td><td className="py-2 text-gray-400">Identify subscription by product</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">subscriptionId</td><td className="py-2 pr-4 text-gray-400">string, optional</td><td className="py-2 text-gray-400">Or by Stripe subscription ID</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">action</td><td className="py-2 pr-4 text-gray-400">string, required</td><td className="py-2 text-gray-400">&quot;cancel&quot; | &quot;pause&quot; | &quot;resume&quot; | &quot;portal&quot;</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">pauseDays</td><td className="py-2 pr-4 text-gray-400">number, optional</td><td className="py-2 text-gray-400">1–90 days for pause action</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm font-mono text-gray-300">{`curl -X POST -H "Authorization: Bearer europay_test_..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"userId":"user_123","productId":"prod_123","action":"cancel"}' \\
+  https://europay.dev/api/v2/subscriptions/manage`}</pre>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm font-mono text-gray-300">{`// If retention is enabled:
+{ "data": { "action": "retention", "url": "https://europay.dev/cancel/eyJhbG..." } }
+
+// If retention is disabled:
+{ "data": { "action": "cancelled", "accessUntil": "2026-04-08T12:00:00Z" } }`}</pre>
+        </div>
+      </section>
+
+      {/* V2: POST /v2/events */}
+      <section className="mt-10">
+        <h3 className="text-xl font-semibold text-white">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400 mr-2">POST</span>
+          /v2/events
+        </h3>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Unified event tracking. Batch up to 50 events per request. Events are routed by type prefix.
+        </p>
+        <h4 className="mt-4 text-sm font-medium text-gray-400">Event Type Prefixes</h4>
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-white/5">
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">campaign.*</td><td className="py-2 text-gray-400">Switch &amp; Save funnel events (prompted, clicked, dismissed, purchased, apple_cancelled)</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">experiment.*</td><td className="py-2 text-gray-400">A/B test events (view, purchase, trial_start, trial_convert, cancel)</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">telemetry.*</td><td className="py-2 text-gray-400">SDK telemetry (region_check, purchase_started, checkout_opened, error)</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">custom.*</td><td className="py-2 text-gray-400">Developer-defined events (stored with full type string and metadata)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm font-mono text-gray-300">{`curl -X POST -H "Authorization: Bearer europay_test_..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"events":[{"type":"telemetry.region_check","region":"EU","locale":"de"}]}' \\
+  https://europay.dev/api/v2/events`}</pre>
+        </div>
+      </section>
+
+      {/* V2: POST /v2/server/gdpr */}
+      <section className="mt-10">
+        <h3 className="text-xl font-semibold text-white">
+          <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-mono font-medium text-green-400 mr-2">POST</span>
+          /v2/server/gdpr
+        </h3>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Server-to-server GDPR data export or deletion. Financial records are retained for tax compliance.
+        </p>
+        <h4 className="mt-4 text-sm font-medium text-gray-400">Body</h4>
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-white/5">
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">action</td><td className="py-2 pr-4 text-gray-400">string, required</td><td className="py-2 text-gray-400">&quot;export&quot; or &quot;delete&quot;</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-teal-300">userId</td><td className="py-2 pr-4 text-gray-400">string, required</td><td className="py-2 text-gray-400">End customer&apos;s userId</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm font-mono text-gray-300">{`curl -X POST -H "Authorization: Bearer europay_live_..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"action":"export","userId":"user_123"}' \\
+  https://europay.dev/api/v2/server/gdpr`}</pre>
+        </div>
+      </section>
+
+      {/* V2 Webhooks Format */}
+      <section className="mt-10">
+        <h3 className="text-xl font-semibold text-white">Webhooks V2 Format</h3>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          When your app&apos;s <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">webhookVersion</code> is set to &quot;v2&quot;, developer webhook notifications use clean EuroPay event types instead of raw Stripe event types:
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/10 text-left">
+                <th className="pb-3 pr-4 font-medium text-gray-400">Stripe Event</th>
+                <th className="pb-3 font-medium text-gray-400">EuroPay V2 Type</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              <tr><td className="py-2 pr-4 font-mono text-xs text-gray-500">checkout.session.completed</td><td className="py-2 font-mono text-xs text-teal-300">purchase.completed</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-gray-500">customer.subscription.updated</td><td className="py-2 font-mono text-xs text-teal-300">subscription.updated</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-gray-500">invoice.payment_succeeded</td><td className="py-2 font-mono text-xs text-teal-300">subscription.renewed</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-gray-500">customer.subscription.deleted</td><td className="py-2 font-mono text-xs text-teal-300">subscription.cancelled</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-gray-500">invoice.payment_failed</td><td className="py-2 font-mono text-xs text-teal-300">payment.failed</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-gray-500">charge.refunded</td><td className="py-2 font-mono text-xs text-teal-300">purchase.refunded</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-gray-500">charge.dispute.created</td><td className="py-2 font-mono text-xs text-teal-300">dispute.created</td></tr>
+              <tr><td className="py-2 pr-4 font-mono text-xs text-gray-500">checkout.session.expired</td><td className="py-2 font-mono text-xs text-teal-300">checkout.expired</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm font-mono text-gray-300">{`{
+  "id": "evt_abc123",
+  "version": "2026-03-08",
+  "type": "purchase.completed",
+  "data": {
+    "transaction": { "id": "tx_1", "amount": 999, "currency": "eur", "status": "succeeded" },
+    "product": { "id": "prod_1", "name": "Pro Monthly" },
+    "customer": { "userId": "user_123", "email": "user@example.com" },
+    "entitlement": { "status": "active", "expiresAt": "2026-04-08T12:00:00Z" },
+    "withdrawalWaiver": { "accepted": true, "locale": "de" }
+  },
+  "timestamp": "2026-03-08T12:00:00Z"
+}`}</pre>
+        </div>
+      </section>
+
+      {/* V1 Legacy divider */}
+      <section className="mt-16 mb-8">
+        <div className="flex items-center gap-4">
+          <div className="h-px flex-1 bg-white/10" />
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-semibold text-white">V1 API</h2>
+            <span className="rounded-full bg-gray-500/10 px-2.5 py-0.5 text-xs font-medium text-gray-400 border border-gray-500/20">Legacy — still supported</span>
+          </div>
+          <div className="h-px flex-1 bg-white/10" />
+        </div>
+      </section>
 
       {/* Authentication */}
       <section className="mt-12">

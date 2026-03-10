@@ -28,6 +28,7 @@ export default async function WebhooksPage({
       mode: true,
       webhookUrl: true,
       webhookSecret: true,
+      webhookVersion: true,
     },
   })
   if (!app || app.clerkUserId !== userId) notFound()
@@ -69,6 +70,7 @@ export default async function WebhooksPage({
         appId={appId}
         webhookUrl={app.webhookUrl}
         hasSecret={!!app.webhookSecret}
+        webhookVersion={app.webhookVersion as "v1" | "v2"}
       />
 
       <WebhookTester appId={appId} hasUrl={!!app.webhookUrl} />

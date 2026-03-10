@@ -43,6 +43,8 @@ model App {
   // Webhook settings
   webhookUrl       String?
   webhookSecret    String?
+  returnUrlScheme  String?   // e.g. "europay-com.acme.photoeditor"
+  webhookVersion   String  @default("v1")  // "v1" or "v2"
 
   // Apple App Store Connect credentials (for DMA reporting)
   appleKeyId       String?
@@ -96,6 +98,7 @@ model ApiKey {
   keyPrefix   String   // First 8 chars (for display)
   keyHash     String   @unique // SHA-256 of full key
   name        String   // e.g. "Production", "Development"
+  keyType     String   @default("test")  // "test" or "live"
   isActive    Boolean  @default(true)
 
   @@index([appId])
@@ -131,6 +134,7 @@ model Product {
   trialDays        Int?        @default(0)
 
   isActive         Boolean     @default(true)
+  syncedToStripe   Boolean     @default(false)
 
   entitlements     Entitlement[]
   transactions     Transaction[]
@@ -269,6 +273,23 @@ model WebhookEvent {
   payload     Json     // Full Stripe event object
   status      WebhookStatus @default(PENDING)
   error       String?
+}
+
+// V2 API request tracking
+model ApiRequest {
+  id          String   @id @default(cuid())
+  requestId   String   @unique  // "req_" + cuid
+  appId       String
+  endpoint    String   // "/v2/init", "/v2/checkout", etc.
+  method      String   // "GET", "POST"
+  statusCode  Int?
+  durationMs  Int?
+  errorCode   String?
+  userId      String?  // end customer userId if available
+  createdAt   DateTime @default(now())
+
+  @@index([appId, createdAt])
+  @@index([requestId])
 }
 
 enum PaymentProvider {

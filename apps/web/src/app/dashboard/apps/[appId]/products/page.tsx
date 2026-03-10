@@ -14,8 +14,9 @@ import {
 } from "@/components/ui/table"
 import { CreateProductDialog } from "@/components/dashboard/CreateProductDialog"
 import { ProductToggle } from "@/components/dashboard/ProductToggle"
+import { SyncProductsButton } from "@/components/dashboard/SyncProductsButton"
 import { SandboxBanner } from "@/components/dashboard/SandboxBanner"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, AlertTriangle } from "lucide-react"
 
 function formatPrice(cents: number, currency: string) {
   return new Intl.NumberFormat("de-DE", {
@@ -43,6 +44,9 @@ export default async function ProductsPage({
     include: { _count: { select: { entitlements: true } } },
   })
 
+  const hasStripe = !!app.stripeConnectId
+  const unsyncedCount = products.filter((p) => !p.syncedToStripe).length
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -56,10 +60,27 @@ export default async function ProductsPage({
           <h1 className="text-2xl font-bold">Products</h1>
           <p className="text-muted-foreground">{app.name}</p>
         </div>
-        <CreateProductDialog appId={appId} />
+        <CreateProductDialog appId={appId} hasStripe={hasStripe} />
       </div>
 
       {app.mode === "sandbox" && <SandboxBanner />}
+
+      {unsyncedCount > 0 && (
+        <div className="flex items-center gap-3 rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-amber-500">
+              {unsyncedCount} product{unsyncedCount > 1 ? "s" : ""} pending Stripe sync
+            </p>
+            <p className="text-xs text-amber-500/70">
+              {hasStripe
+                ? "These products need to be synced to your Stripe account."
+                : "Connect Stripe to sync these products and start accepting payments."}
+            </p>
+          </div>
+          {hasStripe && <SyncProductsButton appId={appId} />}
+        </div>
+      )}
 
       {products.length === 0 ? (
         <Card>
@@ -92,7 +113,9 @@ export default async function ProductsPage({
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      {product.isActive ? (
+                      {!product.syncedToStripe ? (
+                        <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20">Pending sync</Badge>
+                      ) : product.isActive ? (
                         <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20">Active</Badge>
                       ) : (
                         <Badge variant="secondary">Inactive</Badge>
@@ -154,7 +177,11 @@ export default async function ProductsPage({
                         )}
                       </TableCell>
                       <TableCell>
-                        <code className="text-xs font-mono">{product.stripePriceId}</code>
+                        {product.syncedToStripe ? (
+                          <code className="text-xs font-mono">{product.stripePriceId}</code>
+                        ) : (
+                          <span className="text-xs text-amber-500">Pending sync</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {product.appStoreProductId ? (
@@ -168,7 +195,9 @@ export default async function ProductsPage({
                       </TableCell>
                       <TableCell>{product._count.entitlements}</TableCell>
                       <TableCell>
-                        {product.isActive ? (
+                        {!product.syncedToStripe ? (
+                          <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20">Pending sync</Badge>
+                        ) : product.isActive ? (
                           <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20">Active</Badge>
                         ) : (
                           <Badge variant="secondary">Inactive</Badge>

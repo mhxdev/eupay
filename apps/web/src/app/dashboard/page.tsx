@@ -28,16 +28,38 @@ export default async function DashboardPage() {
   // Onboarding checklist data
   const firstApp = await prisma.app.findFirst({
     where: { clerkUserId: userId },
-    select: { id: true, webhookUrl: true, dmaEntitlementConfirmed: true },
+    select: {
+      id: true,
+      stripeConnectId: true,
+      dmaEntitlementConfirmed: true,
+      mode: true,
+      apiKeys: {
+        where: { isActive: true },
+        select: { id: true, lastUsedAt: true },
+      },
+    },
   })
-  const productCount = firstApp
-    ? await prisma.product.count({ where: { appId: firstApp.id } })
-    : 0
+  const [productCount, sandboxTxCount] = await Promise.all([
+    firstApp
+      ? prisma.product.count({ where: { appId: firstApp.id } })
+      : Promise.resolve(0),
+    firstApp
+      ? prisma.transaction.count({
+          where: { appId: firstApp.id, status: "SUCCEEDED" },
+        })
+      : Promise.resolve(0),
+  ])
+  const hasSdkUsage = firstApp?.apiKeys.some((k) => !!k.lastUsedAt) ?? false
   const checklistData: ChecklistData = {
     hasApp: !!firstApp,
+    appId: firstApp?.id ?? null,
+    hasStripe: !!firstApp?.stripeConnectId,
     hasProduct: productCount > 0,
-    hasWebhook: !!firstApp?.webhookUrl,
+    hasSdkUsage,
+    hasTestTransaction: sandboxTxCount > 0,
     dmaConfirmed: !!firstApp?.dmaEntitlementConfirmed,
+    isLive: firstApp?.mode === "live",
+    activeKeyIds: firstApp?.apiKeys.map((k) => k.id) ?? [],
   }
 
   // Metrics queries
@@ -45,17 +67,14 @@ export default async function DashboardPage() {
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
 
+  // Batch 1: subscriber & revenue metrics (5 queries)
   const [
     activeSubscribers,
     totalActiveLastMonth,
     cancelledThisMonth,
     thisMonthRevenue,
     lastMonthRevenue,
-    newSubscribersThisMonth,
-    totalRevenue,
-    distinctPayingCustomers,
   ] = await Promise.all([
-    // Active subscription entitlements now
     prisma.entitlement.count({
       where: {
         product: { appId: { in: appIds } },
@@ -63,7 +82,6 @@ export default async function DashboardPage() {
         stripeSubscriptionId: { not: null },
       },
     }),
-    // Active at start of this month (approximate: created before this month, not cancelled before)
     prisma.entitlement.count({
       where: {
         product: { appId: { in: appIds } },
@@ -75,7 +93,6 @@ export default async function DashboardPage() {
         ],
       },
     }),
-    // Cancelled this month
     prisma.entitlement.count({
       where: {
         product: { appId: { in: appIds } },
@@ -83,7 +100,6 @@ export default async function DashboardPage() {
         updatedAt: { gte: startOfMonth },
       },
     }),
-    // Revenue this month
     prisma.transaction.aggregate({
       where: {
         appId: { in: appIds },
@@ -92,7 +108,6 @@ export default async function DashboardPage() {
       },
       _sum: { amountSubtotal: true },
     }),
-    // Revenue last month
     prisma.transaction.aggregate({
       where: {
         appId: { in: appIds },
@@ -101,14 +116,21 @@ export default async function DashboardPage() {
       },
       _sum: { amountSubtotal: true },
     }),
-    // New subscribers this month
+  ])
+
+  // Batch 2: LTV, new subs, MRR entitlements (4 queries)
+  const [
+    newSubscribersThisMonth,
+    totalRevenue,
+    distinctPayingCustomers,
+    activeSubProducts,
+  ] = await Promise.all([
     prisma.customer.count({
       where: {
         appId: { in: appIds },
         createdAt: { gte: startOfMonth },
       },
     }),
-    // Total succeeded revenue (for LTV)
     prisma.transaction.aggregate({
       where: {
         appId: { in: appIds },
@@ -116,7 +138,6 @@ export default async function DashboardPage() {
       },
       _sum: { amountSubtotal: true },
     }),
-    // Distinct paying customers (for LTV)
     prisma.transaction.groupBy({
       by: ["customerId"],
       where: {
@@ -124,17 +145,15 @@ export default async function DashboardPage() {
         status: "SUCCEEDED",
       },
     }),
+    prisma.entitlement.findMany({
+      where: {
+        product: { appId: { in: appIds } },
+        status: "ACTIVE",
+        stripeSubscriptionId: { not: null },
+      },
+      include: { product: { select: { amountCents: true, interval: true } } },
+    }),
   ])
-
-  // MRR: sum of active subscription product amounts (excluding VAT)
-  const activeSubProducts = await prisma.entitlement.findMany({
-    where: {
-      product: { appId: { in: appIds } },
-      status: "ACTIVE",
-      stripeSubscriptionId: { not: null },
-    },
-    include: { product: { select: { amountCents: true, interval: true } } },
-  })
 
   const mrr = activeSubProducts.reduce((sum, e) => {
     const amount = e.product.amountCents
@@ -158,62 +177,85 @@ export default async function DashboardPage() {
     ? Math.round(totalRevenueAmount / payingCustomerCount)
     : 0
 
-  // Revenue chart: last 12 months
-  const monthlyData: MonthlyRevenue[] = []
-  for (let i = 11; i >= 0; i--) {
+  // Revenue chart: last 12 months (batched in groups of 6)
+  const revenueMonths = Array.from({ length: 12 }, (_, idx) => {
+    const i = 11 - idx
     const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
     const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 1)
-    const label = monthStart.toLocaleDateString("en-US", {
-      month: "short",
-      year: "2-digit",
-    })
+    const label = monthStart.toLocaleDateString("en-US", { month: "short", year: "2-digit" })
+    return { monthStart, monthEnd, label }
+  })
 
-    const agg = await prisma.transaction.aggregate({
-      where: {
-        appId: { in: appIds },
-        status: "SUCCEEDED",
-        createdAt: { gte: monthStart, lt: monthEnd },
-      },
-      _sum: { amountSubtotal: true },
-    })
+  const revBatch1 = await Promise.all(
+    revenueMonths.slice(0, 6).map((m) =>
+      prisma.transaction.aggregate({
+        where: { appId: { in: appIds }, status: "SUCCEEDED", createdAt: { gte: m.monthStart, lt: m.monthEnd } },
+        _sum: { amountSubtotal: true },
+      })
+    )
+  )
+  const revBatch2 = await Promise.all(
+    revenueMonths.slice(6).map((m) =>
+      prisma.transaction.aggregate({
+        where: { appId: { in: appIds }, status: "SUCCEEDED", createdAt: { gte: m.monthStart, lt: m.monthEnd } },
+        _sum: { amountSubtotal: true },
+      })
+    )
+  )
+  const monthlyData: MonthlyRevenue[] = revenueMonths.map((m, idx) => ({
+    month: m.label,
+    revenue: (idx < 6 ? revBatch1[idx] : revBatch2[idx - 6])._sum.amountSubtotal ?? 0,
+  }))
 
-    monthlyData.push({
-      month: label,
-      revenue: agg._sum.amountSubtotal ?? 0,
-    })
-  }
-
-  // MRR trend: last 12 months
-  const mrrData: MonthlyMrr[] = []
-  for (let i = 11; i >= 0; i--) {
+  // MRR trend: last 12 months (batched in groups of 6)
+  const mrrMonths = Array.from({ length: 12 }, (_, idx) => {
+    const i = 11 - idx
     const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 1)
     const label = new Date(now.getFullYear(), now.getMonth() - i, 1)
       .toLocaleDateString("en-US", { month: "short", year: "2-digit" })
+    return { monthEnd, label }
+  })
 
-    // Entitlements active at month-end: created before month-end, still active or cancelled/expired after month-end
-    const activeAtMonthEnd = await prisma.entitlement.findMany({
-      where: {
-        product: { appId: { in: appIds } },
-        stripeSubscriptionId: { not: null },
-        createdAt: { lt: monthEnd },
-        OR: [
-          { status: "ACTIVE" },
-          {
-            status: { in: ["CANCELLED", "EXPIRED"] },
-            updatedAt: { gte: monthEnd },
-          },
-        ],
-      },
-      include: { product: { select: { amountCents: true, interval: true } } },
-    })
-
-    const monthMrr = activeAtMonthEnd.reduce((sum, e) => {
+  const mrrBatch1 = await Promise.all(
+    mrrMonths.slice(0, 6).map((m) =>
+      prisma.entitlement.findMany({
+        where: {
+          product: { appId: { in: appIds } },
+          stripeSubscriptionId: { not: null },
+          createdAt: { lt: m.monthEnd },
+          OR: [
+            { status: "ACTIVE" },
+            { status: { in: ["CANCELLED", "EXPIRED"] }, updatedAt: { gte: m.monthEnd } },
+          ],
+        },
+        include: { product: { select: { amountCents: true, interval: true } } },
+      })
+    )
+  )
+  const mrrBatch2 = await Promise.all(
+    mrrMonths.slice(6).map((m) =>
+      prisma.entitlement.findMany({
+        where: {
+          product: { appId: { in: appIds } },
+          stripeSubscriptionId: { not: null },
+          createdAt: { lt: m.monthEnd },
+          OR: [
+            { status: "ACTIVE" },
+            { status: { in: ["CANCELLED", "EXPIRED"] }, updatedAt: { gte: m.monthEnd } },
+          ],
+        },
+        include: { product: { select: { amountCents: true, interval: true } } },
+      })
+    )
+  )
+  const mrrData: MonthlyMrr[] = mrrMonths.map((m, idx) => {
+    const entitlements = idx < 6 ? mrrBatch1[idx] : mrrBatch2[idx - 6]
+    const monthMrr = entitlements.reduce((sum, e) => {
       const amount = e.product.amountCents
       return sum + (e.product.interval === "year" ? Math.round(amount / 12) : amount)
     }, 0)
-
-    mrrData.push({ month: label, mrr: monthMrr })
-  }
+    return { month: m.label, mrr: monthMrr }
+  })
 
   const metrics = [
     {

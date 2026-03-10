@@ -96,6 +96,9 @@ export async function POST(req: NextRequest) {
   if (!product) {
     return NextResponse.json({ error: 'Product not found' }, { status: 404 })
   }
+  if (!product.syncedToStripe) {
+    return NextResponse.json({ error: { code: 'product_not_synced', message: "This product hasn't been synced to Stripe yet. Connect your Stripe account to start accepting payments." } }, { status: 422 })
+  }
 
   // Idempotency: check if user already has an active entitlement for this product
   const existingCustomer = await prisma.customer.findUnique({

@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
+import Stripe from "stripe"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 import { logAuditEvent } from "@/lib/audit"
@@ -53,6 +54,48 @@ export async function GET(req: NextRequest) {
     })
 
     await trackMilestone({ clerkUserId: userId, appId, milestone: "stripe_connected", details: { stripeAccountId: stripeUserId } })
+
+    // Auto-sync any products created before Stripe was connected
+    const unsyncedProducts = await prisma.product.findMany({
+      where: { appId, syncedToStripe: false },
+    })
+    const connectOpts = { stripeAccount: stripeUserId }
+    for (const product of unsyncedProducts) {
+      try {
+        const stripeProduct = await stripe.products.create({
+          name: product.name,
+          description: product.description || undefined,
+          tax_code: "txcd_10103001",
+          metadata: { appId, eupay: "true" },
+        }, connectOpts)
+
+        const priceParams: Stripe.PriceCreateParams = {
+          product: stripeProduct.id,
+          unit_amount: product.amountCents,
+          currency: product.currency,
+          metadata: { appId },
+        }
+        if (product.productType === "SUBSCRIPTION" && product.interval) {
+          priceParams.recurring = {
+            interval: product.interval as Stripe.PriceCreateParams.Recurring["interval"],
+            interval_count: product.intervalCount || 1,
+          }
+        }
+        const stripePrice = await stripe.prices.create(priceParams, connectOpts)
+
+        await prisma.product.update({
+          where: { id: product.id },
+          data: {
+            stripeProductId: stripeProduct.id,
+            stripePriceId: stripePrice.id,
+            syncedToStripe: true,
+          },
+        })
+      } catch (err) {
+        console.error(`[Stripe] Failed to sync product ${product.id}:`, err)
+        // Don't block the OAuth callback — log and continue
+      }
+    }
 
     return NextResponse.redirect(
       new URL(`/dashboard/apps/${appId}?connected=true`, req.url)

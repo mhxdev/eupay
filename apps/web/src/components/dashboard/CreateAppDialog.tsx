@@ -17,8 +17,9 @@ import { createApp } from "@/lib/actions"
 
 export function CreateAppDialog() {
   const [open, setOpen] = useState(false)
-  const [apiKey, setApiKey] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
+  const [testApiKey, setTestApiKey] = useState<string | null>(null)
+  const [liveApiKey, setLiveApiKey] = useState<string | null>(null)
+  const [copiedKey, setCopiedKey] = useState<"test" | "live" | null>(null)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
@@ -27,26 +28,26 @@ export function CreateAppDialog() {
     startTransition(async () => {
       try {
         const result = await createApp(formData)
-        setApiKey(result.apiKey)
+        setTestApiKey(result.testApiKey)
+        setLiveApiKey(result.liveApiKey)
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to create app")
       }
     })
   }
 
-  function handleCopy() {
-    if (apiKey) {
-      navigator.clipboard.writeText(apiKey)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
+  function handleCopy(key: string, type: "test" | "live") {
+    navigator.clipboard.writeText(key)
+    setCopiedKey(type)
+    setTimeout(() => setCopiedKey(null), 2000)
   }
 
   function handleClose() {
     setOpen(false)
-    setApiKey(null)
+    setTestApiKey(null)
+    setLiveApiKey(null)
     setError(null)
-    setCopied(false)
+    setCopiedKey(null)
   }
 
   return (
@@ -58,29 +59,47 @@ export function CreateAppDialog() {
         </Button>
       </DialogTrigger>
       <DialogContent>
-        {apiKey ? (
+        {testApiKey ? (
           <>
             <DialogHeader>
               <DialogTitle>App Created</DialogTitle>
               <DialogDescription>
-                Copy your API key now. It will not be shown again.
+                Copy your API keys now. They will not be shown again.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <code className="flex-1 rounded bg-muted px-3 py-2 text-sm font-mono break-all">
-                  {apiKey}
-                </code>
-                <Button variant="outline" size="icon" onClick={handleCopy}>
-                  {copied ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
+              <div>
+                <p className="text-sm font-medium mb-1.5">Test Key (development)</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 rounded bg-muted px-3 py-2 text-sm font-mono break-all">
+                    {testApiKey}
+                  </code>
+                  <Button variant="outline" size="icon" onClick={() => handleCopy(testApiKey, "test")}>
+                    {copiedKey === "test" ? (
+                      <Check className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium mb-1.5">Live Key (production)</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 rounded bg-muted px-3 py-2 text-sm font-mono break-all">
+                    {liveApiKey}
+                  </code>
+                  <Button variant="outline" size="icon" onClick={() => handleCopy(liveApiKey!, "live")}>
+                    {copiedKey === "live" ? (
+                      <Check className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
               <p className="text-sm text-muted-foreground">
-                Use this key in your EuroPayKit configuration.
+                Use the test key for development and the live key for production.
               </p>
               <Button onClick={handleClose} className="w-full">
                 Done

@@ -50,7 +50,145 @@ export default function GettingStartedPage() {
         </div>
       </section>
 
-      {/* What this guide covers */}
+      {/* V2 Quick Start */}
+      <section className="mt-10">
+        <div className="flex items-center gap-3">
+          <h2 className="text-2xl font-semibold text-white">
+            V2 Quick Start
+          </h2>
+          <span className="rounded-full bg-teal-500/10 px-2.5 py-0.5 text-xs font-medium text-teal-400 border border-teal-500/20">Recommended</span>
+        </div>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          With EuroPayKit 2.0, the entire integration is 3 steps:
+        </p>
+        <div className="mt-6 space-y-6">
+          {/* Step 1 */}
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">1</div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-white">Configure (AppDelegate or @main App)</p>
+              <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+                <pre className="text-sm leading-relaxed font-mono text-gray-300">{`EuroPayKit.configure("europay_test_abc123")`}</pre>
+              </div>
+            </div>
+          </div>
+          {/* Step 2 */}
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">2</div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-white">Initialize on app launch</p>
+              <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+                <pre className="text-sm leading-relaxed font-mono text-gray-300">{`let session = try await EuroPayKit.shared.initialize(userId: "your_user_id")
+// session.products — your product catalog
+// session.entitlements — what this user has access to
+// session.experiments — A/B test variant assignments`}</pre>
+              </div>
+            </div>
+          </div>
+          {/* Step 3 */}
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">3</div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-white">Purchase</p>
+              <div className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+                <pre className="text-sm leading-relaxed font-mono text-gray-300">{`let result = try await EuroPayKit.shared.purchase(
+  product: session.products.first!,
+  presenting: viewController
+)
+
+// That's it. Entitlements are updated automatically.
+if session.hasAccess(to: "pro_monthly") {
+  showProFeatures()
+}`}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Managing subscriptions */}
+      <section className="mt-10">
+        <h2 className="text-2xl font-semibold text-white">Managing Subscriptions</h2>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          One call handles cancel, pause, resume, and portal. If you&apos;ve enabled retention (Save the Sale) in the dashboard, cancel requests automatically show the retention flow first.
+        </p>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm leading-relaxed font-mono text-gray-300">{`try await EuroPayKit.shared.manageSubscription(
+  productId: "pro_monthly",
+  action: .cancel  // or .pause(days: 30), .resume, .portal
+)`}</pre>
+        </div>
+      </section>
+
+      {/* Checking access */}
+      <section className="mt-10">
+        <h2 className="text-2xl font-semibold text-white">Checking Access</h2>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          Use <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">session.hasAccess(to:)</code> to gate content. The SDK caches entitlements locally and refreshes on app launch via the <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">/v2/init</code> call.
+        </p>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm leading-relaxed font-mono text-gray-300">{`// On app launch (cached)
+if session.hasAccess(to: "pro_monthly") {
+  showProFeatures()
+}
+
+// Force refresh after purchase
+let updated = try await EuroPayKit.shared.refreshEntitlements()
+if updated.hasAccess(to: "pro_monthly") { ... }`}</pre>
+        </div>
+      </section>
+
+      {/* User identity */}
+      <section className="mt-10">
+        <h2 className="text-2xl font-semibold text-white">User Identity</h2>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          A <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">userId</code> is required. Use your app&apos;s existing user ID. For apps without authentication, use Sign in with Apple:
+        </p>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+          <pre className="text-sm leading-relaxed font-mono text-gray-300">{`// For apps without their own auth
+let userId = try await EuroPayKit.signInWithApple()
+let session = try await EuroPayKit.shared.initialize(userId: userId)`}</pre>
+        </div>
+      </section>
+
+      {/* URL Scheme setup */}
+      <section className="mt-10">
+        <h2 className="text-2xl font-semibold text-white">URL Scheme Setup</h2>
+        <p className="mt-3 text-base text-gray-300 leading-relaxed">
+          After checkout in Safari, EuroPay redirects back to your app via a custom URL scheme. Add it to your Xcode project:
+        </p>
+        <div className="mt-4 space-y-3">
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">1</div>
+            <p className="text-base text-gray-300 leading-relaxed">
+              In Xcode, go to your target &rarr; Info &rarr; URL Types
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">2</div>
+            <p className="text-base text-gray-300 leading-relaxed">
+              Add a URL scheme: <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">europay-com.yourcompany.yourapp</code> (prefix <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono text-teal-300">europay-</code> + your bundle ID)
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400 border border-teal-500/20">3</div>
+            <p className="text-base text-gray-300 leading-relaxed">
+              Set the same scheme as <strong className="text-white">Return URL Scheme</strong> in your app settings in the EuroPay dashboard
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* V1 Integration (legacy) */}
+      <section className="mt-16 mb-8">
+        <div className="flex items-center gap-4">
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="text-sm font-medium text-gray-500">V1 Integration (Legacy)</span>
+          <div className="h-px flex-1 bg-white/10" />
+        </div>
+      </section>
+
+      {/* What this guide covers — original v1 content */}
       <section className="mt-10">
         <h2 className="text-2xl font-semibold text-white">
           What this guide covers

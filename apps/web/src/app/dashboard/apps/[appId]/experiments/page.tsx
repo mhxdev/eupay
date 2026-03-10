@@ -19,6 +19,7 @@ import {
   ExperimentDeleteButton,
 } from "@/components/dashboard/ExperimentActions"
 import { ArrowLeft } from "lucide-react"
+import { getCurrencySymbol } from "@/lib/currencies"
 
 export default async function ExperimentsPage({
   params,
@@ -150,7 +151,7 @@ export default async function ExperimentsPage({
                     {(exp.convRate * 100).toFixed(1)}%
                   </TableCell>
                   <TableCell className="text-right text-xs font-mono">
-                    €{(exp.revPerUser / 100).toFixed(2)}
+                    {getCurrencySymbol("eur")}{(exp.revPerUser / 100).toFixed(2)}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">

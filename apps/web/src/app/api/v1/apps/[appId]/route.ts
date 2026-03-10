@@ -7,6 +7,7 @@ import { trackMilestone } from "@/lib/milestones"
 const schema = z.object({
   webhookUrl: z.string().url().optional(),
   webhookSecret: z.string().optional(),
+  webhookVersion: z.enum(["v1", "v2"]).optional(),
   dmaEntitlementConfirmed: z.boolean().optional(),
   appleKeyId: z.string().optional(),
   appleIssuerId: z.string().optional(),

@@ -13,14 +13,17 @@ export function WebhookConfig({
   appId,
   webhookUrl,
   hasSecret,
+  webhookVersion,
 }: {
   appId: string
   webhookUrl: string | null
   hasSecret: boolean
+  webhookVersion: "v1" | "v2"
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [url, setUrl] = useState(webhookUrl ?? "")
+  const [version, setVersion] = useState(webhookVersion)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [newSecret, setNewSecret] = useState<string | null>(null)
@@ -81,6 +84,30 @@ export function WebhookConfig({
     })
   }
 
+  function handleVersionChange(newVersion: "v1" | "v2") {
+    setError(null)
+    setSuccess(null)
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/v1/apps/${appId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ webhookVersion: newVersion }),
+        })
+        if (!res.ok) {
+          const data = await res.json()
+          setError(data.error ?? "Failed to update format")
+          return
+        }
+        setVersion(newVersion)
+        setSuccess(`Webhook format updated to ${newVersion.toUpperCase()}`)
+        router.refresh()
+      } catch {
+        setError("Network error")
+      }
+    })
+  }
+
   function handleCopy() {
     if (newSecret) {
       navigator.clipboard.writeText(newSecret)
@@ -116,6 +143,41 @@ export function WebhookConfig({
               {isPending ? "Saving..." : "Save"}
             </Button>
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Webhook Format</Label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => handleVersionChange("v1")}
+              disabled={isPending || version === "v1"}
+              className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                version === "v1"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border text-muted-foreground hover:border-primary/50"
+              }`}
+            >
+              V1 (Legacy)
+            </button>
+            <button
+              type="button"
+              onClick={() => handleVersionChange("v2")}
+              disabled={isPending || version === "v2"}
+              className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                version === "v2"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border text-muted-foreground hover:border-primary/50"
+              }`}
+            >
+              V2 (Recommended)
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {version === "v2"
+              ? "Clean EuroPay-native event types (e.g. purchase.completed, subscription.cancelled)"
+              : "Stripe event types with EuroPay enrichment (e.g. checkout.session.completed)"}
+          </p>
         </div>
 
         <div className="space-y-2">

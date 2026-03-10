@@ -30,7 +30,8 @@ export async function createApp(formData: FormData) {
     where: { clerkUserId: userId },
   })
 
-  const { raw, hash, prefix } = generateApiKey()
+  const testKey = generateApiKey("test")
+  const liveKey = generateApiKey("live")
 
   const app = await prisma.app.create({
     data: {
@@ -40,13 +41,23 @@ export async function createApp(formData: FormData) {
     },
   })
 
-  await prisma.apiKey.create({
-    data: {
-      appId: app.id,
-      keyHash: hash,
-      keyPrefix: prefix,
-      name: "Default",
-    },
+  await prisma.apiKey.createMany({
+    data: [
+      {
+        appId: app.id,
+        keyHash: testKey.hash,
+        keyPrefix: testKey.prefix,
+        name: "Test",
+        keyType: "test",
+      },
+      {
+        appId: app.id,
+        keyHash: liveKey.hash,
+        keyPrefix: liveKey.prefix,
+        name: "Live",
+        keyType: "live",
+      },
+    ],
   })
 
   // Track milestones
@@ -80,7 +91,7 @@ export async function createApp(formData: FormData) {
 
   revalidatePath("/dashboard/apps")
 
-  return { appId: app.id, apiKey: raw }
+  return { appId: app.id, testApiKey: testKey.raw, liveApiKey: liveKey.raw }
 }
 
 export async function deleteApp(appId: string) {
@@ -208,36 +219,44 @@ export async function createProduct(formData: FormData) {
   const app = await prisma.app.findUnique({ where: { id: appId } })
   if (!app || app.clerkUserId !== userId) throw new Error("Not found")
 
-  if (!app.stripeConnectId) {
-    throw new Error("No Stripe account connected. Connect your Stripe account in the app settings before creating products.")
-  }
+  let stripeProductId: string
+  let stripePriceId: string
+  let syncedToStripe = false
 
-  const connectOpts = { stripeAccount: app.stripeConnectId }
+  if (app.stripeConnectId) {
+    // Stripe connected — create product + price on connected account
+    const connectOpts = { stripeAccount: app.stripeConnectId }
 
-  // Create Stripe product
-  const stripeProduct = await stripe.products.create({
-    name,
-    description,
-    tax_code: "txcd_10103001", // SaaS
-    metadata: { appId, eupay: "true" },
-  }, connectOpts)
+    const stripeProduct = await stripe.products.create({
+      name,
+      description,
+      tax_code: "txcd_10103001", // SaaS
+      metadata: { appId, eupay: "true" },
+    }, connectOpts)
 
-  // Create Stripe price
-  const priceParams: Parameters<typeof stripe.prices.create>[0] = {
-    product: stripeProduct.id,
-    unit_amount: amountCents,
-    currency,
-    metadata: { appId },
-  }
-
-  if (productType === "SUBSCRIPTION" && interval) {
-    priceParams.recurring = {
-      interval: interval as "month" | "year",
-      interval_count: intervalCount,
+    const priceParams: Parameters<typeof stripe.prices.create>[0] = {
+      product: stripeProduct.id,
+      unit_amount: amountCents,
+      currency,
+      metadata: { appId },
     }
-  }
 
-  const stripePrice = await stripe.prices.create(priceParams, connectOpts)
+    if (productType === "SUBSCRIPTION" && interval) {
+      priceParams.recurring = {
+        interval: interval as "month" | "year",
+        interval_count: intervalCount,
+      }
+    }
+
+    const stripePrice = await stripe.prices.create(priceParams, connectOpts)
+    stripeProductId = stripeProduct.id
+    stripePriceId = stripePrice.id
+    syncedToStripe = true
+  } else {
+    // No Stripe yet — save with placeholder IDs (will sync when Stripe connects)
+    stripeProductId = `pending_sync_${crypto.randomUUID()}`
+    stripePriceId = `pending_sync_${crypto.randomUUID()}`
+  }
 
   await prisma.product.create({
     data: {
@@ -246,19 +265,109 @@ export async function createProduct(formData: FormData) {
       description,
       productType,
       appStoreProductId,
-      stripePriceId: stripePrice.id,
-      stripeProductId: stripeProduct.id,
+      stripePriceId,
+      stripeProductId,
       amountCents,
       currency,
       interval: productType === "SUBSCRIPTION" ? interval : null,
       intervalCount: productType === "SUBSCRIPTION" ? intervalCount : null,
       trialDays: productType === "SUBSCRIPTION" ? trialDays : null,
+      syncedToStripe,
     },
   })
 
   await trackMilestone({ clerkUserId: userId, appId, milestone: "product_created", details: { productName: name, productType } })
 
   revalidatePath(`/dashboard/apps/${appId}/products`)
+}
+
+export async function syncProductsToStripe(appId: string) {
+  const userId = await requireUser()
+  const app = await prisma.app.findUnique({ where: { id: appId } })
+  if (!app || app.clerkUserId !== userId) throw new Error("Not found")
+  if (!app.stripeConnectId) throw new Error("Stripe not connected")
+
+  const unsyncedProducts = await prisma.product.findMany({
+    where: { appId, syncedToStripe: false },
+  })
+
+  const connectOpts = { stripeAccount: app.stripeConnectId }
+  let syncedCount = 0
+
+  for (const product of unsyncedProducts) {
+    try {
+      const stripeProduct = await stripe.products.create({
+        name: product.name,
+        description: product.description || undefined,
+        tax_code: "txcd_10103001",
+        metadata: { appId, eupay: "true" },
+      }, connectOpts)
+
+      const priceParams: Parameters<typeof stripe.prices.create>[0] = {
+        product: stripeProduct.id,
+        unit_amount: product.amountCents,
+        currency: product.currency,
+        metadata: { appId },
+      }
+      if (product.productType === "SUBSCRIPTION" && product.interval) {
+        priceParams.recurring = {
+          interval: product.interval as "month" | "year",
+          interval_count: product.intervalCount || 1,
+        }
+      }
+      const stripePrice = await stripe.prices.create(priceParams, connectOpts)
+
+      await prisma.product.update({
+        where: { id: product.id },
+        data: {
+          stripeProductId: stripeProduct.id,
+          stripePriceId: stripePrice.id,
+          syncedToStripe: true,
+        },
+      })
+      syncedCount++
+    } catch (err) {
+      console.error(`[Stripe] Failed to sync product ${product.id}:`, err)
+    }
+  }
+
+  revalidatePath(`/dashboard/apps/${appId}/products`)
+  return { synced: syncedCount, total: unsyncedProducts.length }
+}
+
+const DMA_CHECKLIST_KEYS = [
+  "dma_membership",
+  "dma_addendum_agreed",
+  "dma_tier_chosen",
+  "dma_iap_removed",
+  "dma_xcode_entitlement",
+  "dma_credentials_uploaded",
+  "dma_sdk_integrated",
+  "dma_tested",
+  "dma_submitted",
+  "dma_live",
+] as const
+
+export type DmaChecklistKey = (typeof DMA_CHECKLIST_KEYS)[number]
+export type DmaChecklistState = Partial<Record<DmaChecklistKey, boolean>>
+
+export async function updateDmaChecklist(appId: string, key: string, value: boolean) {
+  const userId = await requireUser()
+  if (!DMA_CHECKLIST_KEYS.includes(key as DmaChecklistKey)) {
+    throw new Error("Invalid checklist key")
+  }
+  const app = await prisma.app.findUnique({ where: { id: appId } })
+  if (!app || app.clerkUserId !== userId) throw new Error("Not found")
+
+  const current = (app.setupChecklist as DmaChecklistState) ?? {}
+  const updated = { ...current, [key]: value }
+
+  await prisma.app.update({
+    where: { id: appId },
+    data: { setupChecklist: updated },
+  })
+
+  revalidatePath(`/dashboard/apps/${appId}/dma-checklist`)
 }
 
 export async function toggleProduct(productId: string, isActive: boolean) {
@@ -279,12 +388,12 @@ export async function toggleProduct(productId: string, isActive: boolean) {
 
 // ─── API Key Actions ──────────────────────────────────────────
 
-export async function createApiKeyForApp(appId: string, keyName: string) {
+export async function createApiKeyForApp(appId: string, keyName: string, keyType: "test" | "live" = "test") {
   const userId = await requireUser()
   const app = await prisma.app.findUnique({ where: { id: appId } })
   if (!app || app.clerkUserId !== userId) throw new Error("Not found")
 
-  const { raw, hash, prefix } = generateApiKey()
+  const { raw, hash, prefix } = generateApiKey(keyType)
 
   await prisma.apiKey.create({
     data: {
@@ -292,6 +401,7 @@ export async function createApiKeyForApp(appId: string, keyName: string) {
       keyHash: hash,
       keyPrefix: prefix,
       name: keyName || "API Key",
+      keyType,
     },
   })
 
@@ -537,48 +647,149 @@ export async function exportCustomerData(customerId: string): Promise<GdprExport
 
 // ─── Apple Reporting & Compliance Stubs ──────────────────────
 
-export async function exportAuditTrail(appId: string, startDate: string, endDate: string) {
-  await requireUser()
-  void appId; void startDate; void endDate
-  return [] as Record<string, string | number | null>[]
-}
-
 export async function getRegulatoryUpdates() {
-  await requireUser()
-  return [] as { id: string; title: string; description: string; actionRequired: string | null; publishedAt: string; isRead: boolean; readAt: string | null }[]
+  const userId = await requireUser()
+
+  const updates = await prisma.regulatoryUpdate.findMany({
+    orderBy: { publishedAt: "desc" },
+    include: {
+      reads: {
+        where: { clerkUserId: userId },
+        select: { readAt: true },
+      },
+    },
+  })
+
+  return updates.map((u) => ({
+    id: u.id,
+    title: u.title,
+    description: u.description,
+    actionRequired: u.actionRequired,
+    publishedAt: u.publishedAt.toISOString(),
+    isRead: u.reads.length > 0,
+    readAt: u.reads[0]?.readAt?.toISOString() ?? null,
+  }))
 }
 
 export async function markRegulatoryUpdateRead(id: string) {
-  await requireUser()
-  void id
+  const userId = await requireUser()
+
+  await prisma.regulatoryUpdateRead.upsert({
+    where: { updateId_clerkUserId: { updateId: id, clerkUserId: userId } },
+    create: { updateId: id, clerkUserId: userId },
+    update: { readAt: new Date() },
+  })
+
+  revalidatePath("/dashboard/compliance")
   return { success: true as const }
 }
 
 export async function markAllRegulatoryUpdatesRead() {
-  await requireUser()
+  const userId = await requireUser()
+
+  const allUpdates = await prisma.regulatoryUpdate.findMany({
+    select: { id: true },
+  })
+
+  const existingReads = await prisma.regulatoryUpdateRead.findMany({
+    where: { clerkUserId: userId },
+    select: { updateId: true },
+  })
+  const readIds = new Set(existingReads.map((r) => r.updateId))
+
+  const newReads = allUpdates
+    .filter((u) => !readIds.has(u.id))
+    .map((u) => ({ updateId: u.id, clerkUserId: userId }))
+
+  if (newReads.length > 0) {
+    await prisma.regulatoryUpdateRead.createMany({ data: newReads })
+  }
+
+  revalidatePath("/dashboard/compliance")
   return { success: true as const }
 }
 
 export async function updateAppleCredentials(formData: FormData) {
-  await requireUser()
-  void formData
+  const userId = await requireUser()
+  const appId = formData.get("appId") as string
+  const appleKeyId = formData.get("appleKeyId") as string
+  const appleIssuerId = formData.get("appleIssuerId") as string
+  const applePrivateKey = formData.get("applePrivateKey") as string
+  const appleBundleId = formData.get("appleBundleId") as string
+
+  const app = await prisma.app.findUnique({ where: { id: appId } })
+  if (!app || app.clerkUserId !== userId) throw new Error("Not found")
+
+  await prisma.app.update({
+    where: { id: appId },
+    data: { appleKeyId, appleIssuerId, applePrivateKey, appleBundleId },
+  })
+
+  await trackMilestone({
+    clerkUserId: userId,
+    appId,
+    milestone: "apple_credentials_configured",
+  })
+
+  revalidatePath(`/dashboard/apps/${appId}`)
   return { success: true as const }
 }
 
 export async function removeAppleCredentials(appId: string) {
-  await requireUser()
-  void appId
+  const userId = await requireUser()
+  const app = await prisma.app.findUnique({ where: { id: appId } })
+  if (!app || app.clerkUserId !== userId) throw new Error("Not found")
+
+  await prisma.app.update({
+    where: { id: appId },
+    data: {
+      appleKeyId: null,
+      appleIssuerId: null,
+      applePrivateKey: null,
+      appleBundleId: null,
+    },
+  })
+
+  revalidatePath(`/dashboard/apps/${appId}`)
   return { success: true as const }
 }
 
-export async function retryAppleReportAction(reportId: string) {
-  await requireUser()
-  void reportId
-}
+export async function retryAppleReportAction(transactionId: string) {
+  const userId = await requireUser()
 
-export async function updateSetupChecklist(appId: string, stepKey: string, completed: boolean) {
-  await requireUser()
-  void appId; void stepKey; void completed
+  const transaction = await prisma.transaction.findUnique({
+    where: { id: transactionId },
+    include: { app: true },
+  })
+  if (!transaction || transaction.app.clerkUserId !== userId) throw new Error("Not found")
+
+  if (!transaction.app.appleKeyId || !transaction.app.appleIssuerId || !transaction.app.applePrivateKey || !transaction.app.appleBundleId) {
+    throw new Error("Apple credentials not configured")
+  }
+
+  const { reportTransaction } = await import("./apple-reporting")
+
+  const reportId = transaction.stripePaymentIntentId ?? transaction.stripeCheckoutSessionId ?? transaction.id
+  const result = await reportTransaction(
+    {
+      appleKeyId: transaction.app.appleKeyId,
+      appleIssuerId: transaction.app.appleIssuerId,
+      applePrivateKey: transaction.app.applePrivateKey,
+      appleBundleId: transaction.app.appleBundleId,
+    },
+    reportId
+  )
+
+  await prisma.transaction.update({
+    where: { id: transactionId },
+    data: {
+      appleReportStatus: result.success ? "REPORTED" : "FAILED",
+      appleReportedAt: new Date(),
+      appleReportError: result.error ?? null,
+    },
+  })
+
+  revalidatePath(`/dashboard/apps/${transaction.appId}`)
 }
 
 // ─── Promotion Actions ───────────────────────────────────────
