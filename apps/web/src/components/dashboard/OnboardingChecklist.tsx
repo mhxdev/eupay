@@ -115,7 +115,7 @@ function isStepComplete(step: Step, data: ChecklistData): boolean {
     case "product":
       return data.hasProduct
     case "sdk":
-      return data.hasSdkUsage
+      return data.hasSdkUsage || data.hasTestTransaction
     case "test":
       return data.hasTestTransaction
     case "dma":
