@@ -390,3 +390,45 @@ V1 endpoints (22 total) remain active for backward compatibility. V2 (7 endpoint
 
 ### Other
 - `WaitlistEntry` — coming-soon page signups
+
+---
+
+## 10. Local Development Setup
+
+### Starting the dev server
+```bash
+cd ~/eupay/apps/web && npm run dev
+```
+- Runs on port 3000 by default
+- If port is busy: `kill <PID> && npm run dev`
+- Never run Prisma Studio simultaneously (connection pool exhaustion)
+
+### Stripe webhook testing (local)
+```bash
+# Terminal 1: dev server
+cd ~/eupay/apps/web && npm run dev
+
+# Terminal 2: Stripe CLI (MUST use both flags for Connect)
+stripe listen --forward-to localhost:3000/api/v2/webhooks/stripe --forward-connect-to localhost:3000/api/v2/webhooks/stripe
+
+# Terminal 3: test commands
+curl -s "http://localhost:3000/api/v2/init?userId=test_user_1" \
+  -H "Authorization: Bearer europay_test_<key>"
+```
+
+**Important:** Stripe CLI generates its own webhook secret. Update `STRIPE_WEBHOOK_SECRET` in `.env` to match. **Revert before deploying to production.**
+
+### Test connected account
+- Account: `acct_1T9W9OLfQ6pnDNjv` (Standard, sandbox)
+- Business name: "Test Acc sandbox"
+- Standard Connect accounts manage their own settings — platform cannot modify
+
+### Test API key (sandbox)
+- Prefix: `europay_test_a42e...`
+- App ID: `cmmjm409e0000swc0b8um401m`
+- Product ID: `cmmjpdgru0001or2g8ypaxsl7` (rehab, €9/month)
+
+### Test card
+- Number: `4242 4242 4242 4242`
+- Expiry: any future date
+- CVC: any 3 digits

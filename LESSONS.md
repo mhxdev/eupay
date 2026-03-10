@@ -121,3 +121,70 @@ These are standing instructions — apply on every session:
 12. **Fire-and-forget side effects:** Audit logs, milestones, alerts, emails — always try/catch, never break main flow.
 13. **Dev server lifecycle:** Kill before DB operations, always restart after. Never forget the restart.
 14. **Env vars:** Plain `KEY=value`. No quotes, no shell commands, no double prefixes.
+
+### 2026-03-10 — Stripe Standard Connect accounts cannot be modified by platform
+**What happened:** Tried to set `business_profile.name` on connected account via API. Got "does not have the required permissions."
+**Correct pattern:** Standard Connect accounts manage their own profile. Platform can only read, not write. Developers must set their own business name during Stripe onboarding.
+**Rule going forward:** Never attempt to update Standard connected account properties via platform API. Use Account Links to send developers through onboarding, or instruct them to update settings in their own Stripe dashboard.
+
+### 2026-03-10 — Deleting Stripe connected account orphans all DB references
+**What happened:** Deleted connected account `acct_1T9KE3A0wiGTeHEp` and connected a new one. Database still had customer IDs and price IDs from the old account. Every Stripe API call failed with "No such customer" / "No such price."
+**Correct pattern:** When reconnectinripe, clean up: delete Customer records (stripeCustomerId not nullable), reset Product sync flags (syncedToStripe=false, placeholder IDs), delete stale CheckoutSessions.
+**Rule going forward:** Stripe disconnect/reconnect must cascade-clean all Stripe-scoped references in the database. Consider adding a cleanup function to the disconnect flow.
+
+### 2026-03-10 — Always check Prisma model names before writing queries
+**What happened:** Assumed model was called `subscriber` — it was `customer`. Wasted time on TypeError.
+**Correct pattern:** Run `Object.keys(prisma).filter(k => !k.startsWith("_") && !k.startsWith("$"))` to list all models.
+**Rule going forward:** Never guess Prisma model names. Check first.
+
+### 2026-03-10 — Check route HTTP method exports before writing curl commands
+**What happened:** Called `POST /v2/init` — it exports GET. Called `GET /v2/events` — it exports POST. Both returned 405.
+**Correct pattern:** Run `grep "^export async function" <route-file>` to see which methods a route**Rule going forward:** Always verify the exported HTTP method before testing an endpoint.
+
+### 2026-03-10 — Stripe CLI webhook forwarding needs correct path AND --forward-connect-to flag
+**What happened:** Webhooks forwarded to `/api/stripe/webhook` (doesn't exist — actual path is `/api/v2/webhooks/stripe`). Then fixed path but still no webhooks for connected account events without `--forward-connect-to`.
+**Correct pattern:** `stripe listen --forward-to localhost:3000/api/v2/webhooks/stripe --forward-connect-to localhost:3000/api/v2/webhooks/stripe`
+**Rule going forward:** Always use both `--forward-to` AND `--forward-connect-to` for Stripe Connect setups. Always verify the actual webhook route path in the codebase first.
+
+### 2026-03-10 — Stripe CLI generates its own webhook secret
+**What happened:** Stripe CLI showed a different `whsec_xxx` than what was in `.env`. Webhook signature verification failed silently.
+**Correct pattern:** Update `.env` STRIPE_WEBHOOK_SECRET to match CLI output during locting. Revert before deploying.
+**Rule going forward:** When using Stripe CLI locally, always update the webhook secret in `.env`. Add a comment marking it as "LOCAL TESTING ONLY — revert before deploy."
+
+### 2026-03-10 — V2 checkout was missing transaction.create (v1 had it)
+**What happened:** V2 checkout route didn't pre-create a PENDING Transaction. When `checkout.session.completed` webhook fired, `transaction.update` failed with "Record to update not found."
+**Correct pattern:** Checkout must create a PENDING Transaction before returning the session URL, so the webhook handler can update it on completion.
+**Rule going forward:** When building new API versions, diff against v1 to ensure no critical side effects are dropped. The checkout → webhook contract requires a pre-existing Transaction record.
+
+### 2026-03-10 — Never use sed for multi-line code insertions
+**What happened:** Used `sed` to insert a 13-line transaction.create block. The pattern matched `return v2Success` which appeared 4+ times ile. Inserted the block in all locations, corrupting the file. Couldn't git checkout because file was never committed.
+**Correct pattern:** Use a Node.js script with `fs.readFileSync` / `fs.writeFileSync` for targeted insertions. Or use `str_replace` with a unique context string.
+**Rule going forward:** Never use sed for multi-line insertions in files with repeated patterns. Always commit before making risky edits. Use Node.js scripts for surgical file modifications.
+
+### 2026-03-10 — Never run Prisma Studio alongside dev server
+**What happened:** Supabase free tier connection pool (~15) exhausted when both dev server and Prisma Studio competed for connections.
+**Correct pattern:** Kill dev server before running Prisma Studio. Kill Prisma Studio before starting dev server.
+**Rule going forward:** One Prisma consumer at a time on Supabase free tier. Use API endpoints or one-off node scripts to query data instead of Studio when dev server is running.
+
+---
+
+## Recurring Rules (updated 2026-03-10)
+
+1. Supabas Session Pooler only (aws-1, never aws-0, never direct)
+2. Stripe: Every API call needs `{ stripeAccount: app.stripeConnectId }`
+3. Prisma: Max 5-8 parallel queries, batch the rest
+4. Prisma: Never guess model names — check with Object.keys(prisma)
+5. Prisma: Never run Studio alongside dev server on free tier
+6. Stripe Connect: Platform cannot modify Standard account properties
+7. Stripe Connect: Disconnect must cascade-clean all Stripe-scoped DB references
+8. API routes: Check exported HTTP methods before testing
+9. Webhooks: V2 path is /api/v2/webhooks/stripe (not /api/stripe/webhook)
+10. Webhooks: Stripe CLI needs --forward-connect-to for Connect events
+11. Webhooks: CLI generates its own secret — update .env, revert before deploy
+12. Checkout: Must create PENDING Transaction before returning session URL
+13. File edits: Never use sed for multi-line insertions — use Node.js scripts
+14. Always commit before making risky file edits
+15. Fire-and-forget: Audit/milestone/alert/email failures must never business logic
+16. Fee: 1.5% — do not change without explicit instruction
+17. API keys: SHA-256 hashed, shown once, never recoverable
+18. V2 webhooks: Clean EuroPay-native payloads only, no raw Stripe data
