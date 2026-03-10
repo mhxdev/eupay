@@ -39,9 +39,15 @@ export function AdminRevenueChart({ data }: { data: DailyRevenue[] }) {
         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
         <XAxis
           dataKey="date"
-          interval={6}
-          tick={{ fontSize: 12 }}
+          interval="preserveStartEnd"
+          tickFormatter={(v) => {
+            const [m, d] = v.split("-")
+            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+            return months[parseInt(m) - 1] + " " + parseInt(d)
+          }}
+          tick={{ fontSize: 11 }}
           className="fill-muted-foreground"
+          minTickGap={40}
         />
         <YAxis
           tickFormatter={(v) => formatCurrency(v)}

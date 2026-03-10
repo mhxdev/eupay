@@ -36,6 +36,7 @@ export function ApiKeySection({
   const [copied, setCopied] = useState(false)
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [showRevoked, setShowRevoked] = useState(false)
 
   function handleCreate(formData: FormData) {
     startTransition(async () => {
@@ -109,7 +110,7 @@ export function ApiKeySection({
       </div>
 
       <div className="space-y-2">
-        {keys.map((key) => (
+        {keys.filter((key) => key.isActive || showRevoked).map((key) => (
           <div
             key={key.id}
             className="flex items-center justify-between rounded-md border px-4 py-3"
@@ -142,6 +143,14 @@ export function ApiKeySection({
             </div>
           </div>
         ))}
+        {keys.some((k) => !k.isActive) && (
+          <button
+            onClick={() => setShowRevoked(!showRevoked)}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {showRevoked ? "Hide" : "Show"} {keys.filter((k) => !k.isActive).length} revoked key{keys.filter((k) => !k.isActive).length !== 1 ? "s" : ""}
+          </button>
+        )}
       </div>
     </div>
   )
