@@ -38,6 +38,8 @@ function formatCurrency(cents: number) {
 
 export function DevelopersTable({ developers }: { developers: DeveloperRow[] }) {
   const [search, setSearch] = useState("")
+  const [page, setPage] = useState(0)
+  const perPage = 15
 
   const filtered = search.trim()
     ? developers.filter(
@@ -47,6 +49,9 @@ export function DevelopersTable({ developers }: { developers: DeveloperRow[] }) 
       )
     : developers
 
+  const totalPages = Math.ceil(filtered.length / perPage)
+  const paginated = filtered.slice(page * perPage, (page + 1) * perPage)
+
   return (
     <div className="space-y-3">
       <div className="relative w-64">
@@ -55,7 +60,7 @@ export function DevelopersTable({ developers }: { developers: DeveloperRow[] }) 
           type="text"
           placeholder="Search by email or name..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setPage(0) }}
           className="pl-9 h-9 text-sm"
         />
       </div>
@@ -75,7 +80,7 @@ export function DevelopersTable({ developers }: { developers: DeveloperRow[] }) 
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filtered.map((dev) => (
+          {paginated.map((dev) => (
             <TableRow
               key={dev.clerkUserId}
               className="cursor-pointer hover:bg-white/[0.03]"
@@ -123,6 +128,29 @@ export function DevelopersTable({ developers }: { developers: DeveloperRow[] }) 
           )}
         </TableBody>
       </Table>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-2">
+          <span className="text-xs text-muted-foreground">
+            Showing {page * perPage + 1}–{Math.min((page + 1) * perPage, filtered.length)} of {filtered.length}
+          </span>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setPage(Math.max(0, page - 1))}
+              disabled={page === 0}
+              className="px-2.5 py-1 text-xs rounded border border-border disabled:opacity-30 hover:bg-white/[0.05]"
+            >
+              Prev
+            </button>
+            <button
+              onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+              disabled={page >= totalPages - 1}
+              className="px-2.5 py-1 text-xs rounded border border-border disabled:opacity-30 hover:bg-white/[0.05]"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
