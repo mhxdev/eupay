@@ -139,20 +139,40 @@ function Hero() {
                   <span className="text-gray-400">{"{"}</span>
                   {"\n"}
                   {"    "}
-                  <span className="text-teal-300">Button</span>
-                  <span className="text-gray-400">(</span>
-                  <span className="text-orange-300">&quot;Subscribe&quot;</span>
-                  <span className="text-gray-400">)</span>{" "}
-                  <span className="text-gray-400">{"{"}</span>{" "}
-                  <span className="text-gray-400">{"}"}</span>
+                  <span className="text-gray-500">// Check region and purchase</span>
                   {"\n"}
-                  {"      "}
-                  <span className="text-yellow-300">.europayCheckout</span>
+                  {"    "}
+                  <span className="text-purple-400">let</span>{" "}
+                  <span className="text-white">region</span>{" "}
+                  <span className="text-gray-400">=</span>{" "}
+                  <span className="text-purple-400">try await</span>{" "}
+                  <span className="text-teal-300">europay</span>
+                  <span className="text-gray-400">.</span>
+                  <span className="text-yellow-300">checkRegion</span>
+                  <span className="text-gray-400">()</span>
+                  {"\n"}
+                  {"    "}
+                  <span className="text-purple-400">let</span>{" "}
+                  <span className="text-white">products</span>{" "}
+                  <span className="text-gray-400">=</span>{" "}
+                  <span className="text-purple-400">try await</span>{" "}
+                  <span className="text-teal-300">europay</span>
+                  <span className="text-gray-400">.</span>
+                  <span className="text-yellow-300">fetchProducts</span>
+                  <span className="text-gray-400">()</span>
+                  {"\n"}
+                  {"    "}
+                  <span className="text-purple-400">try await</span>{" "}
+                  <span className="text-teal-300">europay</span>
+                  <span className="text-gray-400">.</span>
+                  <span className="text-yellow-300">purchase</span>
                   <span className="text-gray-400">(</span>
-                  <span className="text-white">productId</span>
+                  <span className="text-white">product</span>
                   <span className="text-gray-400">:</span>{" "}
-                  <span className="text-orange-300">&quot;pro_monthly&quot;</span>
-                  <span className="text-gray-400">)</span>
+                  <span className="text-white">products</span>
+                  <span className="text-gray-400">[</span>
+                  <span className="text-orange-300">0</span>
+                  <span className="text-gray-400">])</span>
                   {"\n"}
                   {"  "}
                   <span className="text-gray-400">{"}"}</span>
