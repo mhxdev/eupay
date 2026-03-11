@@ -285,7 +285,7 @@ export default async function DashboardPage() {
     {
       title: "Churn Rate",
       value: `${churnRate.toFixed(1)}%`,
-      description: "Cancelled ÷ active last month",
+      description: "% of subscribers who cancelled this month",
       icon: BarChart3,
     },
     {
