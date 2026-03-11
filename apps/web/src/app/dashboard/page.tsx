@@ -267,7 +267,7 @@ export default async function DashboardPage() {
         ? `+${mrrGrowth.toFixed(1)}% vs last month`
         : mrrGrowth < 0
           ? `${mrrGrowth.toFixed(1)}% vs last month`
-          : "No change",
+          : "Expected monthly recurring revenue from active subscriptions",
       icon: TrendingUp,
     },
     {
@@ -279,25 +279,25 @@ export default async function DashboardPage() {
     {
       title: "Revenue This Month",
       value: formatCurrency(currentRevenue),
-      description: "Excluding VAT",
+      description: "Total collected this month (excl. VAT)",
       icon: CreditCard,
     },
     {
       title: "Churn Rate",
       value: `${churnRate.toFixed(1)}%`,
-      description: "This month",
+      description: "Cancelled ÷ active last month",
       icon: BarChart3,
     },
     {
       title: "New Subscribers",
       value: newSubscribersThisMonth.toLocaleString(),
-      description: "This month",
+      description: "First-time subscribers this month",
       icon: UserPlus,
     },
     {
       title: "LTV (Avg.)",
       value: formatCurrency(ltv),
-      description: `${payingCustomerCount} paying customer${payingCustomerCount !== 1 ? "s" : ""}`,
+      description: "Avg. revenue per customer ÷ monthly churn rate",
       icon: DollarSign,
     },
   ]
